@@ -13,6 +13,9 @@ from .auth.router import router as auth_router
 from .core.config import get_settings
 from .core.database import get_engine
 from .core.errors import install_handlers
+from .qr.router import router as qr_router
+from .redirect.router import router as redirect_router
+from .stats.router import router as stats_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -27,7 +30,15 @@ def create_app() -> FastAPI:
         openapi_url="/api/openapi.json" if development else None,
     )
     install_handlers(app)
-    for router in (auth_router, onboarding_router, account_router, admin_router):
+    for router in (
+        auth_router,
+        onboarding_router,
+        account_router,
+        stats_router,
+        qr_router,
+        admin_router,
+        redirect_router,
+    ):
         app.include_router(router)
 
     @app.get("/health", tags=["system"])
