@@ -1,0 +1,21 @@
+.notice {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+}
+
+.info {
+  background: var(--color-surface-soft);
+  color: var(--color-text-secondary);
+}
+
+.success {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.error {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}

@@ -1,0 +1,105 @@
+# Local development stack (Docker). Production uses deploy/compose.portainer.yaml.
+name: vorya-qr
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vorya_qr}
+      POSTGRES_DB: ${POSTGRES_DB:-vorya_qr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Impostare POSTGRES_PASSWORD nel file .env (make init)}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    restart: unless-stopped
+
+  migrate:
+    build: ./backend
+    command: ["python", "-m", "app.migrate"]
+    environment: &backend_environment
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-vorya_qr}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-vorya_qr}
+      APP_ENV: ${APP_ENV:-development}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      SHORT_LINK_BASE_URL: ${SHORT_LINK_BASE_URL:-http://localhost:3000}
+      PUBLIC_REGISTRATION_ENABLED: ${PUBLIC_REGISTRATION_ENABLED:-true}
+      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-supporto@vorya.it}
+      # Development: emails are written as JSON files inside the backend container.
+      MAIL_TRANSPORT: ${MAIL_TRANSPORT:-file}
+      MAIL_FILE_DIR: /tmp/vorya-qr-mail
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SECURITY: ${SMTP_SECURITY:-ssl}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-noreply@vorya.it}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Vorya QR}
+      # 0.2: uploaded files (local volume by default, or any S3-compatible service).
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      STORAGE_LOCAL_PATH: /data/uploads
+      STORAGE_S3_ENDPOINT: ${STORAGE_S3_ENDPOINT:-}
+      STORAGE_S3_REGION: ${STORAGE_S3_REGION:-}
+      STORAGE_S3_BUCKET: ${STORAGE_S3_BUCKET:-}
+      STORAGE_S3_PREFIX: ${STORAGE_S3_PREFIX:-vorya-qr/}
+      STORAGE_S3_ACCESS_KEY: ${STORAGE_S3_ACCESS_KEY:-}
+      STORAGE_S3_SECRET_KEY: ${STORAGE_S3_SECRET_KEY:-}
+      # 0.2: approximate scan places (DB-IP Lite, downloaded with `python -m app.cli download-geoip`).
+      GEOIP_DB_PATH: /data/geoip/dbip-city-lite.mmdb
+      # 0.2: Google Safe Browsing key; empty = check skipped (logged).
+      SAFE_BROWSING_API_KEY: ${SAFE_BROWSING_API_KEY:-}
+      # 0.3: Stripe. Only keys; plan prices are linked from /admin/billing (never in env or code).
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_LIVE_ALLOWED: ${STRIPE_LIVE_ALLOWED:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    build: ./backend
+    environment: *backend_environment
+    volumes:
+      - uploads_data:/data/uploads
+      - geoip_data:/data/geoip
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  worker:
+    build: ./backend
+    command: ["python", "-m", "app.worker"]
+    environment: *backend_environment
+    volumes:
+      - uploads_data:/data/uploads
+      - geoip_data:/data/geoip
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    environment:
+      API_INTERNAL_URL: http://backend:8000
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  uploads_data:
+  geoip_data:

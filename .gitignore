@@ -23,6 +23,13 @@ coverage/
 playwright-report/
 test-results/
 .mail-outbox/
+.e2e-uploads/
+.uploads/
+.geoip/
 
 # Sistema
 .DS_Store
+
+# Database GeoIP (scaricato sul server, mai committato)
+*.mmdb
+*.mmdb.gz

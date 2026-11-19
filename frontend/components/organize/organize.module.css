@@ -1,0 +1,427 @@
+.layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/* Folder tree */
+.tree {
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-4));
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.treeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+  padding: 0 var(--space-2);
+}
+
+.treeHeader h2 {
+  font-size: var(--fs-sm);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.treeHeader button,
+.folderMenu {
+  display: inline-flex;
+  border: 0;
+  background: transparent;
+  padding: var(--space-1);
+  border-radius: var(--radius-xs);
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.treeHeader button:hover,
+.folderMenu:hover {
+  background: var(--color-selected);
+  color: var(--vorya-green-dark);
+}
+
+.folderRow {
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.folderRow[data-active] {
+  background: var(--color-selected);
+}
+
+.folderRow[data-over] {
+  background: var(--art-glow);
+  box-shadow: inset 0 0 0 2px var(--vorya-green-dark);
+}
+
+.folderRow[data-dragging] {
+  opacity: 0.5;
+}
+
+.folderButton {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 0;
+  background: transparent;
+  padding: var(--space-2);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+  color: var(--color-text);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.folderButton span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.folderButton small {
+  color: var(--color-muted);
+}
+
+.treeEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-3) 0 0;
+  font-size: var(--fs-xs);
+}
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+}
+
+/* Tags */
+.tagsBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-muted);
+}
+
+.tagChip,
+.tag {
+  --tag: var(--vorya-green-dark);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--tag);
+  padding: 1px var(--space-3);
+  font: inherit;
+  font-size: var(--fs-xs);
+  color: var(--tag);
+  background: transparent;
+}
+
+.tagChip {
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.tagChip[aria-pressed="true"] {
+  background: var(--tag);
+  color: var(--vorya-white);
+}
+
+.tagManage {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-xs);
+  color: var(--vorya-green-dark);
+  cursor: pointer;
+}
+
+.tagList {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.tagForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.swatches {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.swatches button {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-round);
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 0 0 1px var(--color-border);
+  cursor: pointer;
+}
+
+.swatches button[aria-checked="true"] {
+  box-shadow: 0 0 0 2px var(--color-text);
+}
+
+.tagManager {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tagManager li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.tagManager button {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+/* Selection bar */
+.bar {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-4);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  max-width: calc(100vw - var(--space-4) * 2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xl);
+  transform: translateX(-50%);
+  animation: rise var(--dur-slow) var(--ease-spring) both;
+}
+
+.barActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+  }
+}
+
+/* Selecting and dragging items */
+.select {
+  display: inline-flex;
+  align-items: center;
+}
+
+.select input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--vorya-green-dark);
+  cursor: pointer;
+}
+
+.handle {
+  display: inline-flex;
+  border: 0;
+  background: transparent;
+  padding: var(--space-1);
+  border-radius: var(--radius-xs);
+  color: var(--color-muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.handle:hover {
+  color: var(--vorya-green-dark);
+  background: var(--color-selected);
+}
+
+.ghost {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--vorya-green-dark);
+  color: var(--vorya-white);
+  font-size: var(--fs-sm);
+  box-shadow: var(--shadow-lg, var(--shadow-md));
+}
+
+.mobileToggle {
+  display: none;
+}
+
+@media (max-width: 959px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tree {
+    position: static;
+  }
+
+  .mobileToggle {
+    display: inline-flex;
+  }
+
+  .treeWrap[data-collapsed] {
+    display: none;
+  }
+}
+
+/* Search dialog */
+.searchTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-size: var(--fs-sm);
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.searchTrigger kbd {
+  font: inherit;
+  font-size: var(--fs-2xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  padding: 0 4px;
+}
+
+.results {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.results a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.results a:hover,
+.results a:focus-visible {
+  background: var(--color-selected);
+}
+
+.results small {
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}
+
+.more {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.moreToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  align-self: flex-start;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-sm);
+  color: var(--vorya-green-dark);
+  cursor: pointer;
+  padding: 0;
+}
+
+.moreGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.dateField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+.dateField input {
+  font: inherit;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}

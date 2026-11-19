@@ -1,0 +1,129 @@
+.modal {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xl);
+  max-height: 88dvh;
+  opacity: 0;
+  transform: translateY(var(--motion-shift-md));
+  transition:
+    opacity var(--dur-fast) var(--ease-in-out),
+    transform var(--dur-fast) var(--ease-in-out);
+}
+
+.modal[data-state="open"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.sm {
+  width: min(460px, calc(100vw - var(--space-8)));
+}
+
+.md {
+  width: min(620px, calc(100vw - var(--space-8)));
+}
+
+.modal::backdrop {
+  background: var(--gradient-overlay);
+  backdrop-filter: blur(3px);
+}
+
+.inner {
+  padding: var(--space-6);
+}
+
+/* Mobile: the dialog becomes a transparent full-screen host; the sheet slides from below. */
+.sheetHost {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  overflow: hidden;
+}
+
+.sheetHost[data-state="open"] {
+  transform: none;
+}
+
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: 0 var(--space-5) calc(var(--space-6) + env(safe-area-inset-bottom));
+  background: var(--color-surface);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  box-shadow: var(--shadow-xl);
+  translate: 0 100%;
+  transition: translate var(--dur-fast) var(--ease-in-out);
+  touch-action: pan-y;
+}
+
+.sheet[data-state="open"] {
+  translate: 0 0;
+  transition: translate var(--dur-slow) var(--ease-out);
+}
+
+.handle {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-3) 0 var(--space-4);
+  cursor: grab;
+  touch-action: none;
+}
+
+.handle span {
+  width: 40px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.heading h2 {
+  font-size: var(--fs-xl);
+}
+
+.body {
+  color: var(--color-text-secondary);
+  line-height: var(--lh-relaxed);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 639px) {
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions > * {
+    width: 100%;
+  }
+}
