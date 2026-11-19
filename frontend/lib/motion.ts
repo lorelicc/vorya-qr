@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 const QUERY = "(prefers-reduced-motion: reduce)";
 
@@ -63,4 +63,31 @@ export function useInView<T extends Element>(ref: React.RefObject<T | null>): bo
     };
   }, [ref]);
   return visible;
+}
+
+/** Animated number from the previous value to `value`; instant with reduced motion. */
+export function useCountUp(value: number, ms = 700): number {
+  const reduced = useReducedMotion();
+  const [shown, setShown] = useState(reduced ? value : 0);
+  const last = useRef(shown);
+  useEffect(() => {
+    const from = last.current;
+    if (reduced || from === value) {
+      last.current = value;
+      setShown(value);
+      return;
+    }
+    let frame = 0;
+    const start = performance.now();
+    const tick = (time: number) => {
+      const t = Math.min(1, (time - start) / ms);
+      const next = Math.round(from + (value - from) * (1 - Math.pow(1 - t, 3))); // ease-out
+      last.current = next;
+      setShown(next);
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value, ms, reduced]);
+  return shown;
 }

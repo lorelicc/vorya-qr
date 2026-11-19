@@ -2,49 +2,31 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Card } from "@/components/ui";
+import { SkeletonList } from "@/components/ui";
 import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import type { QrCode, QrStats } from "@/lib/types";
-import { Breakdown } from "./Breakdown";
-import { DailyChart } from "./DailyChart";
+import { StatsDashboard } from "./StatsDashboard";
 import styles from "./StatsView.module.css";
+import { useStats } from "./useStats";
 
 export function StatsView({ id }: { id: number }) {
   const { api: base, app } = useCompany();
   const [qr, setQr] = useState<QrCode | null>(null);
-  const [stats, setStats] = useState<QrStats | null>(null);
-  const [error, setError] = useState("");
+  const [qrError, setQrError] = useState("");
+  const { range, setRange, data, error, csvHref } = useStats<QrStats>(
+    `${base}/qr-codes/${id}/stats`,
+  );
 
   useEffect(() => {
-    Promise.all([
-      api<QrCode>(`${base}/qr-codes/${id}`),
-      api<QrStats>(`${base}/qr-codes/${id}/stats`),
-    ])
-      .then(([q, s]) => {
-        setQr(q);
-        setStats(s);
-      })
-      .catch((err) => setError(errorMessage(err)));
+    api<QrCode>(`${base}/qr-codes/${id}`)
+      .then(setQr)
+      .catch((err) => setQrError(errorMessage(err)));
   }, [base, id]);
 
-  if (error) return <p role="alert">{error}</p>;
-  if (!qr || !stats)
-    return (
-      <p className="muted" role="status">
-        Caricamento…
-      </p>
-    );
-
-  const figures = [
-    { label: "Scansioni totali", value: formatNumber(stats.total_scans) },
-    { label: "Ultimi 30 giorni", value: formatNumber(stats.scans_last_30_days) },
-    {
-      label: "Ultima scansione",
-      value: stats.last_scan_at ? formatDateTime(stats.last_scan_at) : "Nessuna",
-    },
-  ];
+  if (qrError || error) return <p role="alert">{qrError || error}</p>;
+  if (!qr || !data) return <SkeletonList rows={4} />;
 
   return (
     <div className="page">
@@ -55,31 +37,18 @@ export function StatsView({ id }: { id: number }) {
         <div>
           <h1>Statistiche</h1>
           <p>
-            Conteggiamo le scansioni, non le persone: senza indirizzi IP non è possibile distinguere
-            chi scansiona più volte. Bot e anteprime dei link sono esclusi (
-            {formatNumber(stats.bot_scans)} finora).
+            {formatNumber(data.total_scans)} scansioni in totale
+            {data.last_scan_at ? `, l'ultima il ${formatDateTime(data.last_scan_at)}` : ""}.
           </p>
         </div>
       </div>
-      <div className={styles.figures}>
-        {figures.map((figure) => (
-          <Card key={figure.label}>
-            <p className={styles.label}>{figure.label}</p>
-            <p className={styles.value}>{figure.value}</p>
-          </Card>
-        ))}
-      </div>
-      <Card title="Scansioni giornaliere" description="Ultimi 30 giorni, ora italiana.">
-        <DailyChart days={stats.daily} />
-      </Card>
-      <div className="grid-2">
-        <Card title="Dispositivi">
-          <Breakdown items={stats.devices} />
-        </Card>
-        <Card title="Sistemi operativi">
-          <Breakdown items={stats.os} />
-        </Card>
-      </div>
+      <StatsDashboard
+        stats={data}
+        range={range}
+        onRange={setRange}
+        csvHref={csvHref}
+        showClicks={qr.destination === "page"}
+      />
     </div>
   );
 }

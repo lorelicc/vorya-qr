@@ -30,4 +30,18 @@
   display: block;
   height: 100%;
   background: var(--gradient-vorya);
+  transform-origin: left center;
+  animation: grow var(--dur-slow) var(--ease-out) both;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track span {
+    animation: none;
+  }
 }

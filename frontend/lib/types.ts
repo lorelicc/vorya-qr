@@ -72,18 +72,38 @@ export type AccountPlan = {
 
 export type Warning = { code: "low_contrast" | "inverted" | "small_margin"; message: string };
 
-export type Breakdown = { label: string; count: number }[];
+export type Breakdown = { label: string; key?: string | null; count: number }[];
 
-export type QrStats = {
-  total_scans: number;
+export type StatsRange = "7d" | "30d" | "90d" | "custom";
+
+export type StatsDay = { date: string; count: number; unique: number; clicks: number };
+
+export type StatsSummary = {
+  range: { first: string; last: string; timezone: string };
+  scans: number;
+  unique_estimate: number;
+  clicks: number;
   bot_scans: number;
-  last_scan_at: string | null;
-  scans_last_30_days: number;
-  timezone: string;
-  daily: { date: string; count: number }[];
+  daily: StatsDay[];
   devices: Breakdown;
   os: Breakdown;
   browsers: Breakdown;
+  countries: Breakdown;
+  cities: { label: string; country: string | null; count: number }[];
+  top_clicks: Breakdown;
+  retention_days: number | null;
+  geo_available: boolean;
+  attribution: { text: string; url: string };
+};
+
+export type QrStats = StatsSummary & {
+  total_scans: number;
+  last_scan_at: string | null;
+  scans_last_30_days: number | null;
+};
+
+export type CompanyStats = StatsSummary & {
+  top_qr: { id: number; name: string; qr_type: string; count: number }[];
 };
 
 export type Plan = {
