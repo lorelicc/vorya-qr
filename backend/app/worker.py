@@ -220,6 +220,21 @@ def purge_import_results(session: Session) -> int:
     return len(old)
 
 
+def _billing_jobs() -> None:
+    from .billing import jobs
+
+    for fn in (
+        jobs.trial_redirect_windows,
+        jobs.trial_reminders,
+        jobs.send_billing_mail,
+        jobs.reconcile_subscriptions,
+    ):
+        job(fn)
+
+
+_billing_jobs()
+
+
 def run_once() -> dict[str, int]:
     """Runs every job once. The advisory lock lives on its own connection: a Session may
     switch pooled connections between commits, which would leave a session lock dangling."""

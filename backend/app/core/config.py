@@ -57,6 +57,12 @@ class Settings(BaseSettings):
     # Abuse: Google Safe Browsing v4 key. Empty => the check is skipped (and logged).
     safe_browsing_api_key: SecretStr = SecretStr("")
 
+    # Stripe: keys only from the environment, prices live in the DB (admin-managed).
+    # Live keys are ignored unless STRIPE_LIVE_ALLOWED=true (explicit operator gate).
+    stripe_secret_key: SecretStr = SecretStr("")
+    stripe_webhook_secret: SecretStr = SecretStr("")
+    stripe_live_allowed: bool = False
+
     model_config = SettingsConfigDict(env_file="../.env", extra="ignore", hide_input_in_errors=True)
 
     @field_validator("public_base_url")

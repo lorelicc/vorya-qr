@@ -12,6 +12,8 @@ from .account import router as account_router
 from .admin.router import router as admin_router
 from .auth.onboarding import router as onboarding_router
 from .auth.router import router as auth_router
+from .billing.admin import router as billing_admin_router
+from .billing.router import router as billing_router
 from .companies.router import account_router as company_account_router
 from .companies.router import router as companies_router
 from .companies.transfers import router as transfers_router
@@ -71,6 +73,8 @@ def create_app() -> FastAPI:
         admin_router,
         abuse_admin_router,
         abuse_public_router,
+        billing_router,
+        billing_admin_router,
         redirect_router,
     ):
         app.include_router(router)

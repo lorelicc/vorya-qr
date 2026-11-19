@@ -1,4 +1,12 @@
 from .abuse import AbuseReport, BlockedDomain
+from .billing import (
+    BillingAccount,
+    BillingEvent,
+    BillingMail,
+    BillingPayment,
+    BillingPrice,
+    BillingProfile,
+)
 from .company import Company, CompanyTransfer
 from .file import StoredFile
 from .identity import ROLES, AuditLog, AuthRateLimit, AuthSession, PasswordReset, Registration, User
@@ -13,6 +21,12 @@ __all__ = [
     "AuditLog",
     "AuthRateLimit",
     "AuthSession",
+    "BillingAccount",
+    "BillingEvent",
+    "BillingMail",
+    "BillingPayment",
+    "BillingPrice",
+    "BillingProfile",
     "BlockedDomain",
     "Company",
     "DailySalt",

@@ -17,6 +17,7 @@ ignore = ["B008"]
 "app/qr/designer.py" = ["E501"]
 "app/redirect/pages.py" = ["E501"]  # inline HTML and SVG
 "app/imports/*.py" = ["E501"]  # CSV templates and column maps are tables
+"app/billing/*.py" = ["E501"]  # CSV headers, tables and Stripe payload shapes
 "tests/*.py" = ["E501"]  # long fixtures and assertions read better on one line
 "migrations/versions/*.py" = ["E501"]  # one column per line reads better
 

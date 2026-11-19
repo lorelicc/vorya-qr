@@ -34,7 +34,7 @@ def load_page(slug: str, cookies: dict | None = None):
             or row.QrCode.deleted_at
             or row.QrCode.status != "active"
             or row.Company.deleted_at
-            or not redirects_enabled(row.Workspace.status)
+            or not redirects_enabled(row.Workspace.status, row.Workspace.redirects_until)
         ):
             raise HTTPException(404, "Pagina non disponibile.")
         from ..core.security import now

@@ -29,6 +29,8 @@ os.environ.update(
     SUPPORT_EMAIL="supporto@example.com",
     STORAGE_DRIVER="local",
     STORAGE_LOCAL_PATH=STORAGE_DIR,
+    STRIPE_SECRET_KEY="sk_test_dummy_for_tests",
+    STRIPE_WEBHOOK_SECRET="whsec_dummy_for_tests",
 )
 
 from fastapi.testclient import TestClient  # noqa: E402
@@ -42,6 +44,8 @@ ORIGIN = "http://testserver"
 PASSWORD = "una-password-sicura-123"
 MUTABLE = ", ".join(
     [
+        "billing_prices",
+        "billing_events",
         "link_tags",
         "tags",
         "link_versions",

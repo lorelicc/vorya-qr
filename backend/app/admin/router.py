@@ -102,6 +102,9 @@ def assign_plan(
     previous = workspace.plan_id
     workspace.plan_id = payload.plan_id
     workspace.trial_ends_at = None  # assigning a plan ends the trial
+    if workspace.billing_state in ("canceled", "unpaid", "past_due"):
+        # An admin decision overrides a lapsed subscription: access and redirects come back.
+        workspace.billing_state = workspace.grace_until = workspace.redirects_until = None
     audit(
         session,
         auth.user,

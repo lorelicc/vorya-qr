@@ -88,6 +88,7 @@ def resolve(session, slug: str):
             QrCode.fallback_url, QrCode.password_hash, QrCode.schedule,
             Company.deleted_at.label("company_deleted_at"),
             Workspace.status.label("workspace_status"),
+            Workspace.redirects_until,
         )
         .join(Company, Company.id == QrCode.company_id)
         .join(Workspace, Workspace.id == Company.workspace_id)
@@ -111,7 +112,7 @@ def follow(slug: str, request: Request, tasks: BackgroundTasks):
             row.deleted_at
             or row.company_deleted_at
             or row.status != "active"
-            or not redirects_enabled(row.workspace_status)
+            or not redirects_enabled(row.workspace_status, row.redirects_until)
         ):
             return inactive(410)
         at = now()
