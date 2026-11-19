@@ -12,7 +12,8 @@ from ..auth.deps import Auth, admin_reader, admin_writer
 from ..auth.service import audit
 from ..core.database import get_session
 from ..core.security import now
-from ..models import Plan, QrCode, User, Workspace
+from ..models import Company, CompanyTransfer, Plan, QrCode, User, Workspace
+from ..plans import features_of
 from ..quotas import usage
 from ..schemas.admin import AssignPlan, PlanUpdate
 
@@ -26,6 +27,8 @@ def plan_out(plan: Plan) -> dict:
         "description": plan.description,
         "max_qr_static": plan.max_qr_static,
         "max_dynamic_qr": plan.max_dynamic_qr,
+        "max_companies": plan.max_companies,
+        "features": features_of(plan).model_dump(),
         "position": plan.position,
     }
 
@@ -143,8 +146,34 @@ def update_plan(
     plan = session.get(Plan, plan_id, with_for_update=True)
     if plan is None:
         raise HTTPException(404, "Piano non trovato.")
-    for field, value in payload.model_dump().items():
+    data = payload.model_dump()
+    for field, value in data.items():
         setattr(plan, field, value)
-    audit(session, auth.user, "admin.plan_updated", plan=plan_id, **payload.model_dump())
+    audit(session, auth.user, "admin.plan_updated", plan=plan_id)
     session.commit()
     return plan_out(plan)
+
+
+@router.get("/company-transfers")
+def list_transfers(_: Auth = Depends(admin_reader), session: Session = Depends(get_session)):
+    rows = session.execute(
+        select(CompanyTransfer, Company)
+        .join(Company, Company.id == CompanyTransfer.company_id)
+        .order_by(CompanyTransfer.created_at.desc())
+        .limit(500)
+    ).all()
+    names = dict(session.execute(select(Workspace.id, Workspace.name)).all())
+    return [
+        {
+            "id": t.id,
+            "company": company.name,
+            "from_workspace": {"id": t.from_workspace_id, "name": names.get(t.from_workspace_id)},
+            "to_workspace": {"id": t.to_workspace_id, "name": names.get(t.to_workspace_id)},
+            "to_email": t.to_email,
+            "status": t.status,
+            "failure_reason": t.failure_reason,
+            "created_at": t.created_at,
+            "decided_at": t.decided_at,
+        }
+        for t, company in rows
+    ]

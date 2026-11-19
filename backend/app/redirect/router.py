@@ -1,7 +1,7 @@
 """Public short links: GET /r/{slug} -> 302 to the current destination.
 
-One indexed query (qr_codes JOIN workspaces) decides the outcome. Only manual suspension
-of the workspace blocks redirects; an expired trial does not. The scan is written by a
+One indexed query (qr_codes JOIN companies JOIN workspaces) decides the outcome. Only manual
+suspension of the workspace blocks redirects; an expired trial does not. The scan is written by a
 background task after the response has been sent, so it never slows the redirect.
 """
 
@@ -15,7 +15,7 @@ from sqlalchemy import select
 
 from ..access import redirects_enabled
 from ..core.database import session_factory
-from ..models import QrCode, ScanEvent, Workspace
+from ..models import Company, QrCode, ScanEvent, Workspace
 from ..qr.render import SLUG_LENGTH
 from .pages import INACTIVE_HTML
 from .useragent import classify
@@ -61,14 +61,21 @@ def follow(slug: str, request: Request, tasks: BackgroundTasks):
                 QrCode.target_url,
                 QrCode.status,
                 QrCode.deleted_at,
+                Company.deleted_at.label("company_deleted_at"),
                 Workspace.status.label("workspace_status"),
             )
-            .join(Workspace, Workspace.id == QrCode.workspace_id)
+            .join(Company, Company.id == QrCode.company_id)
+            .join(Workspace, Workspace.id == Company.workspace_id)
             .where(QrCode.slug == slug)
         ).one_or_none()
     if row is None:
         return inactive(404)
-    if row.deleted_at or row.status != "active" or not redirects_enabled(row.workspace_status):
+    if (
+        row.deleted_at
+        or row.company_deleted_at
+        or row.status != "active"
+        or not redirects_enabled(row.workspace_status)
+    ):
         return inactive(410)
     if request.method == "GET":
         tasks.add_task(

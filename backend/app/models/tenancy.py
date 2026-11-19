@@ -14,6 +14,8 @@ class Plan(Base):
     # NULL means unlimited.
     max_qr_static: Mapped[int | None] = mapped_column(Integer)
     max_dynamic_qr: Mapped[int | None] = mapped_column(Integer)
+    max_companies: Mapped[int | None] = mapped_column(Integer, default=1)
+    features: Mapped[dict] = mapped_column(JSON, default=dict)
     position: Mapped[int] = mapped_column(Integer, default=0)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     updated_at: Mapped[datetime] = mapped_column(

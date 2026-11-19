@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from ..access import ensure_usable
 from ..core.database import get_session
 from ..core.security import digest, now
-from ..models import AuthSession, User, Workspace
+from ..models import AuthSession, Company, QrCode, User, Workspace
 from .service import CSRF_COOKIE, SESSION_COOKIE, check_origin
 
 SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
@@ -86,3 +86,54 @@ def client_context(
         raise HTTPException(403, "Nessuno spazio di lavoro associato all'account.")
     access = ensure_usable(workspace)
     return ClientContext(user=auth.user, workspace=workspace, access=access)
+
+
+@dataclass
+class CompanyContext:
+    user: User
+    workspace: Workspace
+    access: str
+    company: Company
+
+
+def load_company(session: Session, workspace_id: int, company_id: int, lock=False) -> Company:
+    query = select(Company).where(
+        Company.id == company_id,
+        Company.workspace_id == workspace_id,
+        Company.deleted_at.is_(None),
+    )
+    if lock:
+        query = query.with_for_update()
+    company = session.scalar(query)
+    if company is None:
+        raise HTTPException(404, "Azienda non trovata.")
+    return company
+
+
+def owned_company(
+    company_id: int,
+    ctx: ClientContext = Depends(client_context),
+    session: Session = Depends(get_session),
+) -> CompanyContext:
+    """Chain check: company -> workspace of the logged-in owner, plus workspace_access()."""
+    company = load_company(session, ctx.workspace.id, company_id)
+    return CompanyContext(ctx.user, ctx.workspace, ctx.access, company)
+
+
+def owned_qr(
+    qr_id: int,
+    ctx: CompanyContext = Depends(owned_company),
+    session: Session = Depends(get_session),
+) -> tuple[CompanyContext, QrCode]:
+    """Chain check: qr -> company -> workspace. Soft-deleted QR codes are not found."""
+    qr = session.scalar(
+        select(QrCode).where(
+            QrCode.id == qr_id,
+            QrCode.company_id == ctx.company.id,
+            QrCode.workspace_id == ctx.workspace.id,
+            QrCode.deleted_at.is_(None),
+        )
+    )
+    if qr is None:
+        raise HTTPException(404, "Codice QR non trovato.")
+    return ctx, qr

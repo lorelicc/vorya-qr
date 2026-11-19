@@ -2,14 +2,14 @@ import struct
 
 from app.qr.contrast import contrast_ratio, warnings
 from app.qr.render import SLUG_ALPHABET, new_slug, render_png
-from tests.conftest import csrf, signup
+from tests.conftest import csrf, qrs, signup
 
 URL = "https://www.vorya.it/promo"
 
 
 def create(client, kind="dynamic", **extra):
     payload = {"name": f"QR {kind}", "kind": kind, "target_url": URL, **extra}
-    return client.post("/api/qr-codes", json=payload, headers=csrf(client))
+    return client.post(f"{qrs(client)}", json=payload, headers=csrf(client))
 
 
 def test_create_dynamic_qr_with_slug_and_short_url(client):
@@ -41,33 +41,33 @@ def test_list_search_and_filters(client):
     signup(client)
     create(client, name="Menu ristorante")
     create(client, kind="static", name="Biglietto da visita")
-    assert len(client.get("/api/qr-codes").json()) == 2
-    assert [q["name"] for q in client.get("/api/qr-codes?search=menu").json()] == [
+    assert len(client.get(f"{qrs(client)}").json()) == 2
+    assert [q["name"] for q in client.get(f"{qrs(client)}?search=menu").json()] == [
         "Menu ristorante"
     ]
-    assert len(client.get("/api/qr-codes?kind=static").json()) == 1
-    assert client.get("/api/qr-codes?kind=altro").status_code == 422
+    assert len(client.get(f"{qrs(client)}?kind=static").json()) == 1
+    assert client.get(f"{qrs(client)}?kind=altro").status_code == 422
 
 
 def test_update_destination_pause_resume_delete(client):
     signup(client)
     qr = create(client).json()
     body = {"name": "Nuovo nome", "target_url": "https://example.com/nuova"}
-    updated = client.put(f"/api/qr-codes/{qr['id']}", json=body, headers=csrf(client)).json()
+    updated = client.put(f"{qrs(client)}/{qr['id']}", json=body, headers=csrf(client)).json()
     assert updated["target_url"] == "https://example.com/nuova"
     assert updated["slug"] == qr["slug"]
-    paused = client.post(f"/api/qr-codes/{qr['id']}/pause", headers=csrf(client)).json()
+    paused = client.post(f"{qrs(client)}/{qr['id']}/pause", headers=csrf(client)).json()
     assert paused["status"] == "paused"
-    resumed = client.post(f"/api/qr-codes/{qr['id']}/resume", headers=csrf(client)).json()
+    resumed = client.post(f"{qrs(client)}/{qr['id']}/resume", headers=csrf(client)).json()
     assert resumed["status"] == "active"
-    assert client.delete(f"/api/qr-codes/{qr['id']}", headers=csrf(client)).status_code == 204
-    assert client.get(f"/api/qr-codes/{qr['id']}").status_code == 404
+    assert client.delete(f"{qrs(client)}/{qr['id']}", headers=csrf(client)).status_code == 204
+    assert client.get(f"{qrs(client)}/{qr['id']}").status_code == 404
 
 
 def test_static_qr_cannot_be_paused(client):
     signup(client)
     qr = create(client, kind="static").json()
-    assert client.post(f"/api/qr-codes/{qr['id']}/pause", headers=csrf(client)).status_code == 409
+    assert client.post(f"{qrs(client)}/{qr['id']}/pause", headers=csrf(client)).status_code == 409
 
 
 def test_workspaces_are_isolated(client):
@@ -75,9 +75,9 @@ def test_workspaces_are_isolated(client):
     qr = create(client).json()
     client.cookies.clear()
     signup(client, "b@example.com")
-    assert client.get(f"/api/qr-codes/{qr['id']}").status_code == 404
-    assert client.get("/api/qr-codes").json() == []
-    response = client.delete(f"/api/qr-codes/{qr['id']}", headers=csrf(client))
+    assert client.get(f"{qrs(client)}/{qr['id']}").status_code == 404
+    assert client.get(f"{qrs(client)}").json() == []
+    response = client.delete(f"{qrs(client)}/{qr['id']}", headers=csrf(client))
     assert response.status_code == 404
 
 
@@ -91,27 +91,27 @@ def test_preview_returns_svg_and_warnings(client):
         "margin": 1,
         "error_correction": "M",
     }
-    data = client.post("/api/qr-codes/preview", json=body, headers=csrf(client)).json()
+    data = client.post(f"{qrs(client)}/preview", json=body, headers=csrf(client)).json()
     assert data["svg"].startswith("<svg")
     assert {w["code"] for w in data["warnings"]} == {"low_contrast", "small_margin"}
     body.update(fg_color="#ffffff", bg_color="#091411", margin=4)
-    data = client.post("/api/qr-codes/preview", json=body, headers=csrf(client)).json()
+    data = client.post(f"{qrs(client)}/preview", json=body, headers=csrf(client)).json()
     assert [w["code"] for w in data["warnings"]] == ["inverted"]
 
 
 def test_download_png_and_svg(client):
     signup(client)
     qr = create(client, name="Menù Estate", fg_color="#087f5b").json()
-    png = client.get(f"/api/qr-codes/{qr['id']}/image.png?size=512")
+    png = client.get(f"{qrs(client)}/{qr['id']}/image.png?size=512")
     assert png.status_code == 200 and png.headers["content-type"] == "image/png"
     assert png.content[:8] == b"\x89PNG\r\n\x1a\n"
     width, height = struct.unpack(">II", png.content[16:24])
     assert width == height == int(png.headers["x-image-size"]) and 400 < width <= 512
     assert 'filename="vorya-qr-menu-estate.png"' in png.headers["content-disposition"]
-    svg = client.get(f"/api/qr-codes/{qr['id']}/image.svg")
+    svg = client.get(f"{qrs(client)}/{qr['id']}/image.svg")
     assert svg.headers["content-type"].startswith("image/svg+xml")
     assert "#087f5b" in svg.text
-    assert client.get(f"/api/qr-codes/{qr['id']}/image.png?size=99999").status_code == 422
+    assert client.get(f"{qrs(client)}/{qr['id']}/image.png?size=99999").status_code == 422
 
 
 def test_render_png_scales_to_requested_size():

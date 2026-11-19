@@ -89,4 +89,5 @@ class Me(BaseModel):
     email: str
     role: str
     workspace: WorkspaceSummary | None
+    last_company_id: int | None = None
     support_email: str

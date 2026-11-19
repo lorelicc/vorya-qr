@@ -51,6 +51,7 @@ def build_me(session: Session, user: User) -> Me:
         email=user.email,
         role=user.role,
         workspace=summary,
+        last_company_id=user.last_company_id,
         support_email=get_settings().support_email,
     )
 

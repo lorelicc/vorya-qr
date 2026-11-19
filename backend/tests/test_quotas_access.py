@@ -4,7 +4,7 @@ from sqlalchemy import select, update
 
 from app.core.security import now
 from app.models import Workspace
-from tests.conftest import ORIGIN, csrf, login, make_admin, signup
+from tests.conftest import ORIGIN, csrf, login, make_admin, qrs, signup
 from tests.test_qr import create
 
 
@@ -32,7 +32,7 @@ def test_deleted_qr_frees_the_slot(client, db):
     signup(client)
     set_plan_limits(db, "pro", 0, 1)
     qr = create(client).json()
-    client.delete(f"/api/qr-codes/{qr['id']}", headers=csrf(client))
+    client.delete(f"{qrs(client)}/{qr['id']}", headers=csrf(client))
     assert create(client).status_code == 201
 
 
@@ -49,7 +49,7 @@ def test_plan_downgrade_keeps_qr_and_reports_over_limit(client, db):
     workspace = db.scalar(select(Workspace))
     workspace.plan_id, workspace.trial_ends_at = "start", None  # Start: 3 dynamic
     db.commit()
-    assert len(client.get("/api/qr-codes").json()) == 4
+    assert len(client.get(f"{qrs(client)}").json()) == 4
     plan = client.get("/api/account/plan").json()
     assert plan["usage"]["dynamic"] == {
         "used": 4,
@@ -69,7 +69,7 @@ def expire_trial(db):
 def test_trial_expired_blocks_user_api_but_not_login(client, db):
     signup(client)
     expire_trial(db)
-    response = client.get("/api/qr-codes")
+    response = client.get(f"{qrs(client)}")
     assert response.status_code == 423
     assert response.json() == {
         "detail": "Il periodo di prova è terminato, contattaci per attivare un piano.",
@@ -131,7 +131,7 @@ def test_customer_cannot_use_admin_api_and_admin_has_no_workspace(client):
     client.cookies.clear()
     make_admin()
     login(client, "admin@example.com")
-    assert client.get("/api/qr-codes").status_code == 403
+    assert client.get(f"{qrs(client)}").status_code == 403
 
 
 def test_cli_rejects_duplicate_and_short_password():

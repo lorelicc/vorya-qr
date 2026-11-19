@@ -55,3 +55,44 @@ def send_password_reset(email: str, name: str, token: str) -> None:
         ),
         kind="reset",
     )
+
+
+def send_transfer_request(email: str, name: str, company: str, sender: str, token: str) -> None:
+    url = f"{get_settings().public_base_url}/companies#transfer={token}"
+    send_email(
+        email,
+        f"{sender} vuole trasferirti l'azienda «{company}» · Vorya QR",
+        f"Ciao {name},\n{sender} vuole trasferire al tuo account Vorya QR l'azienda «{company}», "
+        f"con i suoi codici QR, file e statistiche.\nPer accettare o rifiutare: {url}\n"
+        "La richiesta scade tra 7 giorni.",
+        _layout(
+            "Richiesta di trasferimento",
+            f"Ciao {html.escape(name)}, {html.escape(sender)} vuole trasferire al tuo account "
+            f"l'azienda «{html.escape(company)}», con i suoi codici QR, file e statistiche. "
+            "I QR continueranno a funzionare senza interruzioni. La richiesta scade tra 7 giorni.",
+            url,
+            "Vedi la richiesta",
+        ),
+        kind="transfer",
+    )
+
+
+def send_transfer_outcome(email: str, name: str, company: str, outcome: str) -> None:
+    text = {
+        "accepted_sender": f"l'azienda «{company}» è stata trasferita: non è più nel tuo account.",
+        "accepted_recipient": f"l'azienda «{company}» è ora nel tuo account Vorya QR.",
+        "declined": f"la richiesta di trasferimento dell'azienda «{company}» è stata rifiutata.",
+    }[outcome]
+    url = f"{get_settings().public_base_url}/companies"
+    send_email(
+        email,
+        "Trasferimento azienda · Vorya QR",
+        f"Ciao {name},\n{text}\n{url}",
+        _layout(
+            "Trasferimento azienda",
+            f"Ciao {html.escape(name)}, {html.escape(text)}",
+            url,
+            "Apri Vorya QR",
+        ),  # fmt: skip
+        kind="transfer",
+    )

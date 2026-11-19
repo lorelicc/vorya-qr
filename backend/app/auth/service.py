@@ -19,11 +19,19 @@ SESSION_HOURS = 8
 REMEMBER_DAYS = 30
 
 
-def audit(session: Session, actor: User | None, action: str, workspace_id=None, **details):
+def audit(
+    session: Session,
+    actor: User | None,
+    action: str,
+    workspace_id=None,
+    company_id=None,
+    **details,
+):
     session.add(
         AuditLog(
             actor_id=actor.id if actor else None,
             workspace_id=workspace_id,
+            company_id=company_id,
             action=action,
             details=details,
         )

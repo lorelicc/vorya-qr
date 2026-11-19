@@ -37,8 +37,8 @@ from app.migrate import migrate  # noqa: E402
 ORIGIN = "http://testserver"
 PASSWORD = "una-password-sicura-123"
 MUTABLE = (
-    "scan_events, qr_codes, audit_logs, registrations, password_resets, auth_sessions, "
-    "auth_rate_limits, mail_logs, workspaces, users"
+    "company_transfers, scan_events, qr_codes, companies, audit_logs, registrations, "
+    "password_resets, auth_sessions, auth_rate_limits, mail_logs, workspaces, users"
 )
 SEED_PLANS = {
     "start": (10, 3),
@@ -96,7 +96,7 @@ def last_mail(kind: str, to: str) -> dict:
 
 
 def token_from(mail: dict) -> str:
-    return re.search(r"#([A-Za-z0-9_-]{43})", mail["text"]).group(1)
+    return re.search(r"[#=]([A-Za-z0-9_-]{43})", mail["text"]).group(1)
 
 
 def register(client: TestClient, email="cliente@example.com", workspace="Azienda Demo"):
@@ -138,3 +138,12 @@ def login(client: TestClient, email: str, password: str = PASSWORD):
         json={"email": email, "password": password},
         headers={"Origin": ORIGIN},
     )
+
+
+def company_id(client: TestClient) -> int:
+    return client.get("/api/auth/me").json()["last_company_id"]
+
+
+def qrs(client: TestClient) -> str:
+    """Base URL of the QR codes of the logged-in user's current company."""
+    return f"/api/companies/{company_id(client)}/qr-codes"

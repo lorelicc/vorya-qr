@@ -41,9 +41,13 @@ def qr_out(qr: QrCode, scan_count: int = 0) -> QrOut:
     )
 
 
-def get_owned(session: Session, workspace_id: int, qr_id: int, lock=False) -> QrCode:
+def get_owned(session: Session, ctx, qr_id: int, lock=False) -> QrCode:
+    """qr -> company -> workspace chain check (ctx comes from owned_company)."""
     query = select(QrCode).where(
-        QrCode.id == qr_id, QrCode.workspace_id == workspace_id, QrCode.deleted_at.is_(None)
+        QrCode.id == qr_id,
+        QrCode.company_id == ctx.company.id,
+        QrCode.workspace_id == ctx.workspace.id,
+        QrCode.deleted_at.is_(None),
     )
     if lock:
         query = query.with_for_update()
@@ -58,11 +62,13 @@ def require_dynamic(qr: QrCode) -> None:
         raise HTTPException(409, "Operazione disponibile solo per i QR dinamici.")
 
 
-def insert_qr(session: Session, workspace_id: int, payload: QrCreate) -> QrCode:
+def insert_qr(session: Session, ctx, payload: QrCreate) -> QrCode:
     """Inserts with a fresh unique slug for dynamic QR, retrying on the rare collision."""
     data = payload.model_dump()
     for _ in range(SLUG_ATTEMPTS):
-        qr = QrCode(workspace_id=workspace_id, status="active", **data)
+        qr = QrCode(
+            workspace_id=ctx.workspace.id, company_id=ctx.company.id, status="active", **data
+        )
         if payload.kind == "dynamic":
             qr.slug = new_slug()
         savepoint = session.begin_nested()

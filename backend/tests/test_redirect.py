@@ -5,7 +5,7 @@ from sqlalchemy import func, select, update
 from app.core.security import now
 from app.models import ScanEvent, Workspace
 from app.redirect.useragent import classify
-from tests.conftest import csrf, signup
+from tests.conftest import csrf, qrs, signup
 from tests.test_qr import URL, create
 
 IPHONE = (
@@ -44,14 +44,14 @@ def test_destination_change_applies_immediately(client):
     signup(client)
     qr = create(client).json()
     body = {"name": qr["name"], "target_url": "https://example.com/nuova"}
-    client.put(f"/api/qr-codes/{qr['id']}", json=body, headers=csrf(client))
+    client.put(f"{qrs(client)}/{qr['id']}", json=body, headers=csrf(client))
     assert follow(client, qr["slug"]).headers["location"] == "https://example.com/nuova"
 
 
 def test_paused_qr_shows_inactive_page(client, db):
     signup(client)
     qr = create(client).json()
-    client.post(f"/api/qr-codes/{qr['id']}/pause", headers=csrf(client))
+    client.post(f"{qrs(client)}/{qr['id']}/pause", headers=csrf(client))
     response = follow(client, qr["slug"])
     assert response.status_code == 410
     assert "QR non attivo" in response.text
@@ -62,7 +62,7 @@ def test_paused_qr_shows_inactive_page(client, db):
 def test_deleted_and_unknown_qr(client):
     signup(client)
     qr = create(client).json()
-    client.delete(f"/api/qr-codes/{qr['id']}", headers=csrf(client))
+    client.delete(f"{qrs(client)}/{qr['id']}", headers=csrf(client))
     assert follow(client, qr["slug"]).status_code == 410
     assert follow(client, "zzzzzzz").status_code == 404
     assert follow(client, "bad").status_code == 404
@@ -102,20 +102,20 @@ def test_bots_are_flagged_and_excluded_from_stats(client):
     follow(client, qr["slug"], ua=DESKTOP)
     follow(client, qr["slug"], ua="WhatsApp/2.24.1 A")
     follow(client, qr["slug"], ua="")
-    stats = client.get(f"/api/qr-codes/{qr['id']}/stats").json()
+    stats = client.get(f"{qrs(client)}/{qr['id']}/stats").json()
     assert stats["total_scans"] == 2
     assert stats["bot_scans"] == 2
     assert stats["scans_last_30_days"] == 2
     assert len(stats["daily"]) == 30 and stats["daily"][-1]["count"] == 2
     assert {d["label"] for d in stats["devices"]} == {"Smartphone", "Computer"}
     assert {o["label"] for o in stats["os"]} == {"iOS", "Windows"}
-    assert client.get("/api/qr-codes").json()[0]["scan_count"] == 2
+    assert client.get(f"{qrs(client)}").json()[0]["scan_count"] == 2
 
 
 def test_stats_only_for_dynamic(client):
     signup(client)
     qr = create(client, kind="static").json()
-    assert client.get(f"/api/qr-codes/{qr['id']}/stats").status_code == 409
+    assert client.get(f"{qrs(client)}/{qr['id']}/stats").status_code == 409
 
 
 def test_useragent_classification():

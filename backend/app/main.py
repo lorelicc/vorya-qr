@@ -10,6 +10,9 @@ from .account import router as account_router
 from .admin.router import router as admin_router
 from .auth.onboarding import router as onboarding_router
 from .auth.router import router as auth_router
+from .companies.router import account_router as company_account_router
+from .companies.router import router as companies_router
+from .companies.transfers import router as transfers_router
 from .core.config import get_settings
 from .core.database import get_engine
 from .core.errors import install_handlers
@@ -34,6 +37,9 @@ def create_app() -> FastAPI:
         auth_router,
         onboarding_router,
         account_router,
+        company_account_router,
+        companies_router,
+        transfers_router,
         stats_router,
         qr_router,
         admin_router,

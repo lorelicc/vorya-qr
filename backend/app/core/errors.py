@@ -15,6 +15,14 @@ class QuotaExceeded(Exception):
         self.code = code
 
 
+class CodedError(Exception):
+    """An error with a machine-readable code: {"detail": message, "code": code}."""
+
+    def __init__(self, status: int, detail: str, code: str):
+        super().__init__(detail)
+        self.status, self.detail, self.code = status, detail, code
+
+
 class AccessBlocked(Exception):
     """Raised when the workspace cannot use the app (trial expired or suspended)."""
 
@@ -33,6 +41,12 @@ def install_handlers(app: FastAPI) -> None:
     @app.exception_handler(QuotaExceeded)
     def quota(_: Request, exc: QuotaExceeded):
         return JSONResponse(status_code=409, content={"detail": exc.detail, "code": exc.code})
+
+    @app.exception_handler(CodedError)
+    def coded(_: Request, exc: CodedError):
+        return JSONResponse(
+            status_code=exc.status, content={"detail": exc.detail, "code": exc.code}
+        )
 
     @app.exception_handler(AccessBlocked)
     def blocked(_: Request, exc: AccessBlocked):

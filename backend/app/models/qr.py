@@ -10,7 +10,9 @@ class QrCode(Base):
     __tablename__ = "qr_codes"
     __table_args__ = (Index("ix_qr_codes_workspace_deleted", "workspace_id", "deleted_at"),)
     id: Mapped[int] = mapped_column(primary_key=True)
+    # Denormalized owner, kept in sync with companies.workspace_id (quotas, redirect).
     workspace_id: Mapped[int] = mapped_column(ForeignKey("workspaces.id"))
+    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"), index=True)
     name: Mapped[str] = mapped_column(String(120))
     kind: Mapped[str] = mapped_column(String(8))  # static | dynamic
     content_type: Mapped[str] = mapped_column(String(16), default="url")

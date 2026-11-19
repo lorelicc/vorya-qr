@@ -11,6 +11,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request,
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
+from ..companies.service import create_default_company
 from ..core.config import get_settings
 from ..core.database import get_session
 from ..core.security import digest, hash_password, now
@@ -120,6 +121,8 @@ def verify_email(
     )
     session.add(workspace)
     session.flush()
+    company = create_default_company(session, workspace.id, workspace.name)
+    user.last_company_id = company.id
     session.execute(delete(PasswordReset).where(PasswordReset.user_id == user.id))
     token, csrf = start_session(session, user, remember=False)
     audit(session, user, "registration.verified", workspace.id)

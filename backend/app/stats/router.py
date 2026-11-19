@@ -8,13 +8,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import Date, cast, func, select
 from sqlalchemy.orm import Session
 
-from ..auth.deps import ClientContext, client_context
+from ..auth.deps import CompanyContext, owned_company
 from ..core.database import get_session
 from ..core.security import now
 from ..models import ScanEvent
 from ..qr.service import get_owned, require_dynamic
 
-router = APIRouter(prefix="/api/qr-codes", tags=["stats"])
+router = APIRouter(prefix="/api/companies/{company_id}/qr-codes", tags=["stats"])
 TIMEZONE = "Europe/Rome"
 DAYS = 30
 DEVICE_LABELS = {
@@ -42,10 +42,10 @@ def _breakdown(session: Session, column, qr_id: int, limit: int = 6) -> list[dic
 @router.get("/{qr_id}/stats")
 def qr_stats(
     qr_id: int,
-    ctx: ClientContext = Depends(client_context),
+    ctx: CompanyContext = Depends(owned_company),
     session: Session = Depends(get_session),
 ):
-    qr = get_owned(session, ctx.workspace.id, qr_id)
+    qr = get_owned(session, ctx, qr_id)
     require_dynamic(qr)
     human = (ScanEvent.qr_code_id == qr.id, ScanEvent.is_bot.is_(False))
     total, last = session.execute(
