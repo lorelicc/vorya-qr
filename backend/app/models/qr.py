@@ -1,13 +1,15 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import (
     JSON,
     BigInteger,
     Boolean,
+    Date,
     DateTime,
     ForeignKey,
     Index,
     Integer,
+    LargeBinary,
     String,
     func,
 )
@@ -57,6 +59,33 @@ class ScanEvent(Base):
     browser: Mapped[str] = mapped_column(String(40))
     referrer_host: Mapped[str | None] = mapped_column(String(255))
     is_bot: Mapped[bool] = mapped_column(Boolean, default=False)
+    # 0.2: approximate place from DB-IP Lite (the IP itself is discarded) and a daily-salted
+    # hash used only to estimate unique visitors within one day.
+    country_code: Mapped[str | None] = mapped_column(String(2))
+    city: Mapped[str | None] = mapped_column(String(80))
+    visitor_hash: Mapped[str | None] = mapped_column(String(16))
+
+
+class PageEvent(Base):
+    """A click on a hosted page (link, button, download). No visitor identifier at all."""
+
+    __tablename__ = "page_events"
+    __table_args__ = (Index("ix_page_events_qr_time", "qr_code_id", "created_at"),)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    qr_code_id: Mapped[int] = mapped_column(ForeignKey("qr_codes.id", ondelete="CASCADE"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    kind: Mapped[str] = mapped_column(String(16))
+    label: Mapped[str] = mapped_column(String(120))
+    device_type: Mapped[str] = mapped_column(String(16))
+
+
+class DailySalt(Base):
+    """Random salt for today's visitor hashes; older salts are deleted by the worker, which
+    makes past hashes impossible to link to an IP or to each other across days."""
+
+    __tablename__ = "daily_salts"
+    day: Mapped[date] = mapped_column(Date, primary_key=True)
+    salt: Mapped[bytes] = mapped_column(LargeBinary(32))
 
 
 class QrPage(Base):

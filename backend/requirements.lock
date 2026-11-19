@@ -58,6 +58,8 @@ mako==1.4.3
     # via alembic
 markupsafe==3.0.4
     # via mako
+maxminddb==2.8.2
+    # via -r requirements.txt
 pillow==12.1.1
     # via
     #   -r requirements.txt

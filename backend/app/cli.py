@@ -47,6 +47,33 @@ def read_password() -> str:
     return first
 
 
+def download_geoip() -> str:
+    """Monthly DB-IP Lite City (CC BY 4.0) into GEOIP_DB_PATH, swapped atomically."""
+    import gzip
+    import os
+    import shutil
+    import tempfile
+    import urllib.request
+    from datetime import UTC, datetime
+    from pathlib import Path
+
+    from .core.config import get_settings
+
+    target = Path(get_settings().geoip_db_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    month = datetime.now(UTC).strftime("%Y-%m")
+    url = f"https://download.db-ip.com/free/dbip-city-lite-{month}.mmdb.gz"
+    with tempfile.NamedTemporaryFile(dir=target.parent, delete=False) as tmp:
+        with urllib.request.urlopen(url, timeout=120) as response:  # noqa: S310 - fixed https URL
+            with gzip.GzipFile(fileobj=response) as data:
+                shutil.copyfileobj(data, tmp)
+    import maxminddb
+
+    maxminddb.open_database(tmp.name).close()  # refuse a broken download
+    os.replace(tmp.name, target)
+    return f"Database GeoIP aggiornato: {target} (riavvia backend per ricaricarlo)"
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -54,7 +81,11 @@ def main(argv: list[str] | None = None) -> None:
     create.add_argument("--email", required=True)
     create.add_argument("--name", required=True)
     create.add_argument("--role", choices=("super_admin", "platform_admin"), default="super_admin")
+    sub.add_parser("download-geoip", help="Scarica il database DB-IP Lite City del mese")
     args = parser.parse_args(argv)
+    if args.command == "download-geoip":
+        print(download_geoip(), file=sys.stdout)
+        return
     try:
         email = create_admin(args.email, args.name, args.role, read_password())
     except ValueError as exc:

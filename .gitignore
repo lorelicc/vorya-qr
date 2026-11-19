@@ -26,3 +26,7 @@ test-results/
 
 # Sistema
 .DS_Store
+
+# Database GeoIP (scaricato sul server, mai committato)
+*.mmdb
+*.mmdb.gz

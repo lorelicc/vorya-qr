@@ -37,7 +37,7 @@ def test_redirect_is_302_no_store_and_records_scan(client, db):
     assert (event.device_type, event.os, event.is_bot) == ("mobile", "iOS", False)
     assert event.referrer_host == "instagram.com"
     columns = set(ScanEvent.__table__.columns.keys())
-    assert not columns & {"ip", "ip_address", "country", "city", "latitude", "longitude"}
+    assert not columns & {"ip", "ip_address", "latitude", "longitude"}  # 0.2: only country/city
 
 
 def test_destination_change_applies_immediately(client):

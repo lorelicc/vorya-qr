@@ -96,6 +96,43 @@ def purge_files(session: Session) -> int:
 
 
 @job
+def rotate_salts(session: Session) -> int:
+    """Yesterday's salt is destroyed: its visitor hashes become unlinkable forever."""
+    from .stats.periods import local_today
+    from .stats.visitors import drop_old_salts
+
+    return drop_old_salts(session, local_today())
+
+
+@job
+def stats_retention(session: Session) -> int:
+    """Deletes scans and clicks older than the retention of each workspace's plan."""
+    from datetime import timedelta
+
+    from .models import PageEvent, Plan, Workspace
+    from .plans import features_of
+
+    removed = 0
+    for plan in session.scalars(select(Plan)):
+        days = features_of(plan).stats_retention_days
+        if days is None:
+            continue
+        cutoff = now() - timedelta(days=days + 1)  # one day of slack for time zones
+        qr_ids = (
+            select(QrCode.id)
+            .join(Workspace, Workspace.id == QrCode.workspace_id)
+            .where(Workspace.plan_id == plan.id)
+        )
+        removed += session.execute(
+            delete(ScanEvent).where(ScanEvent.qr_code_id.in_(qr_ids), ScanEvent.scanned_at < cutoff)
+        ).rowcount
+        removed += session.execute(
+            delete(PageEvent).where(PageEvent.qr_code_id.in_(qr_ids), PageEvent.created_at < cutoff)
+        ).rowcount
+    return removed
+
+
+@job
 def cleanup_tokens(session: Session) -> int:
     a = session.execute(delete(AuthSession).where(AuthSession.expires_at <= now())).rowcount
     b = session.execute(delete(PasswordReset).where(PasswordReset.expires_at <= now())).rowcount

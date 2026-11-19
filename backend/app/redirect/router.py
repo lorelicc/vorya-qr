@@ -14,9 +14,13 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy import select
 
 from ..access import redirects_enabled
+from ..auth.service import client_ip
 from ..core.database import session_factory
 from ..models import Company, QrCode, ScanEvent, Workspace
 from ..qr.render import SLUG_LENGTH
+from ..stats.geo import lookup
+from ..stats.periods import local_today
+from ..stats.visitors import salt_for, visitor_hash
 from .pages import INACTIVE_HTML
 from .useragent import classify
 
@@ -26,11 +30,16 @@ SLUG = re.compile(rf"^[A-Za-z0-9]{{{SLUG_LENGTH}}}$")
 HEADERS = {"Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow"}
 
 
-def record_scan(qr_id: int, user_agent: str, referrer: str) -> None:
+def record_scan(qr_id: int, user_agent: str, referrer: str, ip: str = "unknown") -> None:
+    """The IP is used in memory for the place and the daily hash, then discarded."""
     try:
         info = classify(user_agent)
         host = urlsplit(referrer).hostname if referrer else None
+        country, city = (None, None) if info.is_bot else lookup(ip)
         with session_factory()() as session:
+            hashed = None
+            if not info.is_bot and ip != "unknown":
+                hashed = visitor_hash(salt_for(session, local_today()), ip, user_agent)
             session.add(
                 ScanEvent(
                     qr_code_id=qr_id,
@@ -39,6 +48,9 @@ def record_scan(qr_id: int, user_agent: str, referrer: str) -> None:
                     browser=info.browser,
                     referrer_host=host[:255] if host else None,
                     is_bot=info.is_bot,
+                    country_code=country,
+                    city=city,
+                    visitor_hash=hashed,
                 )
             )
             session.commit()
@@ -84,6 +96,7 @@ def follow(slug: str, request: Request, tasks: BackgroundTasks):
             row.id,
             request.headers.get("user-agent", ""),
             request.headers.get("referer", ""),
+            client_ip(request),
         )
     if row.destination == "page":
         # The hosted page is rendered by the frontend on the same URL (no extra hop).

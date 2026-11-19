@@ -52,6 +52,11 @@ class Settings(BaseSettings):
     storage_s3_access_key: SecretStr = SecretStr("")
     storage_s3_secret_key: SecretStr = SecretStr("")
 
+    # Statistics: DB-IP Lite City (mmdb). Missing file => statistics without places.
+    geoip_db_path: str = "/data/geoip/dbip-city-lite.mmdb"
+    # Abuse: Google Safe Browsing v4 key. Empty => the check is skipped (and logged).
+    safe_browsing_api_key: SecretStr = SecretStr("")
+
     model_config = SettingsConfigDict(env_file="../.env", extra="ignore", hide_input_in_errors=True)
 
     @field_validator("public_base_url")
