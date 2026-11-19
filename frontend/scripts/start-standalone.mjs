@@ -10,6 +10,10 @@ if (!existsSync(`${standalone}/server.js`)) {
 }
 cpSync(`${root}.next/static`, `${standalone}/.next/static`, { recursive: true });
 cpSync(`${root}public`, `${standalone}/public`, { recursive: true });
-const child = spawn(process.execPath, ["server.js"], { cwd: standalone, stdio: "inherit", env: process.env });
+const child = spawn(process.execPath, ["server.js"], {
+  cwd: standalone,
+  stdio: "inherit",
+  env: process.env,
+});
 child.on("exit", (code) => process.exit(code ?? 0));
 for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, () => child.kill(signal));
