@@ -30,13 +30,13 @@ export default defineConfig({
     {
       name: "desktop",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: /(mobile|companies|links|organize|import)\.spec\.ts/,
+      testIgnore: /(mobile|companies|links|organize|import|billing)\.spec\.ts/,
     },
     // v0.2 scenario: reduced motion, as requested for deterministic runs.
     {
       name: "reduced-motion",
       use: { ...devices["Desktop Chrome"], contextOptions: { reducedMotion: "reduce" } },
-      testMatch: /(companies|links|organize|import)\.spec\.ts/,
+      testMatch: /(companies|links|organize|import|billing)\.spec\.ts/,
     },
     { name: "mobile", use: { ...devices["Pixel 7"] }, testMatch: /mobile\.spec\.ts/ },
   ],
@@ -56,6 +56,21 @@ export default defineConfig({
         SUPPORT_EMAIL: "supporto@example.com",
         STORAGE_LOCAL_PATH: path.resolve(here, ".e2e-uploads"),
         GEOIP_DB_PATH: path.resolve(here, ".e2e-uploads/missing.mmdb"),
+        // 0.3 billing: a local fake of the Stripe API (e2e/fake-stripe.mjs), never the real one.
+        STRIPE_SECRET_KEY: "sk_test_e2e_fake",
+        STRIPE_WEBHOOK_SECRET: "whsec_e2e",
+        STRIPE_API_BASE: "http://127.0.0.1:8210",
+      },
+    },
+    {
+      command: "node e2e/fake-stripe.mjs",
+      url: "http://127.0.0.1:8210",
+      reuseExistingServer: false,
+      env: {
+        FAKE_STRIPE_PORT: "8210",
+        BACKEND_URL: `http://127.0.0.1:${BACKEND_PORT}`,
+        STRIPE_WEBHOOK_SECRET: "whsec_e2e",
+        PATH: process.env.PATH ?? "",
       },
     },
     {
@@ -70,6 +85,9 @@ export default defineConfig({
         APP_ENV: "test",
         STORAGE_LOCAL_PATH: path.resolve(here, ".e2e-uploads"),
         WORKER_PORT: "8200",
+        MAIL_TRANSPORT: "file",
+        MAIL_FILE_DIR: MAIL_DIR,
+        PUBLIC_BASE_URL: BASE_URL,
         PATH: process.env.PATH ?? "",
       },
     },

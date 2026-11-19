@@ -27,6 +27,21 @@ def test_populated_v02_database_upgrades_without_regressions(monkeypatch, client
             "VALUES (1, 'Pizzeria', 1, 'pro', 'active')"
         ))  # fmt: skip
         c.execute(text("INSERT INTO companies (id, workspace_id, name) VALUES (1, 1, 'Pizzeria')"))
+        # An account whose trial already ended under 0.2: its QR keep working, not retroactively cut.
+        c.execute(text(
+            "INSERT INTO users (id, display_name, email, role, is_active, email_verified_at) "
+            "VALUES (2, 'Luca', 'luca@example.com', 'company_admin', true, now())"
+        ))  # fmt: skip
+        c.execute(text(
+            "INSERT INTO workspaces (id, name, owner_user_id, plan_id, status, trial_ends_at) "
+            "VALUES (2, 'Scaduta', 2, 'pro', 'active', now() - interval '40 days')"
+        ))  # fmt: skip
+        c.execute(text("INSERT INTO companies (id, workspace_id, name) VALUES (2, 2, 'Scaduta')"))
+        c.execute(text(
+            "INSERT INTO qr_codes (id, workspace_id, company_id, name, kind, qr_type, destination,"
+            " target_url, slug, status) VALUES (4, 2, 2, 'Vecchio', 'dynamic', 'website', "
+            "'redirect', 'https://example.com/old', 'Old4Qr7', 'active')"
+        ))  # fmt: skip
         c.execute(text(
             "INSERT INTO qr_codes (id, workspace_id, company_id, name, kind, qr_type, destination,"
             " target_url, slug, status, design) VALUES "
@@ -55,11 +70,20 @@ def test_populated_v02_database_upgrades_without_regressions(monkeypatch, client
         pro = c.execute(text("SELECT features FROM plans WHERE id = 'pro'")).scalar_one()
         reserved = c.execute(text("SELECT count(*) FROM reserved_words")).scalar_one()
     assert [(r.slug, r.has_qr, r.scan_total) for r in rows] == [
-        ("Ab3dEf7", True, 2), ("Pg4hJk8", True, 0), (None, True, 0)]  # fmt: skip
+        ("Ab3dEf7", True, 2), ("Pg4hJk8", True, 0), (None, True, 0), ("Old4Qr7", True, 0)]  # fmt: skip
     assert json.loads(rows[0].design) == {"modules": "dots"}
     assert outcomes == ["ok"]
     assert pro["max_bulk_rows"] == 500 and pro["storage_mb"] == 1024  # merged, not replaced
     assert reserved > 50
+
+    with get_engine().connect() as c:
+        windows = c.execute(text(
+            "SELECT id, billing_state, redirects_until > now() + interval '29 days' AS fresh, "
+            "redirects_until IS NULL AS open FROM workspaces ORDER BY id"
+        )).all()  # fmt: skip
+    assert [(w.billing_state, w.open) for w in windows] == [(None, True), (None, False)]
+    assert windows[1].fresh  # a new 30-day window, not an immediate cut
+    assert client.get("/r/Old4Qr7", follow_redirects=False).status_code == 302
 
     hop = client.get("/r/Ab3dEf7", follow_redirects=False)
     assert hop.status_code == 302 and hop.headers["location"] == "https://example.com/menu"

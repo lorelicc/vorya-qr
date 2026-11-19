@@ -26,8 +26,9 @@ def client() -> stripe.StripeClient:
         raise HTTPException(503, "Pagamenti online non configurati.")
     if mode() == "live" and not s.stripe_live_allowed:
         raise HTTPException(503, "Pagamenti live non abilitati su questo ambiente.")
+    base = {"base_addresses": {"api": s.stripe_api_base}} if s.stripe_api_base else {}
     return stripe.StripeClient(
-        key, max_network_retries=2, http_client=stripe.RequestsClient(timeout=20)
+        key, max_network_retries=2, http_client=stripe.RequestsClient(timeout=20), **base
     )
 
 

@@ -62,6 +62,8 @@ class Settings(BaseSettings):
     stripe_secret_key: SecretStr = SecretStr("")
     stripe_webhook_secret: SecretStr = SecretStr("")
     stripe_live_allowed: bool = False
+    # Only for automated tests: points the Stripe client at a local fake. Refused in production.
+    stripe_api_base: str = ""
 
     model_config = SettingsConfigDict(env_file="../.env", extra="ignore", hide_input_in_errors=True)
 
@@ -97,6 +99,8 @@ class Settings(BaseSettings):
                     raise ValueError(f"{name.upper()} HTTPS obbligatoria in produzione")
             if self.mail_transport != "smtp":
                 raise ValueError("In produzione MAIL_TRANSPORT deve essere smtp")
+            if self.stripe_api_base:
+                raise ValueError("STRIPE_API_BASE non è ammesso in produzione")
         if not self.short_link_base_url:
             self.short_link_base_url = self.public_base_url or "http://localhost:3000"
         return self

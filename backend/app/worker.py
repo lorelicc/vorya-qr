@@ -161,12 +161,16 @@ def cleanup_tokens(session: Session) -> int:
 
 
 def run_queue(session: Session) -> int:
-    """Short-interval work: ZIP rendering of confirmed imports, one job per tick."""
+    """Short-interval work: billing emails, then one import ZIP per tick."""
     import uuid
 
+    from .billing.mail import send_pending
     from .imports.service import build_zip
     from .models import ImportJob
     from .storage.backends import get_storage
+
+    mails = send_pending(session)  # payment emails go out within seconds, not minutes
+    session.commit()
 
     job = session.scalar(
         select(ImportJob)
@@ -176,7 +180,7 @@ def run_queue(session: Session) -> int:
         .limit(1)
     )
     if job is None:
-        return 0
+        return mails
     job.status, job.processed = "running", 0
     session.commit()
 
