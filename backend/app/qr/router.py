@@ -15,7 +15,10 @@ from ..quotas import reserve_slot
 from ..schemas.page import Page
 from ..schemas.qr import QrCreate, QrOut, QrPreview, QrUpdate
 from .contrast import warnings
-from .render import PNG_DEFAULT, PNG_MAX, PNG_MIN, PREVIEW_SLUG, render_png, render_svg, short_link
+from .design_service import design_from_payload, design_of, render
+from .designer import svg_to_pdf, svg_to_png
+from .render import PNG_DEFAULT, PNG_MAX, PNG_MIN, PREVIEW_SLUG, short_link
+from .scan_check import check
 from .service import (
     encoded_content_of,
     get_owned,
@@ -33,15 +36,6 @@ NO_STORE = {"Cache-Control": "no-store, private"}
 
 
 STYLE_FIELDS = ("fg_color", "bg_color", "margin", "error_correction")
-
-
-def style(qr) -> dict:
-    return {
-        "fg": qr.fg_color,
-        "bg": qr.bg_color,
-        "margin": qr.margin,
-        "error_correction": qr.error_correction,
-    }
 
 
 def filename(name: str, extension: str) -> str:
@@ -107,17 +101,14 @@ def preview(
             content = encode_static(payload.qr_type, data)
         except Exception:  # noqa: BLE001 - incomplete forms still get a placeholder preview
             content = "https://qr.vorya.it"
-    svg = render_svg(
-        content,
-        fg=payload.fg_color,
-        bg=payload.bg_color,
-        margin=payload.margin,
-        error_correction=payload.error_correction,
-    )
+    design = design_from_payload(payload)
+    svg = render(session, ctx.company.id, content, design)
     return {
         "svg": svg,
         "content": content,
-        "warnings": warnings(payload.fg_color, payload.bg_color, payload.margin),
+        "error_correction": design.error_correction,
+        "warnings": warnings(design.fill.color, design.background, design.margin),
+        "scannability": check(content, design, svg),
     }
 
 
@@ -211,6 +202,22 @@ def delete_qr(
     session.commit()
 
 
+def _image(session: Session, ctx, qr: QrCode) -> str:
+    return render(session, ctx.company.id, encoded_content_of(qr), design_of(qr))
+
+
+def _download(data, media_type: str, name: str, extension: str, extra: dict | None = None):
+    return Response(
+        data,
+        media_type=media_type,
+        headers={
+            **NO_STORE,
+            "Content-Disposition": f'attachment; filename="{filename(name, extension)}"',
+            **(extra or {}),
+        },
+    )
+
+
 @router.get("/{qr_id}/image.svg")
 def image_svg(
     qr_id: int,
@@ -218,15 +225,7 @@ def image_svg(
     session: Session = Depends(get_session),
 ):
     qr = get_owned(session, ctx, qr_id)
-    svg = render_svg(encoded_content_of(qr), **style(qr))
-    return Response(
-        svg,
-        media_type="image/svg+xml",
-        headers={
-            **NO_STORE,
-            "Content-Disposition": f'attachment; filename="{filename(qr.name, "svg")}"',
-        },
-    )
+    return _download(_image(session, ctx, qr), "image/svg+xml", qr.name, "svg")
 
 
 @router.get("/{qr_id}/image.png")
@@ -237,13 +236,15 @@ def image_png(
     session: Session = Depends(get_session),
 ):
     qr = get_owned(session, ctx, qr_id)
-    png, real_size = render_png(encoded_content_of(qr), size=size, **style(qr))
-    return Response(
-        png,
-        media_type="image/png",
-        headers={
-            **NO_STORE,
-            "Content-Disposition": f'attachment; filename="{filename(qr.name, "png")}"',
-            "X-Image-Size": str(real_size),
-        },
-    )
+    png = svg_to_png(_image(session, ctx, qr), size)
+    return _download(png, "image/png", qr.name, "png", {"X-Image-Size": str(size)})
+
+
+@router.get("/{qr_id}/image.pdf")
+def image_pdf(
+    qr_id: int,
+    ctx: CompanyContext = Depends(owned_company),
+    session: Session = Depends(get_session),
+):
+    qr = get_owned(session, ctx, qr_id)
+    return _download(svg_to_pdf(_image(session, ctx, qr)), "application/pdf", qr.name, "pdf")

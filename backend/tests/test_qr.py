@@ -1,7 +1,7 @@
 import struct
 
 from app.qr.contrast import contrast_ratio, warnings
-from app.qr.render import SLUG_ALPHABET, new_slug, render_png
+from app.qr.render import SLUG_ALPHABET, new_slug
 from tests.conftest import csrf, qrs, signup
 
 URL = "https://www.vorya.it/promo"
@@ -108,20 +108,12 @@ def test_download_png_and_svg(client):
     assert png.status_code == 200 and png.headers["content-type"] == "image/png"
     assert png.content[:8] == b"\x89PNG\r\n\x1a\n"
     width, height = struct.unpack(">II", png.content[16:24])
-    assert width == height == int(png.headers["x-image-size"]) and 400 < width <= 512
+    assert width == height == int(png.headers["x-image-size"]) == 512
     assert 'filename="vorya-qr-menu-estate.png"' in png.headers["content-disposition"]
     svg = client.get(f"{qrs(client)}/{qr['id']}/image.svg")
     assert svg.headers["content-type"].startswith("image/svg+xml")
     assert "#087f5b" in svg.text
     assert client.get(f"{qrs(client)}/{qr['id']}/image.png?size=99999").status_code == 422
-
-
-def test_render_png_scales_to_requested_size():
-    png, size = render_png(
-        URL, fg="#000000", bg="#ffffff", margin=4, error_correction="M", size=1024
-    )
-    assert struct.unpack(">II", png[16:24]) == (size, size)
-    assert size <= 1024
 
 
 def test_contrast_rules():

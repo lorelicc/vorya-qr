@@ -141,6 +141,16 @@ def save_page(session: Session, qr: QrCode, page: Page | None) -> None:
 STYLE_FIELDS = ("fg_color", "bg_color", "margin", "error_correction")
 
 
+def gate_design(session: Session, ctx, qr: QrCode, payload: QrContent) -> None:
+    """Applies the design and refuses to save a QR that does not decode."""
+    from .design_service import apply_design, design_from_payload, render, require_scannable
+
+    design = design_from_payload(payload)
+    content = encoded_content_of(qr)
+    require_scannable(content, design, render(session, ctx.company.id, content, design))
+    apply_design(qr, design)
+
+
 def insert_qr(session: Session, ctx, payload: QrCreate) -> QrCode:
     """Creates the QR (fresh unique slug for dynamic ones, retried on the rare collision)."""
     require_type(session.get(Plan, ctx.workspace.plan_id), payload.qr_type)
@@ -159,6 +169,7 @@ def insert_qr(session: Session, ctx, payload: QrCreate) -> QrCode:
         session.add(qr)
         try:
             savepoint.commit()
+            gate_design(session, ctx, qr, payload)
             save_page(session, qr, page)
             return qr
         except IntegrityError:
@@ -173,6 +184,7 @@ def update_content(session: Session, ctx, qr: QrCode, content: QrContent) -> boo
     target_url, static_data, page = resolve_content(session, ctx, qr.qr_type, qr.kind, content)
     changed = qr.destination == "redirect" and qr.kind == "dynamic" and target_url != qr.target_url
     qr.target_url, qr.static_data = target_url, static_data
+    gate_design(session, ctx, qr, content)
     save_page(session, qr, page)
     return changed
 

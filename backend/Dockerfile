@@ -2,6 +2,9 @@
 FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
+# libcairo2: cairosvg renders the QR SVG to PNG/PDF (LGPL, dynamically linked).
+RUN apt-get update && apt-get install -y --no-install-recommends libcairo2 \
+    && rm -rf /var/lib/apt/lists/*
 COPY requirements.lock .
 # Optional build secret `proxy_ca` (same pattern as Vorya Sign) for builds behind a TLS proxy.
 RUN --mount=type=secret,id=proxy_ca \

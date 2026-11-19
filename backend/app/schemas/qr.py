@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from ..core.config import get_settings
 from ..plans import QrType
+from .design import QrDesign
 from .page import Page
 
 HEX = r"^#[0-9a-fA-F]{6}$"
@@ -54,6 +55,7 @@ class QrContent(QrStyle):
     target_url: str = Field(default="", max_length=2048)
     static_data: dict | None = None
     page: Page | None = None
+    design: QrDesign | None = None  # 0.2 designer; when absent the 0.1 style fields apply
 
 
 class QrUpdate(QrContent):
