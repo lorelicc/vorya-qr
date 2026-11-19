@@ -1,0 +1,28 @@
+# Segreti e configurazione locale
+.env
+.env.*
+!.env.example
+deploy/.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Test e artefatti
+coverage/
+playwright-report/
+test-results/
+.mail-outbox/
+
+# Sistema
+.DS_Store
