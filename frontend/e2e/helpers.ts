@@ -44,5 +44,5 @@ export async function signUp(page: Page, email: string, workspace = "Pizzeria E2
   await page.getByLabel("Nuova password").fill(PASSWORD);
   await page.getByLabel("Ripeti la password").fill(PASSWORD);
   await page.getByRole("button", { name: "Attiva la prova" }).click();
-  await page.waitForURL("**/app");
+  await page.waitForURL(/\/app\/c\/\d+$/);
 }

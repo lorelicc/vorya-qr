@@ -10,6 +10,8 @@
 }
 
 .toast {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
@@ -21,7 +23,37 @@
   box-shadow: var(--shadow-md);
   font-size: var(--fs-md);
   line-height: var(--lh-base);
-  animation: enter 0.2s ease-out;
+  animation: enter var(--dur-slow) var(--ease-out);
+  transition:
+    opacity var(--dur-fast) var(--ease-in-out),
+    transform var(--dur-fast) var(--ease-in-out);
+}
+
+.toast[data-leaving] {
+  opacity: 0;
+  transform: translateX(var(--motion-shift-md));
+}
+
+/* Remaining time: a bar that shrinks with transform only. */
+.timer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: currentColor;
+  opacity: 0.35;
+  transform-origin: left;
+  animation: timer linear forwards;
+}
+
+@keyframes timer {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }
 
 .toast span {
@@ -34,6 +66,11 @@
 
 .success {
   border-left-color: var(--vorya-green-primary);
+  color: var(--color-text);
+}
+
+.success .timer {
+  background: var(--vorya-green-primary);
 }
 
 .success > svg:first-child {
@@ -55,7 +92,7 @@
 @keyframes enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateX(calc(var(--motion-shift-md) * 3));
   }
 }
 
@@ -65,5 +102,15 @@
     right: var(--space-4);
     bottom: var(--space-4);
     width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+
+  .timer {
+    display: none;
   }
 }

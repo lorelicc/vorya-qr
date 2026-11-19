@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { BarChart3, Copy, Pause, Play, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button, ButtonLink, Card, Modal, useToast } from "@/components/ui";
+import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
 import { scansLabel } from "@/lib/format";
 import type { QrCode } from "@/lib/types";
@@ -10,6 +11,7 @@ import styles from "./DynamicControls.module.css";
 
 export function DynamicControls({ qr, onChange }: { qr: QrCode; onChange: (qr: QrCode) => void }) {
   const router = useRouter();
+  const { api: base, app } = useCompany();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -18,7 +20,10 @@ export function DynamicControls({ qr, onChange }: { qr: QrCode; onChange: (qr: Q
   async function toggle() {
     setBusy(true);
     try {
-      const updated = await api<QrCode>(`qr-codes/${qr.id}/${paused ? "resume" : "pause"}`, "POST");
+      const updated = await api<QrCode>(
+        `${base}/qr-codes/${qr.id}/${paused ? "resume" : "pause"}`,
+        "POST",
+      );
       onChange(updated);
       toast.show(
         paused ? "QR riattivato." : "QR in pausa: chi lo scansiona vedrà “QR non attivo”.",
@@ -33,8 +38,8 @@ export function DynamicControls({ qr, onChange }: { qr: QrCode; onChange: (qr: Q
   async function remove() {
     setBusy(true);
     try {
-      await api(`qr-codes/${qr.id}`, "DELETE");
-      router.push("/app");
+      await api(`${base}/qr-codes/${qr.id}`, "DELETE");
+      router.push(app);
       router.refresh();
     } catch (err) {
       toast.show(errorMessage(err), "error");
@@ -63,7 +68,7 @@ export function DynamicControls({ qr, onChange }: { qr: QrCode; onChange: (qr: Q
         <div className={styles.actions}>
           <ButtonLink
             variant="secondary"
-            href={`/app/qr/${qr.id}/stats`}
+            href={`${app}/qr/${qr.id}/stats`}
             icon={<BarChart3 size={16} />}
           >
             Statistiche

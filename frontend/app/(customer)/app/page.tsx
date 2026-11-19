@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
-import { Dashboard } from "@/components/qr/Dashboard";
+import { redirect } from "next/navigation";
+import { requireCustomer } from "@/lib/auth-server";
 
-export const metadata: Metadata = { title: "Codici QR" };
-
-export default function DashboardPage() {
-  return <Dashboard />;
+/** Entry point after login: the last company used, or the company list. */
+export default async function AppHome() {
+  const me = await requireCustomer();
+  redirect(me.last_company_id ? `/app/c/${me.last_company_id}` : "/companies");
 }

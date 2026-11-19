@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Button, Card, Input, useToast } from "@/components/ui";
+import { useCompany } from "@/lib/company-context";
 import { api, errorMessage, fieldErrors, type FieldErrors } from "@/lib/api";
 import type { QrCode, QrKind, QrStyle } from "@/lib/types";
 import { KindPicker } from "./KindPicker";
@@ -20,6 +21,7 @@ function styleOf(qr?: QrCode): QrStyle {
 /** Create or edit a QR code: data on the left, live preview on the right. */
 export function QrEditor({ initial, onSaved }: Props) {
   const router = useRouter();
+  const { api: base, app } = useCompany();
   const toast = useToast();
   const [name, setName] = useState(initial?.name ?? "");
   const [kind, setKind] = useState<QrKind>(initial?.kind ?? "dynamic");
@@ -37,11 +39,11 @@ export function QrEditor({ initial, onSaved }: Props) {
     const body = { name, target_url: targetUrl, ...style };
     try {
       const saved = editing
-        ? await api<QrCode>(`qr-codes/${initial!.id}`, "PUT", body)
-        : await api<QrCode>("qr-codes", "POST", { ...body, kind, content_type: "url" });
+        ? await api<QrCode>(`${base}/qr-codes/${initial!.id}`, "PUT", body)
+        : await api<QrCode>(`${base}/qr-codes`, "POST", { ...body, kind, content_type: "url" });
       toast.show(editing ? "Modifiche salvate." : "Codice QR creato.");
       if (editing) onSaved?.(saved);
-      else router.push(`/app/qr/${saved.id}`);
+      else router.push(`${app}/qr/${saved.id}`);
     } catch (err) {
       setErrors(fieldErrors(err));
       toast.show(errorMessage(err), "error");

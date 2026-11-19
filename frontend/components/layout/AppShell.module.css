@@ -30,13 +30,31 @@
   display: none;
 }
 
+.switcher {
+  margin-bottom: var(--space-4);
+}
+
 .nav {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
 
+.indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-radius: var(--radius-xs);
+  background: var(--color-selected);
+  box-shadow: inset 3px 0 0 var(--vorya-green-primary);
+  transition: transform var(--dur-slow) var(--ease-out);
+  pointer-events: none;
+}
+
 .navItem {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -52,11 +70,13 @@
   text-decoration: none;
 }
 
-.active {
-  background: var(--color-selected);
-  box-shadow: inset 3px 0 0 var(--vorya-green-primary);
+.navItem[data-active] {
   color: var(--vorya-green-dark);
   font-weight: var(--fw-semibold);
+}
+
+.navItem[data-active]:hover {
+  background: transparent;
 }
 
 .promo {
@@ -125,6 +145,11 @@
   display: none;
 }
 
+.header,
+.content {
+  min-width: 0;
+}
+
 @media (max-width: 959px) {
   .shell {
     grid-template-columns: minmax(0, 1fr);
@@ -137,14 +162,19 @@
     z-index: var(--z-modal);
     width: min(280px, 85vw);
     transform: translateX(-100%);
-    transition: transform var(--transition-fast);
     visibility: hidden;
+    transition:
+      transform var(--dur-fast) var(--ease-in-out),
+      visibility 0s linear var(--dur-fast);
   }
 
-  .open {
+  .sidebar[data-open] {
     transform: none;
     visibility: visible;
     box-shadow: var(--shadow-xl);
+    transition:
+      transform var(--dur-slow) var(--ease-out),
+      visibility 0s;
   }
 
   .sidebarBrand {
@@ -163,6 +193,15 @@
     inset: 0;
     z-index: calc(var(--z-modal) - 1);
     background: var(--gradient-overlay);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-fast) var(--ease-in-out);
+  }
+
+  .scrim[data-open] {
+    opacity: 1;
+    pointer-events: auto;
+    transition-duration: var(--dur-slow);
   }
 
   .menuButton {

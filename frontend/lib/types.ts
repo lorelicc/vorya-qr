@@ -16,6 +16,7 @@ export type Me = {
     access: Access;
     trial_ends_at: string | null;
   } | null;
+  last_company_id: number | null;
 };
 
 export type QrStyle = {
@@ -46,11 +47,22 @@ export type UsageItem = {
   can_create: boolean;
 };
 
+export type PlanFeatures = {
+  allowed_types: string[];
+  storage_mb: number | null;
+  max_file_mb: number;
+  remove_branding: boolean;
+  stats_retention_days: number | null;
+  max_style_presets: number | null;
+};
+
 export type AccountPlan = {
   plan: { id: string; name: string; description: string };
+  features: PlanFeatures;
+  type_labels: Record<string, string>;
   access: Access;
   trial_ends_at: string | null;
-  usage: Record<QrKind, UsageItem>;
+  usage: Record<QrKind | "companies" | "storage", UsageItem>;
   support_email: string;
 };
 
@@ -91,4 +103,32 @@ export type AdminWorkspace = {
   created_at: string;
   qr_count?: number;
   usage?: Record<QrKind, UsageItem>;
+};
+
+export type Company = {
+  id: number;
+  name: string;
+  logo_url: string | null;
+  primary_color: string;
+  secondary_color: string;
+  sector: string | null;
+  qr_count: number;
+  scans_7d: number;
+  created_at: string;
+  deleted_at: string | null;
+  purge_after: string | null;
+};
+
+export type TransferStatus = "pending" | "accepted" | "declined" | "cancelled" | "expired";
+
+export type Transfer = {
+  id: number;
+  company: { id: number; name: string };
+  from: { name: string; email: string };
+  to_email: string;
+  status: TransferStatus;
+  failure_reason: string | null;
+  created_at: string;
+  expires_at: string;
+  decided_at: string | null;
 };

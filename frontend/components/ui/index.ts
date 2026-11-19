@@ -7,3 +7,5 @@ export { IconButton } from "./IconButton";
 export { Modal } from "./Modal";
 export { Table, type Column } from "./Table";
 export { ToastProvider, useToast } from "./Toast";
+export { Menu, MenuItem } from "./Menu";
+export { Skeleton, SkeletonList } from "./Skeleton";

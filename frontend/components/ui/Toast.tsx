@@ -1,27 +1,30 @@
 "use client";
-import { CheckCircle2, CircleAlert, X } from "lucide-react";
+import { CheckCircle2, CircleAlert, Info, X } from "lucide-react";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import styles from "./Toast.module.css";
 
 export type ToastTone = "success" | "error" | "info";
-type ToastItem = { id: number; tone: ToastTone; message: string };
+type ToastItem = { id: number; tone: ToastTone; message: string; leaving: boolean };
 type ToastApi = { show: (message: string, tone?: ToastTone) => void };
 
 const ToastContext = createContext<ToastApi | null>(null);
-const DURATION = 4500;
+export const TOAST_DURATION = 4500;
+const EXIT_MS = 140;
 let counter = 0;
+
+const ICON = { success: CheckCircle2, error: CircleAlert, info: Info };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([]);
-  const dismiss = useCallback(
-    (id: number) => setItems((all) => all.filter((t) => t.id !== id)),
-    [],
-  );
+  const dismiss = useCallback((id: number) => {
+    setItems((all) => all.map((t) => (t.id === id ? { ...t, leaving: true } : t)));
+    window.setTimeout(() => setItems((all) => all.filter((t) => t.id !== id)), EXIT_MS);
+  }, []);
   const show = useCallback(
     (message: string, tone: ToastTone = "success") => {
       const id = ++counter;
-      setItems((all) => [...all.slice(-2), { id, tone, message }]);
-      window.setTimeout(() => dismiss(id), DURATION);
+      setItems((all) => [...all.slice(-2), { id, tone, message, leaving: false }]);
+      window.setTimeout(() => dismiss(id), TOAST_DURATION);
     },
     [dismiss],
   );
@@ -31,15 +34,27 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={api}>
       {children}
       <div className={styles.region} role="status" aria-live="polite">
-        {items.map((item) => (
-          <div key={item.id} className={`${styles.toast} ${styles[item.tone]}`}>
-            {item.tone === "error" ? <CircleAlert size={18} /> : <CheckCircle2 size={18} />}
-            <span>{item.message}</span>
-            <button type="button" aria-label="Chiudi notifica" onClick={() => dismiss(item.id)}>
-              <X size={16} />
-            </button>
-          </div>
-        ))}
+        {items.map((item) => {
+          const Icon = ICON[item.tone];
+          return (
+            <div
+              key={item.id}
+              className={`${styles.toast} ${styles[item.tone]}`}
+              data-leaving={item.leaving || undefined}
+            >
+              <Icon size={18} aria-hidden="true" />
+              <span>{item.message}</span>
+              <button type="button" aria-label="Chiudi notifica" onClick={() => dismiss(item.id)}>
+                <X size={16} />
+              </button>
+              <i
+                className={styles.timer}
+                style={{ animationDuration: `${TOAST_DURATION}ms` }}
+                aria-hidden="true"
+              />
+            </div>
+          );
+        })}
       </div>
     </ToastContext.Provider>
   );

@@ -6,14 +6,14 @@ import type { QrCode } from "@/lib/types";
 import { KindBadge, StatusBadge } from "./QrBadges";
 import styles from "./QrTable.module.css";
 
-const columns: Column<QrCode>[] = [
+const columnsFor = (base: string): Column<QrCode>[] => [
   {
     key: "name",
     header: "Nome",
     mobileLabel: false,
     render: (qr) => (
       <div className={styles.name}>
-        <Link href={`/app/qr/${qr.id}`}>{qr.name}</Link>
+        <Link href={`${base}/qr/${qr.id}`}>{qr.name}</Link>
         <span className={styles.url} title={qr.target_url}>
           {qr.target_url}
         </span>
@@ -35,12 +35,12 @@ const columns: Column<QrCode>[] = [
     align: "end",
     render: (qr) => (
       <div className={styles.actions}>
-        <Link href={`/app/qr/${qr.id}`} aria-label={`Modifica ${qr.name}`} title="Modifica">
+        <Link href={`${base}/qr/${qr.id}`} aria-label={`Modifica ${qr.name}`} title="Modifica">
           <Pencil size={16} />
         </Link>
         {qr.kind === "dynamic" && (
           <Link
-            href={`/app/qr/${qr.id}/stats`}
+            href={`${base}/qr/${qr.id}/stats`}
             aria-label={`Statistiche di ${qr.name}`}
             title="Statistiche"
           >
@@ -52,6 +52,8 @@ const columns: Column<QrCode>[] = [
   },
 ];
 
-export function QrTable({ rows }: { rows: QrCode[] }) {
-  return <Table caption="Codici QR" columns={columns} rows={rows} rowKey={(qr) => qr.id} />;
+export function QrTable({ rows, base }: { rows: QrCode[]; base: string }) {
+  return (
+    <Table caption="Codici QR" columns={columnsFor(base)} rows={rows} rowKey={(qr) => qr.id} />
+  );
 }

@@ -6,6 +6,8 @@ type Props = HTMLAttributes<HTMLElement> & {
   description?: ReactNode;
   actions?: ReactNode;
   padding?: "md" | "lg";
+  /** Hover lift and a small scale-down on tap (for clickable cards). */
+  interactive?: boolean;
 };
 
 export function Card({
@@ -13,13 +15,16 @@ export function Card({
   description,
   actions,
   padding = "md",
+  interactive = false,
   children,
   className,
   ...props
 }: Props) {
   return (
     <section
-      className={[styles.card, styles[padding], className].filter(Boolean).join(" ")}
+      className={[styles.card, styles[padding], interactive ? styles.interactive : "", className]
+        .filter(Boolean)
+        .join(" ")}
       {...props}
     >
       {(title || actions) && (

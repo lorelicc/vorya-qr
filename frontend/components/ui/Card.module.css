@@ -6,6 +6,37 @@
   min-width: 0;
 }
 
+.interactive {
+  position: relative;
+  cursor: pointer;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+/* The bigger shadow fades in (opacity only) instead of animating box-shadow. */
+.interactive::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.interactive:hover {
+  transform: translateY(calc(var(--motion-shift-sm) * -1));
+}
+
+.interactive:hover::after {
+  opacity: 1;
+}
+
+.interactive:active {
+  transform: scale(0.985);
+  transition-duration: var(--dur-instant);
+}
+
 .md {
   padding: var(--space-5);
 }

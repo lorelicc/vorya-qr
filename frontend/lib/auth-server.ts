@@ -49,3 +49,18 @@ export async function requireUser(): Promise<Me> {
   if (!me) redirect("/login");
   return me;
 }
+
+/** Server-side GET to the backend with the browser's cookies. Returns null on 404. */
+export async function serverGet<T>(path: string): Promise<T | null> {
+  const jar = await cookies();
+  const response = await fetch(`${apiBase()}/api/${path}`, {
+    headers: { Cookie: jar.toString() },
+    cache: "no-store",
+    signal: AbortSignal.timeout(8000),
+  });
+  if (response.status === 404) return null;
+  if (response.status === 401) redirect("/login");
+  if (response.status === 423) redirect("/suspended");
+  if (!response.ok) throw new Error("Impossibile caricare i dati.");
+  return (await response.json()) as T;
+}

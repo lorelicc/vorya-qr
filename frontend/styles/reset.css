@@ -87,11 +87,10 @@ textarea::placeholder {
   color: var(--color-muted);
 }
 
+/* Reduced motion: transitions collapse through the motion tokens; each decorative loop stops
+   on a designed frame in its own module (components/illustrations). Spinners keep turning. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
+  html {
+    scroll-behavior: auto;
   }
 }

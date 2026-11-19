@@ -15,7 +15,7 @@ test("registrazione → QR dinamico → cambio destinazione → scansione simula
   await page.getByLabel("URL di destinazione").fill("https://example.com/menu-pranzo");
   await expect(page.getByAltText("Anteprima del codice QR")).toBeVisible();
   await page.getByRole("button", { name: "Crea codice QR" }).click();
-  await page.waitForURL(/\/app\/qr\/\d+$/);
+  await page.waitForURL(/\/app\/c\/\d+\/qr\/\d+$/);
   await expect(page.getByText("Codice QR creato.")).toBeVisible();
   const shortUrl = (await page.locator("code").first().textContent())!.trim();
   expect(shortUrl).toMatch(/\/r\/[A-Za-z0-9]{7}$/);
@@ -41,7 +41,7 @@ test("registrazione → QR dinamico → cambio destinazione → scansione simula
   expect(second.headers()["location"]).toBe("https://example.com/menu-cena");
 
   // Stats count both scans (never "visitors").
-  await page.getByRole("link", { name: "Statistiche" }).click();
+  await page.getByRole("main").getByRole("link", { name: "Statistiche" }).click();
   await expect(page.getByRole("heading", { name: "Statistiche" })).toBeVisible();
   await expect(page.getByText("Scansioni totali").locator("..")).toContainText("2");
   await expect(page.getByText("Smartphone")).toBeVisible();

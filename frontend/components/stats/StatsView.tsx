@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui";
+import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import type { QrCode, QrStats } from "@/lib/types";
@@ -11,18 +12,22 @@ import { DailyChart } from "./DailyChart";
 import styles from "./StatsView.module.css";
 
 export function StatsView({ id }: { id: number }) {
+  const { api: base, app } = useCompany();
   const [qr, setQr] = useState<QrCode | null>(null);
   const [stats, setStats] = useState<QrStats | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    Promise.all([api<QrCode>(`qr-codes/${id}`), api<QrStats>(`qr-codes/${id}/stats`)])
+    Promise.all([
+      api<QrCode>(`${base}/qr-codes/${id}`),
+      api<QrStats>(`${base}/qr-codes/${id}/stats`),
+    ])
       .then(([q, s]) => {
         setQr(q);
         setStats(s);
       })
       .catch((err) => setError(errorMessage(err)));
-  }, [id]);
+  }, [base, id]);
 
   if (error) return <p role="alert">{error}</p>;
   if (!qr || !stats)
@@ -43,7 +48,7 @@ export function StatsView({ id }: { id: number }) {
 
   return (
     <div className="page">
-      <Link href={`/app/qr/${qr.id}`} className={styles.back}>
+      <Link href={`${app}/qr/${qr.id}`} className={styles.back}>
         <ArrowLeft size={16} /> {qr.name}
       </Link>
       <div className="page-header">

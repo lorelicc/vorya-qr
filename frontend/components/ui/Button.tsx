@@ -29,8 +29,12 @@ export function Button({
       aria-busy={loading || undefined}
       {...props}
     >
-      {loading ? <span className={styles.spinner} aria-hidden="true" /> : icon}
-      {children}
+      {/* The label stays in the flow while loading, so the width never changes. */}
+      <span className={styles.content} data-hidden={loading || undefined}>
+        {icon}
+        {children}
+      </span>
+      {loading && <span className={styles.spinner} aria-hidden="true" />}
     </button>
   );
 }

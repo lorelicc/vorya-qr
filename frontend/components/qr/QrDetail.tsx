@@ -2,6 +2,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
 import type { QrCode } from "@/lib/types";
 import { DownloadPanel } from "./DownloadPanel";
@@ -12,15 +13,16 @@ import { StaticControls } from "./StaticControls";
 import styles from "./QrDetail.module.css";
 
 export function QrDetail({ id }: { id: number }) {
+  const { api: base, app } = useCompany();
   const [qr, setQr] = useState<QrCode | null>(null);
   const [error, setError] = useState("");
   const [version, setVersion] = useState(0);
 
   useEffect(() => {
-    api<QrCode>(`qr-codes/${id}`)
+    api<QrCode>(`${base}/qr-codes/${id}`)
       .then(setQr)
       .catch((err) => setError(errorMessage(err)));
-  }, [id]);
+  }, [base, id]);
 
   if (error) return <p role="alert">{error}</p>;
   if (!qr)
@@ -32,7 +34,7 @@ export function QrDetail({ id }: { id: number }) {
 
   return (
     <div className="page">
-      <Link href="/app" className={styles.back}>
+      <Link href={app} className={styles.back}>
         <ArrowLeft size={16} /> Tutti i codici QR
       </Link>
       <div className="page-header">

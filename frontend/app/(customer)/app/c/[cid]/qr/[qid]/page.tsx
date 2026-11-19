@@ -4,8 +4,8 @@ import { QrDetail } from "@/components/qr/QrDetail";
 
 export const metadata: Metadata = { title: "Modifica QR" };
 
-export default async function QrPage({ params }: { params: Promise<{ id: string }> }) {
-  const id = Number((await params).id);
+export default async function QrPage({ params }: { params: Promise<{ qid: string }> }) {
+  const id = Number((await params).qid);
   if (!Number.isSafeInteger(id) || id <= 0) notFound();
   return <QrDetail id={id} />;
 }

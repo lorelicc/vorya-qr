@@ -2,26 +2,47 @@
 type Rule = { method: "GET" | "POST" | "PUT" | "DELETE"; pattern: RegExp };
 
 const ID = String.raw`\d+`;
+const C = String.raw`companies/\d+`;
+const QR = String.raw`companies/\d+/qr-codes`;
+const r = (method: Rule["method"], source: string): Rule => ({
+  method,
+  pattern: new RegExp(`^${source}$`),
+});
+
 const rules: Rule[] = [
-  { method: "GET", pattern: /^health$/ },
+  r("GET", "health"),
   ...["login", "logout", "register", "verify-email", "forgot-password", "reset-password"].map(
-    (name) => ({ method: "POST" as const, pattern: new RegExp(`^auth/${name}$`) }),
+    (name) => r("POST", `auth/${name}`),
   ),
-  { method: "GET", pattern: /^auth\/me$/ },
-  { method: "GET", pattern: /^account\/plan$/ },
-  { method: "GET", pattern: /^qr-codes$/ },
-  { method: "POST", pattern: /^qr-codes$/ },
-  { method: "POST", pattern: /^qr-codes\/preview$/ },
-  { method: "GET", pattern: new RegExp(`^qr-codes/${ID}$`) },
-  { method: "PUT", pattern: new RegExp(`^qr-codes/${ID}$`) },
-  { method: "DELETE", pattern: new RegExp(`^qr-codes/${ID}$`) },
-  { method: "POST", pattern: new RegExp(`^qr-codes/${ID}/(pause|resume)$`) },
-  { method: "GET", pattern: new RegExp(`^qr-codes/${ID}/(stats|image\\.svg|image\\.png)$`) },
-  { method: "GET", pattern: /^admin\/(workspaces|plans)$/ },
-  { method: "GET", pattern: new RegExp(`^admin/workspaces/${ID}$`) },
-  { method: "PUT", pattern: new RegExp(`^admin/workspaces/${ID}/plan$`) },
-  { method: "POST", pattern: new RegExp(`^admin/workspaces/${ID}/(suspend|reactivate)$`) },
-  { method: "PUT", pattern: /^admin\/plans\/[a-z0-9_-]{1,24}$/ },
+  r("GET", "auth/me"),
+  r("GET", "account/plan"),
+  r("PUT", "account/last-company"),
+  // Companies
+  r("GET", "companies"),
+  r("POST", "companies"),
+  r("GET", C),
+  r("PUT", C),
+  r("DELETE", C),
+  r("POST", `${C}/(restore|transfer)`),
+  // QR codes of a company
+  r("GET", QR),
+  r("POST", QR),
+  r("POST", `${QR}/preview`),
+  r("GET", `${QR}/${ID}`),
+  r("PUT", `${QR}/${ID}`),
+  r("DELETE", `${QR}/${ID}`),
+  r("POST", `${QR}/${ID}/(pause|resume)`),
+  r("GET", `${QR}/${ID}/(stats|image\\.svg|image\\.png)`),
+  // Transfers
+  r("GET", "company-transfers"),
+  r("POST", "company-transfers/by-token"),
+  r("POST", `company-transfers/${ID}/(accept|decline|cancel)`),
+  // Admin
+  r("GET", "admin/(workspaces|plans|company-transfers)"),
+  r("GET", `admin/workspaces/${ID}`),
+  r("PUT", `admin/workspaces/${ID}/plan`),
+  r("POST", `admin/workspaces/${ID}/(suspend|reactivate)`),
+  r("PUT", "admin/plans/[a-z0-9_-]{1,24}"),
 ];
 
 export function isAllowed(path: string, method: string): boolean {

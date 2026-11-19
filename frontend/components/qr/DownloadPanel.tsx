@@ -1,4 +1,5 @@
 "use client";
+import { useCompany } from "@/lib/company-context";
 import { Download } from "lucide-react";
 import { useState } from "react";
 import { Card, Select, buttonClass } from "@/components/ui";
@@ -8,6 +9,7 @@ const SIZES = [512, 1024, 2048, 4096];
 
 /** Downloads always reflect the saved QR (save changes first). */
 export function DownloadPanel({ qrId }: { qrId: number }) {
+  const { api: base } = useCompany();
   const [size, setSize] = useState(1024);
   return (
     <Card
@@ -29,14 +31,14 @@ export function DownloadPanel({ qrId }: { qrId: number }) {
         <div className={styles.buttons}>
           <a
             className={buttonClass({ variant: "secondary" })}
-            href={`/api/qr-codes/${qrId}/image.png?size=${size}`}
+            href={`/api/${base}/qr-codes/${qrId}/image.png?size=${size}`}
             download
           >
             <Download size={16} /> PNG
           </a>
           <a
             className={buttonClass({ variant: "secondary" })}
-            href={`/api/qr-codes/${qrId}/image.svg`}
+            href={`/api/${base}/qr-codes/${qrId}/image.svg`}
             download
           >
             <Download size={16} /> SVG

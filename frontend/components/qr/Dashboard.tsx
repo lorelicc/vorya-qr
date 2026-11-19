@@ -2,6 +2,7 @@
 import { Plus, QrCode as QrIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ButtonLink, Card, EmptyState } from "@/components/ui";
+import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/hooks";
 import type { AccountPlan, QrCode } from "@/lib/types";
@@ -11,6 +12,7 @@ import { UsageMeter } from "./UsageMeter";
 import styles from "./Dashboard.module.css";
 
 export function Dashboard() {
+  const { api: base, app, company } = useCompany();
   const [plan, setPlan] = useState<AccountPlan | null>(null);
   const [items, setItems] = useState<QrCode[] | null>(null);
   const [error, setError] = useState("");
@@ -25,10 +27,10 @@ export function Dashboard() {
 
   useEffect(() => {
     const query = new URLSearchParams({ search, kind: filters.kind, status: filters.status });
-    api<QrCode[]>(`qr-codes?${query}`)
+    api<QrCode[]>(`${base}/qr-codes?${query}`)
       .then(setItems)
       .catch((err) => setError(errorMessage(err)));
-  }, [search, filters.kind, filters.status]);
+  }, [base, search, filters.kind, filters.status]);
 
   const filtered = Boolean(search || filters.kind || filters.status);
   const canCreate = plan ? plan.usage.static.can_create || plan.usage.dynamic.can_create : true;
@@ -37,11 +39,11 @@ export function Dashboard() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1>Codici QR</h1>
-          <p>Crea, modifica e misura i tuoi codici QR.</p>
+          <h1>{company.name}</h1>
+          <p>Codici QR dell’azienda: crea, modifica e misura.</p>
         </div>
         {canCreate && (
-          <ButtonLink href="/app/qr/new" icon={<Plus size={16} />}>
+          <ButtonLink href={`${app}/qr/new`} icon={<Plus size={16} />}>
             Nuovo QR
           </ButtonLink>
         )}
@@ -75,12 +77,12 @@ export function Dashboard() {
           }
           action={
             !filtered && canCreate ? (
-              <ButtonLink href="/app/qr/new">Nuovo QR</ButtonLink>
+              <ButtonLink href={`${app}/qr/new`}>Nuovo QR</ButtonLink>
             ) : undefined
           }
         />
       ) : (
-        <QrTable rows={items} />
+        <QrTable rows={items} base={app} />
       )}
     </div>
   );

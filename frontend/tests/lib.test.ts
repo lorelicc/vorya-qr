@@ -33,12 +33,15 @@ describe("format", () => {
 
 describe("proxy allowlist", () => {
   it("allows only known routes and methods", () => {
-    expect(isAllowed("qr-codes", "GET")).toBe(true);
-    expect(isAllowed("qr-codes/12/pause", "POST")).toBe(true);
-    expect(isAllowed("qr-codes/12/image.png", "GET")).toBe(true);
+    expect(isAllowed("companies", "GET")).toBe(true);
+    expect(isAllowed("companies/3/qr-codes", "GET")).toBe(true);
+    expect(isAllowed("companies/3/qr-codes/12/pause", "POST")).toBe(true);
+    expect(isAllowed("companies/3/qr-codes/12/image.png", "GET")).toBe(true);
+    expect(isAllowed("company-transfers/5/accept", "POST")).toBe(true);
     expect(isAllowed("admin/workspaces/3/plan", "PUT")).toBe(true);
-    expect(isAllowed("qr-codes/12/pause", "GET")).toBe(false);
-    expect(isAllowed("qr-codes/abc", "GET")).toBe(false);
+    expect(isAllowed("qr-codes", "GET")).toBe(false); // 0.1 endpoints removed
+    expect(isAllowed("companies/3/qr-codes/12/pause", "GET")).toBe(false);
+    expect(isAllowed("companies/abc", "GET")).toBe(false);
     expect(isAllowed("openapi.json", "GET")).toBe(false);
     expect(isAllowed("admin/plans", "DELETE")).toBe(false);
   });

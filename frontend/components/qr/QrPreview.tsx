@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/hooks";
 import type { QrKind, QrStyle } from "@/lib/types";
@@ -10,6 +11,7 @@ type Preview = { svg: string; content: string };
 
 /** Live preview rendered by the backend (same engine as the downloads), shown as an <img>. */
 export function QrPreview({ kind, targetUrl, style, qrId }: Props) {
+  const { api: base } = useCompany();
   // Debounce a string key: a fresh object on every render would never settle.
   const key = useDebouncedValue(
     JSON.stringify({ kind, target_url: targetUrl, qr_id: qrId ?? null, ...style }),
@@ -20,7 +22,7 @@ export function QrPreview({ kind, targetUrl, style, qrId }: Props) {
 
   useEffect(() => {
     let current = true;
-    api<Preview>("qr-codes/preview", "POST", JSON.parse(key))
+    api<Preview>(`${base}/qr-codes/preview`, "POST", JSON.parse(key))
       .then((result) => {
         if (!current) return;
         setPreview(result);
@@ -30,7 +32,7 @@ export function QrPreview({ kind, targetUrl, style, qrId }: Props) {
     return () => {
       current = false;
     };
-  }, [key]);
+  }, [base, key]);
 
   return (
     <figure className={styles.preview}>

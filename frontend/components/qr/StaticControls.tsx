@@ -3,11 +3,13 @@ import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button, Card, Modal, useToast } from "@/components/ui";
+import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
 import type { QrCode } from "@/lib/types";
 
 export function StaticControls({ qr }: { qr: QrCode }) {
   const router = useRouter();
+  const { api: base, app } = useCompany();
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -15,8 +17,8 @@ export function StaticControls({ qr }: { qr: QrCode }) {
   async function remove() {
     setBusy(true);
     try {
-      await api(`qr-codes/${qr.id}`, "DELETE");
-      router.push("/app");
+      await api(`${base}/qr-codes/${qr.id}`, "DELETE");
+      router.push(app);
       router.refresh();
     } catch (err) {
       toast.show(errorMessage(err), "error");
