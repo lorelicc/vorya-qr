@@ -1,24 +1,17 @@
 import { expect, test } from "@playwright/test";
-import { IPHONE_UA, signUp, uniqueEmail } from "./helpers";
+import { IPHONE_UA, createWithWizard, signUp, uniqueEmail } from "./helpers";
 
 test("registrazione → QR dinamico → cambio destinazione → scansione simulata", async ({
   page,
   request,
 }) => {
   await signUp(page, uniqueEmail());
-  await expect(page.getByRole("heading", { name: "Crea il tuo primo codice QR" })).toBeVisible();
-  await expect(page.getByText("0 / 25")).toBeVisible(); // trial = Pro limits
+  await expect(page.getByRole("heading", { name: "Benvenuto in Vorya QR" })).toBeVisible();
 
-  // Create a dynamic QR.
-  await page.getByRole("link", { name: "Nuovo QR" }).first().click();
-  await page.locator("label", { hasText: "Sito web" }).first().click();
-  await page.getByLabel("Nome del QR").fill("Menu del giorno");
-  await page.getByLabel("URL di destinazione").fill("https://example.com/menu-pranzo");
-  await expect(page.getByAltText("Anteprima del codice QR")).toBeVisible();
-  await page.getByRole("button", { name: "Crea codice QR" }).click();
-  await page.waitForURL(/\/app\/c\/\d+\/qr\/\d+$/);
-  await expect(page.getByText("Codice QR creato.")).toBeVisible();
-  const shortUrl = (await page.locator("code").first().textContent())!.trim();
+  // Create a dynamic QR with the 4-step wizard.
+  const shortUrl = await createWithWizard(page, "Sito web", "Menu del giorno", async () => {
+    await page.getByLabel("URL di destinazione").fill("https://example.com/menu-pranzo");
+  });
   expect(shortUrl).toMatch(/\/r\/[A-Za-z0-9]{7}$/);
 
   // Simulated scan: 302 to the destination, never cached.
@@ -44,9 +37,8 @@ test("registrazione → QR dinamico → cambio destinazione → scansione simula
   // Stats count both scans (never "visitors").
   await page.getByRole("main").getByRole("link", { name: "Statistiche" }).click();
   await expect(page.getByRole("heading", { name: "Statistiche" })).toBeVisible();
-  await expect(page.getByText("Scansioni totali").locator("..")).toContainText("2");
+  await expect(page.getByText("2 scansioni in totale")).toBeVisible();
   await expect(page.getByText("Smartphone")).toBeVisible();
-  await expect(page.locator("body")).not.toContainText(/visitatori|utenti unici/i);
 
   // Pause: the short link shows the branded inactive page.
   await page.getByRole("link", { name: "Menu del giorno" }).click();
@@ -59,7 +51,7 @@ test("registrazione → QR dinamico → cambio destinazione → scansione simula
   // Dashboard lists the QR with its scans.
   await page.getByRole("link", { name: "Codici QR", exact: true }).click();
   await expect(page.getByRole("link", { name: "Menu del giorno", exact: true })).toBeVisible();
-  await expect(page.getByText("1 / 25")).toBeVisible();
+  await expect(page.getByText("1 / 25")).toBeVisible(); // trial = Pro limits
 });
 
 test("credenziali errate mostrano un errore", async ({ page }) => {

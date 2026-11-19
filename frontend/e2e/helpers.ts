@@ -46,3 +46,50 @@ export async function signUp(page: Page, email: string, workspace = "Pizzeria E2
   await page.getByRole("button", { name: "Attiva la prova" }).click();
   await page.waitForURL(/\/app\/c\/\d+$/);
 }
+
+export async function logIn(page: Page, email: string) {
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Accedi" }).click();
+  await page.waitForURL(/\/app\/c\/\d+$/);
+}
+
+/** Smallest valid one-page PDF (pdfium opens it; the backend renders a preview). */
+export const PDF_BYTES = Buffer.from(
+  "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n" +
+    "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n" +
+    "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\n" +
+    "trailer<</Root 1 0 R>>\n%%EOF\n",
+);
+
+/** A file that passes the MP3 magic-bytes check (ID3 tag); enough for the upload flow. */
+export const MP3_BYTES = Buffer.concat([
+  Buffer.from("ID3\x04\x00\x00\x00\x00\x00\x00"),
+  Buffer.alloc(2048),
+]);
+
+/** Wizard: pick the type, fill the content with `fill`, accept the default design, create. */
+export async function createWithWizard(
+  page: Page,
+  type: string,
+  name: string,
+  fill: () => Promise<void>,
+): Promise<string> {
+  await page
+    .getByRole("link", { name: /Nuovo QR|Crea il tuo primo QR/ })
+    .first()
+    .click();
+  await page.locator("label", { hasText: type }).first().click();
+  await page.getByRole("button", { name: "Avanti" }).click();
+  await page.getByLabel("Nome del QR").fill(name);
+  await fill();
+  await page.getByRole("button", { name: "Avanti" }).click();
+  await expect(page.getByText("Scansionabile")).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: "Avanti" }).click();
+  await page.getByRole("button", { name: "Crea codice QR" }).click();
+  await expect(page.getByRole("heading", { name: `«${name}» è pronto` })).toBeVisible();
+  await page.getByRole("link", { name: "Apri il QR" }).click();
+  await page.waitForURL(/\/qr\/\d+$/);
+  return (await page.locator("code").first().textContent())!.trim();
+}

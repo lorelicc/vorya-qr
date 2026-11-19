@@ -27,7 +27,17 @@ export default defineConfig({
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: { baseURL: BASE_URL, trace: "off", locale: "it-IT" },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: /mobile\.spec\.ts/ },
+    {
+      name: "desktop",
+      use: { ...devices["Desktop Chrome"] },
+      testIgnore: /(mobile|companies)\.spec\.ts/,
+    },
+    // v0.2 scenario: reduced motion, as requested for deterministic runs.
+    {
+      name: "reduced-motion",
+      use: { ...devices["Desktop Chrome"], contextOptions: { reducedMotion: "reduce" } },
+      testMatch: /companies\.spec\.ts/,
+    },
     { name: "mobile", use: { ...devices["Pixel 7"] }, testMatch: /mobile\.spec\.ts/ },
   ],
   webServer: [
@@ -44,6 +54,8 @@ export default defineConfig({
         PUBLIC_BASE_URL: BASE_URL,
         SHORT_LINK_BASE_URL: BASE_URL,
         SUPPORT_EMAIL: "supporto@example.com",
+        STORAGE_LOCAL_PATH: path.resolve(here, ".e2e-uploads"),
+        GEOIP_DB_PATH: path.resolve(here, ".e2e-uploads/missing.mmdb"),
       },
     },
     {

@@ -43,7 +43,11 @@ export function Menu({
         root.current?.querySelectorAll<HTMLElement>("[role=menuitem]:not([disabled])") ?? [],
       );
       const index = items.indexOf(document.activeElement as HTMLElement);
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        // Return focus to the trigger, as for any WAI-ARIA menu button.
+        root.current?.querySelector<HTMLElement>("[aria-haspopup=menu]")?.focus();
+      }
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         event.preventDefault();
         const step = event.key === "ArrowDown" ? 1 : -1;

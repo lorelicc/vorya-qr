@@ -23,6 +23,7 @@ coverage/
 playwright-report/
 test-results/
 .mail-outbox/
+.e2e-uploads/
 
 # Sistema
 .DS_Store
