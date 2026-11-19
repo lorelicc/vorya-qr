@@ -10,6 +10,13 @@ const DEFAULTS: PlanFeatures = {
   remove_branding: false,
   stats_retention_days: 90,
   max_style_presets: 3,
+  custom_back_half: false,
+  max_aliases_per_link: 0,
+  link_rules: false,
+  utm_templates: false,
+  max_bulk_rows: 0,
+  version_history: false,
+  menu_type: false,
 };
 
 /** Feature flags and numeric limits of a plan (stored as JSON, validated by the backend). */
@@ -51,6 +58,38 @@ export function PlanFeaturesFields({ features = DEFAULTS }: { features?: PlanFea
           hint="Vuoto = illimitati"
         />
       </div>
+      <div className={styles.features}>
+        <Input
+          label="Back-half per link"
+          name="max_aliases_per_link"
+          type="number"
+          min={0}
+          defaultValue={features.max_aliases_per_link ?? ""}
+          hint="Vuoto = illimitati"
+        />
+        <Input
+          label="Righe massime per import"
+          name="max_bulk_rows"
+          type="number"
+          min={0}
+          required
+          defaultValue={features.max_bulk_rows}
+        />
+      </div>
+      {(
+        [
+          ["custom_back_half", "Back-half personalizzato"],
+          ["link_rules", "Regole del link (scadenza, password, programmazione)"],
+          ["utm_templates", "Modelli UTM"],
+          ["version_history", "Cronologia delle versioni"],
+          ["menu_type", "Tipo Menu / Carta dei vini"],
+        ] as const
+      ).map(([name, label]) => (
+        <label key={name} className={styles.check}>
+          <input type="checkbox" name={name} defaultChecked={features[name]} />
+          {label}
+        </label>
+      ))}
       <label className={styles.check}>
         <input type="checkbox" name="remove_branding" defaultChecked={features.remove_branding} />
         Può nascondere “Creato con Vorya QR” nelle pagine

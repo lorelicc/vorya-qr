@@ -9,6 +9,7 @@ const NAV: NavItem[] = [
   { href: "/admin/reports", label: "Segnalazioni", icon: "abuse" },
   { href: "/admin/blocked-domains", label: "Domini bloccati", icon: "blocked" },
   { href: "/admin/transfers", label: "Trasferimenti", icon: "transfers" },
+  { href: "/admin/reserved-words", label: "Parole riservate", icon: "blocked" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

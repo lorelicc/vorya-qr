@@ -53,7 +53,7 @@ def qr_stats(
     data = summary(session, Scope(first, last, qr_id=qr.id))
     total, last_scan = session.execute(
         select(func.count(), func.max(ScanEvent.scanned_at)).where(
-            ScanEvent.qr_code_id == qr.id, ScanEvent.is_bot.is_(False)
+            ScanEvent.qr_code_id == qr.id, ScanEvent.is_bot.is_(False), ScanEvent.outcome == "ok"
         )
     ).one()
     return {**data, **_meta(retention), "total_scans": total, "last_scan_at": last_scan,

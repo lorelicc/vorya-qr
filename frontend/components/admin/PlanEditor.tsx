@@ -41,6 +41,13 @@ export function PlanEditor({
           remove_branding: form.get("remove_branding") === "on",
           stats_retention_days: parseLimit(form.get("stats_retention_days")),
           max_style_presets: parseLimit(form.get("max_style_presets")),
+          max_aliases_per_link: parseLimit(form.get("max_aliases_per_link")),
+          max_bulk_rows: Number(form.get("max_bulk_rows") ?? 0),
+          custom_back_half: form.get("custom_back_half") === "on",
+          link_rules: form.get("link_rules") === "on",
+          utm_templates: form.get("utm_templates") === "on",
+          version_history: form.get("version_history") === "on",
+          menu_type: form.get("menu_type") === "on",
         },
       });
       onSaved(saved);

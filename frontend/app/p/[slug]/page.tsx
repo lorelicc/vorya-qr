@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { PageRenderer } from "@/components/page/PageRenderer";
 import type { PublicPage } from "@/lib/page-types";
@@ -12,7 +13,9 @@ const apiBase = () => process.env.API_INTERNAL_URL ?? "http://127.0.0.1:8000";
 
 async function load(slug: string): Promise<PublicPage | null> {
   if (!/^[A-Za-z0-9]{7}$/.test(slug)) return null;
+  const jar = await cookies(); // unlock cookie of password-protected pages
   const response = await fetch(`${apiBase()}/api/public/pages/${slug}`, {
+    headers: { Cookie: jar.toString() },
     cache: "no-store",
     signal: AbortSignal.timeout(8000),
   });

@@ -1,7 +1,8 @@
 "use client";
-import { Link2, Plus } from "lucide-react";
-import { useState, type FormEvent, type ReactNode } from "react";
-import { Button, useToast } from "@/components/ui";
+import { ChevronDown, Link2, Plus } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { Button, ButtonLink, useToast } from "@/components/ui";
+import { UtmBuilder } from "./UtmBuilder";
 import { api, errorMessage, fieldErrors } from "@/lib/api";
 import { useCompany } from "@/lib/company-context";
 import type { QrCode } from "@/lib/types";
@@ -11,19 +12,14 @@ import styles from "./QuickLinkBar.module.css";
  * Paste a URL → short link in one tap, copied to the clipboard. `advanced` (back-half, UTM,
  * rules) opens below once the link exists.
  */
-export function QuickLinkBar({
-  onCreated,
-  advanced,
-}: {
-  onCreated: (link: QrCode) => void;
-  advanced?: (link: QrCode) => ReactNode;
-}) {
-  const { api: base } = useCompany();
+export function QuickLinkBar({ onCreated }: { onCreated: (link: QrCode) => void }) {
+  const { api: base, app } = useCompany();
   const toast = useToast();
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [last, setLast] = useState<QrCode | null>(null);
+  const [open, setOpen] = useState(false);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -81,7 +77,47 @@ export function QuickLinkBar({
           {error}
         </p>
       )}
-      {last && advanced?.(last)}
+      {last && (
+        <div className={styles.advanced}>
+          <button
+            type="button"
+            className={styles.toggle}
+            aria-expanded={open}
+            aria-controls="quick-advanced"
+            onClick={() => setOpen((v) => !v)}
+          >
+            Opzioni avanzate per questo link <ChevronDown size={14} aria-hidden="true" />
+          </button>
+          {open && (
+            <div id="quick-advanced" className={styles.panel}>
+              <p className="muted">
+                Link creato: <code>{last.root_url}</code>. Il link e le sue regole si modificano
+                anche dalla pagina del link.
+              </p>
+              <UtmBuilder
+                url={last.target_url}
+                canTemplate={false}
+                onApply={async (finalUrl) => {
+                  try {
+                    const updated = await api<QrCode>(`${base}/qr-codes/${last.id}`, "PUT", {
+                      name: last.name,
+                      target_url: finalUrl,
+                    });
+                    setLast(updated);
+                    onCreated(updated);
+                    toast.show("URL con UTM salvato.");
+                  } catch (err) {
+                    toast.show(errorMessage(err), "error");
+                  }
+                }}
+              />
+              <ButtonLink href={`${app}/qr/${last.id}`} variant="secondary">
+                Back-half e regole
+              </ButtonLink>
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 }

@@ -54,7 +54,7 @@ def label_for(block, item: str) -> str | None:
 
 @router.post("/{slug}/events", status_code=204)
 def page_event(slug: str, body: ClickIn, request: Request):
-    page, _, _, _ = load_page(slug)
+    page, _, _, _ = load_page(slug, request.cookies)
     block = next((b for b in page.blocks if b.id == body.block_id), None)
     label = label_for(block, body.item) if block else None
     info = classify(request.headers.get("user-agent", ""))

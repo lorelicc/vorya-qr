@@ -24,7 +24,11 @@ def scan_counts(session: Session, qr_ids: list[int]) -> dict[int, int]:
         return {}
     rows = session.execute(
         select(ScanEvent.qr_code_id, func.count())
-        .where(ScanEvent.qr_code_id.in_(qr_ids), ScanEvent.is_bot.is_(False))
+        .where(
+            ScanEvent.qr_code_id.in_(qr_ids),
+            ScanEvent.is_bot.is_(False),
+            ScanEvent.outcome == "ok",
+        )
         .group_by(ScanEvent.qr_code_id)
     ).all()
     return dict(rows)
@@ -44,7 +48,8 @@ def sparklines(session: Session, qr_ids: list[int], days: int = 7) -> dict[int, 
     rows = session.execute(
         select(ScanEvent.qr_code_id, day, func.count())
         .where(ScanEvent.qr_code_id.in_(qr_ids), ScanEvent.is_bot.is_(False),
-               ScanEvent.scanned_at >= start, ScanEvent.scanned_at < end)
+               ScanEvent.outcome == "ok", ScanEvent.scanned_at >= start,
+               ScanEvent.scanned_at < end)
         .group_by(ScanEvent.qr_code_id, day)
     ).all()  # fmt: skip
     out = {qr_id: [0] * days for qr_id in qr_ids}
@@ -204,6 +209,10 @@ def insert_qr(session: Session, ctx, payload: QrCreate) -> QrCode:
         )  # fmt: skip
         if kind == "dynamic":
             qr.slug = new_slug()
+            from ..links.service import slug_taken_by_alias
+
+            while slug_taken_by_alias(session, qr.slug):  # a back-half already uses it
+                qr.slug = new_slug()
         savepoint = session.begin_nested()
         session.add(qr)
         try:

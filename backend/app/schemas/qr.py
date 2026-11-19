@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Literal
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -26,6 +26,10 @@ def valid_url(value: str) -> str:
     if parts.hostname == short.hostname and (path.startswith("r/") or (path and "/" not in path)):
         # /r/{slug} and, from 0.3, /{slug}: a short link pointing to a short link loops.
         raise ValueError("La destinazione non può essere un altro link breve Vorya QR")
+    keys = [k.lower() for k, _ in parse_qsl(parts.query, keep_blank_values=True)]
+    duplicate = next((k for k in keys if keys.count(k) > 1), None)
+    if duplicate:  # 0.3 UTM builder: never two values for the same parameter
+        raise ValueError(f"Il parametro «{duplicate}» compare più volte nell'URL")
     return value
 
 

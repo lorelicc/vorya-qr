@@ -40,11 +40,12 @@ from app.migrate import migrate  # noqa: E402
 
 ORIGIN = "http://testserver"
 PASSWORD = "una-password-sicura-123"
-MUTABLE = (
-    "abuse_reports, blocked_domains, page_events, daily_salts, style_presets, files, "
-    "company_transfers, scan_events, qr_codes, companies, audit_logs, "
-    "registrations, password_resets, auth_sessions, auth_rate_limits, mail_logs, workspaces, users"
-)
+MUTABLE = ", ".join([
+    "utm_templates", "link_aliases", "abuse_reports", "blocked_domains", "page_events",
+    "daily_salts", "style_presets", "files", "company_transfers", "scan_events", "qr_codes",
+    "companies", "audit_logs", "registrations", "password_resets", "auth_sessions",
+    "auth_rate_limits", "mail_logs", "workspaces", "users",
+])  # fmt: skip
 PLAN_SNAPSHOT: list[dict] = []  # plans as seeded by the migrations, restored before each test
 
 

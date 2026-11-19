@@ -29,9 +29,13 @@ class Scope:
         self.start, self.end = bounds(first, last)
         self.qr_id, self.company_id = qr_id, company_id
 
-    def scans(self, *extra, bots=False):
+    def scans(self, *extra, bots=False, blocked=False):
         where = [ScanEvent.scanned_at >= self.start, ScanEvent.scanned_at < self.end,
                  ScanEvent.is_bot.is_(bots), *extra]  # fmt: skip
+        if not bots and not blocked:  # 0.3: scans stopped by a password/expiry are apart
+            where.append(ScanEvent.outcome == "ok")
+        elif blocked:
+            where.append(ScanEvent.outcome != "ok")
         if self.qr_id is not None:
             where.append(ScanEvent.qr_code_id == self.qr_id)
         else:
@@ -116,6 +120,7 @@ def top_clicks(session: Session, scope: Scope) -> list[dict]:
 def summary(session: Session, scope: Scope) -> dict:
     daily = series(session, scope)
     bots = session.scalar(select(func.count()).where(*scope.scans(bots=True)))
+    blocked = session.scalar(select(func.count()).where(*scope.scans(blocked=True)))
     return {
         "range": {
             "first": scope.first.isoformat(),
@@ -127,6 +132,7 @@ def summary(session: Session, scope: Scope) -> dict:
         "unique_estimate": sum(d["unique"] for d in daily),
         "clicks": sum(d["clicks"] for d in daily),
         "bot_scans": bots,
+        "blocked_scans": blocked,  # stopped by a password or an expired link
         "daily": daily,
         "devices": breakdown(session, scope, ScanEvent.device_type, DEVICE_LABELS),
         "os": breakdown(session, scope, ScanEvent.os),

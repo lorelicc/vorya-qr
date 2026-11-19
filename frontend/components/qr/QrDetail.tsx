@@ -6,10 +6,12 @@ import { useEffect, useState } from "react";
 import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
 import type { PageDoc, PageFiles } from "@/lib/page-types";
-import type { QrCode } from "@/lib/types";
+import type { AccountPlan, QrCode } from "@/lib/types";
 import type { UploadedFile } from "@/lib/upload";
 import { toPageFile } from "./pages/shared";
 import { DownloadPanel } from "./DownloadPanel";
+import { AliasesCard } from "@/components/links/AliasesCard";
+import { RulesCard } from "@/components/links/RulesCard";
 import { GenerateQrCard } from "@/components/links/GenerateQrCard";
 import { DynamicControls } from "./DynamicControls";
 import { KindBadge, StatusBadge } from "./QrBadges";
@@ -25,6 +27,12 @@ export function QrDetail({ id }: { id: number }) {
   const [files, setFiles] = useState<PageFiles | null>(null);
   const [error, setError] = useState("");
   const [version, setVersion] = useState(0);
+  const [plan, setPlan] = useState<AccountPlan | null>(null);
+  useEffect(() => {
+    api<AccountPlan>("account/plan")
+      .then(setPlan)
+      .catch(() => undefined);
+  }, []);
   // The onboarding sample lands here with ?created=1: celebrate once, then clean the URL.
   const params = useSearchParams();
   const [celebrate] = useState(() => params.has("created"));
@@ -89,6 +97,12 @@ export function QrDetail({ id }: { id: number }) {
           <GenerateQrCard qr={qr} onDone={setQr} />
         )}
       </div>
+      {qr.kind === "dynamic" && (
+        <div className={styles.panels}>
+          <AliasesCard qr={qr} plan={plan} />
+          <RulesCard qr={qr} plan={plan} />
+        </div>
+      )}
       <QrEditor
         key={qr.updated_at}
         initial={qr}

@@ -109,3 +109,33 @@ export function Suspended() {
     </Illustration>
   );
 }
+
+/** 0.3: password-protected link. */
+export function PasswordGate() {
+  return (
+    <Illustration>
+      <Blob x={118} y={98} r={60} tone="lilac" />
+      <Blob x={190} y={60} r={22} tone="mint" slow />
+      <g className={art.float}>
+        <Paper x={70} y={52} w={100} h={84} />
+        {[0, 1, 2, 3].map((i) => (
+          <circle
+            key={i}
+            cx={94 + i * 17}
+            cy={96}
+            r={6}
+            fill="var(--art-dark)"
+            className={art.pulse}
+            style={{ animationDelay: `${i * 180}ms` }}
+          />
+        ))}
+        <rect x={86} y={68} width={68} height={8} rx={4} fill="var(--art-line)" />
+        <rect x={86} y={112} width={40} height={8} rx={4} fill="var(--art-mint)" />
+      </g>
+      <Badge x={164} y={128} tone="lilac">
+        {LOCK}
+      </Badge>
+      <Stroke d="M40 64c10-14 24-18 36-12" />
+    </Illustration>
+  );
+}

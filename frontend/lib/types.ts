@@ -63,6 +63,13 @@ export type PlanFeatures = {
   remove_branding: boolean;
   stats_retention_days: number | null;
   max_style_presets: number | null;
+  custom_back_half: boolean;
+  max_aliases_per_link: number | null;
+  link_rules: boolean;
+  utm_templates: boolean;
+  max_bulk_rows: number;
+  version_history: boolean;
+  menu_type: boolean;
 };
 
 export type AccountPlan = {

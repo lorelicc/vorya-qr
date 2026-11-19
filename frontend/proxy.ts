@@ -15,6 +15,8 @@ async function shortLink(request: NextRequest, slug: string) {
       method: request.method === "HEAD" ? "HEAD" : "GET",
       headers: {
         "User-Agent": request.headers.get("user-agent") ?? "",
+        // 0.3: the unlock cookie of password-protected links.
+        Cookie: request.headers.get("cookie") ?? "",
         Referer: request.headers.get("referer") ?? "",
         "X-Vorya-Client-IP":
           request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() ?? "",
@@ -23,7 +25,16 @@ async function shortLink(request: NextRequest, slug: string) {
       cache: "no-store",
       signal: AbortSignal.timeout(8000),
     });
-    if (response.headers.get("x-vorya-destination") === "page") {
+    const destination = response.headers.get("x-vorya-destination");
+    if (destination === "password") {
+      const canonical = response.headers.get("x-vorya-slug") ?? slug;
+      const gate = NextResponse.rewrite(
+        new URL(`/p/${encodeURIComponent(canonical)}/unlock`, request.url),
+      );
+      gate.headers.set("Cache-Control", "no-store");
+      return gate;
+    }
+    if (destination === "page") {
       // Aliases resolve to the canonical slug: the page is always rendered from it.
       const canonical = response.headers.get("x-vorya-slug") ?? slug;
       const rewritten = NextResponse.rewrite(

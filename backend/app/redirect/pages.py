@@ -36,3 +36,28 @@ p{margin:0;color:var(--muted);font-size:15px}
 lo ha fornito.</p>
 <p class="report"><a href="/report">Segnala un QR sospetto</a></p>
 </main></body></html>"""
+
+_INACTIVE_ART = INACTIVE_HTML[
+    INACTIVE_HTML.index('<svg class="art"') : INACTIVE_HTML.index("</svg>") + 6
+]
+_EXPIRED_ART = """<svg class="art" viewBox="0 0 240 150" width="200" height="125" aria-hidden="true">
+<path fill="var(--peach)" d="M64 82c0-30 24-48 56-48s58 16 58 44-28 46-58 46-56-14-56-42Z"/>
+<circle cx="120" cy="70" r="38" fill="#fff" stroke="var(--line)" stroke-width="1.5"/>
+<path d="M120 70V48M120 70l16 10" stroke="var(--g3)" stroke-width="5" stroke-linecap="round" fill="none"/>
+<circle cx="120" cy="70" r="4" fill="var(--ink)"/>
+<circle cx="154" cy="102" r="15" fill="var(--g3)"/><path d="M148 102h12" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+</svg>"""
+
+# 0.3: a link past its expiry date or its maximum number of scans (no fallback URL set).
+EXPIRED_HTML = (
+    INACTIVE_HTML.replace(
+        "<title>QR non attivo | Vorya QR</title>", "<title>Link scaduto | Vorya QR</title>"
+    )
+    .replace("--line:#d3e7dc}", "--line:#d3e7dc;--peach:#ffd7ba}")
+    .replace(_INACTIVE_ART, _EXPIRED_ART)
+    .replace("<h1>QR non attivo</h1>", "<h1>Link scaduto</h1>")
+    .replace(
+        "<p>Questo codice QR non è al momento attivo. Se pensi che sia un errore, contatta chi te\nlo ha fornito.</p>",
+        "<p>Questo link o QR è scaduto e non porta più a nessuna pagina. Per informazioni contatta chi te lo ha fornito.</p>",
+    )
+)

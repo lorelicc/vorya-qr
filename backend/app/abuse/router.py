@@ -14,7 +14,7 @@ from ..auth.service import audit, client_ip, rate_limit
 from ..core.database import get_session
 from ..core.errors import CodedError
 from ..core.security import now
-from ..models import AbuseReport, BlockedDomain, Company, QrCode, Workspace
+from ..models import AbuseReport, BlockedDomain, Company, QrCode, ReservedWord, Workspace
 from .checks import normalise_domain
 
 public = APIRouter(prefix="/api/public/reports", tags=["public"])
@@ -201,4 +201,45 @@ def remove_domain(domain_id: int, auth: Auth = Depends(admin_writer),
         raise HTTPException(404, "Dominio non trovato.")
     audit(session, auth.user, "admin.domain_unblocked", None, domain=domain.domain)
     session.delete(domain)
+    session.commit()
+
+
+# ---------------------------------------------------------------- 0.3 reserved back-halves
+
+
+class WordIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    word: str = Field(min_length=2, max_length=50)
+
+
+@admin.get("/reserved-words")
+def list_words(_: Auth = Depends(admin_reader), session: Session = Depends(get_session)):
+    rows = session.scalars(select(ReservedWord).order_by(ReservedWord.kind, ReservedWord.word))
+    return [{"word": r.word, "kind": r.kind, "created_at": r.created_at} for r in rows]
+
+
+@admin.post("/reserved-words", status_code=201)
+def add_word(body: WordIn, auth: Auth = Depends(admin_writer),
+             session: Session = Depends(get_session)):  # fmt: skip
+    word = body.word.strip().lower()
+    if not re.fullmatch(r"[a-z0-9-]+", word):
+        raise CodedError(422, "Usa solo lettere minuscole, numeri e trattini.", "invalid")
+    if session.get(ReservedWord, word):
+        raise CodedError(409, "Parola già presente.", "duplicate")
+    session.add(ReservedWord(word=word, kind="blocked", created_by=auth.user.id))
+    audit(session, auth.user, "admin.word_reserved", None, word=word)
+    session.commit()
+    return {"word": word, "kind": "blocked"}
+
+
+@admin.delete("/reserved-words/{word}", status_code=204)
+def remove_word(word: str, auth: Auth = Depends(admin_writer),
+                session: Session = Depends(get_session)):  # fmt: skip
+    row = session.get(ReservedWord, word)
+    if row is None:
+        raise HTTPException(404, "Parola non trovata.")
+    if row.kind == "route":  # app routes are fixed: removing one would break /{slug}
+        raise CodedError(409, "Le route dell'app non si possono rimuovere.", "fixed")
+    audit(session, auth.user, "admin.word_released", None, word=word)
+    session.delete(row)
     session.commit()
