@@ -1,0 +1,30 @@
+.promo {
+  padding: var(--space-5) var(--space-4);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(var(--gradient-overlay), var(--gradient-overlay)), var(--gradient-vorya);
+  color: var(--vorya-white);
+}
+
+.promo h3 {
+  font-size: var(--fs-h3);
+  line-height: var(--lh-tight);
+}
+
+.body {
+  margin-top: var(--space-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-relaxed);
+}
+
+.footer {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--vorya-green-middle);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+}
+
+.footer a {
+  color: var(--vorya-white);
+}
