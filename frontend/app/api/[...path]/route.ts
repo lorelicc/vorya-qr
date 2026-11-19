@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { backendPath, isAllowed } from "@/lib/allowlist";
 
-const MAX_BODY = 64 * 1024;
+const MAX_BODY = 512 * 1024; // JSON bodies (page blocks included)
+const MAX_UPLOAD = 60 * 1024 * 1024; // multipart uploads; the backend enforces the plan limit
+const UPLOAD = /^companies\/\d+\/(files|logo)$/;
 const PASS_HEADERS = [
   "content-type",
   "content-disposition",
@@ -26,8 +28,15 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
   if (!isAllowed(key, request.method)) {
     return NextResponse.json({ detail: "Risorsa non trovata." }, { status: 404 });
   }
-  let body: string | undefined;
-  if (request.method === "POST" || request.method === "PUT") {
+  const upload = request.method === "POST" && UPLOAD.test(key);
+  let body: string | ReadableStream<Uint8Array> | undefined;
+  if (upload) {
+    const length = Number(request.headers.get("content-length") ?? "0");
+    if (!length || length > MAX_UPLOAD) {
+      return NextResponse.json({ detail: "Il file supera il limite consentito." }, { status: 413 });
+    }
+    body = request.body ?? undefined; // streamed, never buffered in memory
+  } else if (request.method === "POST" || request.method === "PUT") {
     body = await request.text();
     if (body.length > MAX_BODY) {
       return NextResponse.json(
@@ -40,7 +49,8 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
     const response = await fetch(`${apiBase()}${backendPath(key)}${request.nextUrl.search}`, {
       method: request.method,
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": upload ? (request.headers.get("content-type") ?? "") : "application/json",
+        ...(upload ? { "Content-Length": request.headers.get("content-length") ?? "" } : {}),
         Cookie: request.headers.get("cookie") ?? "",
         Origin: request.headers.get("origin") ?? "",
         "X-CSRF-Token": request.headers.get("x-csrf-token") ?? "",
@@ -51,7 +61,8 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
       body,
       cache: "no-store",
       redirect: "manual",
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(upload ? 180000 : 30000),
+      ...(upload ? { duplex: "half" } : {}),
     });
     const headers = new Headers({ "Cache-Control": "no-store, private" });
     for (const name of PASS_HEADERS) {

@@ -4,6 +4,7 @@ import { UsageMeter } from "@/components/qr/UsageMeter";
 import { ButtonLink, Card } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import { daysLeft, formatDate } from "@/lib/format";
+import { formatBytes } from "@/lib/upload";
 import type { AccountPlan } from "@/lib/types";
 import styles from "./PlanOverview.module.css";
 
@@ -49,6 +50,8 @@ export function PlanOverview() {
         <div className={styles.meters}>
           <UsageMeter label="QR dinamici" usage={plan.usage.dynamic} />
           <UsageMeter label="QR statici" usage={plan.usage.static} />
+          <UsageMeter label="Aziende" usage={plan.usage.companies} />
+          <UsageMeter label="Spazio file" usage={plan.usage.storage} format={formatBytes} />
         </div>
       </Card>
     </div>

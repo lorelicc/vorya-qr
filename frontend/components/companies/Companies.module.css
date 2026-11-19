@@ -187,3 +187,16 @@
     align-items: stretch;
   }
 }
+
+.logoRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+@media (max-width: 639px) {
+  .logoRow {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}

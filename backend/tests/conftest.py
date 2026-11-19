@@ -7,6 +7,7 @@ every test then starts from truncated tables and the seeded plans.
 import json
 import os
 import re
+import shutil
 import tempfile
 from pathlib import Path
 
@@ -17,6 +18,7 @@ if not TEST_URL.rsplit("/", 1)[-1].endswith("_test"):
     raise RuntimeError("Imposta TEST_DATABASE_URL verso un database dedicato che termina con _test")
 
 MAIL_DIR = tempfile.mkdtemp(prefix="vorya-qr-mail-")
+STORAGE_DIR = tempfile.mkdtemp(prefix="vorya-qr-files-")
 os.environ.update(
     DATABASE_URL=TEST_URL,
     APP_ENV="test",
@@ -25,6 +27,8 @@ os.environ.update(
     PUBLIC_BASE_URL="http://testserver",
     SHORT_LINK_BASE_URL="http://testserver",
     SUPPORT_EMAIL="supporto@example.com",
+    STORAGE_DRIVER="local",
+    STORAGE_LOCAL_PATH=STORAGE_DIR,
 )
 
 from fastapi.testclient import TestClient  # noqa: E402
@@ -37,14 +41,10 @@ from app.migrate import migrate  # noqa: E402
 ORIGIN = "http://testserver"
 PASSWORD = "una-password-sicura-123"
 MUTABLE = (
-    "company_transfers, scan_events, qr_codes, companies, audit_logs, registrations, "
+    "files, company_transfers, scan_events, qr_codes, companies, audit_logs, registrations, "
     "password_resets, auth_sessions, auth_rate_limits, mail_logs, workspaces, users"
 )
-SEED_PLANS = {
-    "start": (10, 3),
-    "pro": (100, 25),
-    "plus": (None, 250),
-}
+PLAN_SNAPSHOT: list[dict] = []  # plans as seeded by the migrations, restored before each test
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -53,6 +53,16 @@ def database():
         connection.execute(text("DROP SCHEMA public CASCADE"))
         connection.execute(text("CREATE SCHEMA public"))
     migrate(TEST_URL)
+    with get_engine().connect() as connection:
+        PLAN_SNAPSHOT[:] = [
+            dict(row._mapping)
+            for row in connection.execute(
+                text(
+                    "SELECT id, name, max_qr_static, max_dynamic_qr, max_companies, features "
+                    "FROM plans"
+                )
+            )
+        ]
     yield
 
 
@@ -60,13 +70,18 @@ def database():
 def clean(database):
     with get_engine().begin() as connection:
         connection.execute(text(f"TRUNCATE {MUTABLE} RESTART IDENTITY CASCADE"))
-        for plan_id, (static, dynamic) in SEED_PLANS.items():
+        for plan in PLAN_SNAPSHOT:
             connection.execute(
-                text("UPDATE plans SET max_qr_static=:s, max_dynamic_qr=:d WHERE id=:id"),
-                {"s": static, "d": dynamic, "id": plan_id},
+                text(
+                    "UPDATE plans SET name=:name, max_qr_static=:max_qr_static, "
+                    "max_dynamic_qr=:max_dynamic_qr, max_companies=:max_companies, "
+                    "features=CAST(:features AS json) WHERE id=:id"
+                ),
+                {**plan, "features": json.dumps(plan["features"])},
             )
     for file in Path(MAIL_DIR).glob("*.json"):
         file.unlink()
+    shutil.rmtree(Path(STORAGE_DIR) / "files", ignore_errors=True)
     yield
 
 

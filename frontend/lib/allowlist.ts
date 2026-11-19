@@ -24,6 +24,10 @@ const rules: Rule[] = [
   r("PUT", C),
   r("DELETE", C),
   r("POST", `${C}/(restore|transfer)`),
+  r("GET", `${C}/files`),
+  r("POST", `${C}/(files|logo)`),
+  r("DELETE", `${C}/logo`),
+  r("DELETE", `${C}/files/[0-9a-f-]{36}`),
   // QR codes of a company
   r("GET", QR),
   r("POST", QR),

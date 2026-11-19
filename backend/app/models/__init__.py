@@ -1,4 +1,5 @@
 from .company import Company, CompanyTransfer
+from .file import StoredFile
 from .identity import ROLES, AuditLog, AuthRateLimit, AuthSession, PasswordReset, Registration, User
 from .qr import QrCode, ScanEvent
 from .tenancy import MailLog, Plan, PlatformSetting, Workspace
@@ -17,6 +18,7 @@ __all__ = [
     "QrCode",
     "Registration",
     "ScanEvent",
+    "StoredFile",
     "User",
     "Workspace",
 ]

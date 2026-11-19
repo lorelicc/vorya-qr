@@ -19,6 +19,8 @@ from .core.errors import install_handlers
 from .qr.router import router as qr_router
 from .redirect.router import router as redirect_router
 from .stats.router import router as stats_router
+from .storage.public import router as files_public_router
+from .storage.router import router as files_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -41,6 +43,8 @@ def create_app() -> FastAPI:
         companies_router,
         transfers_router,
         stats_router,
+        files_router,
+        files_public_router,
         qr_router,
         admin_router,
         redirect_router,

@@ -3,7 +3,15 @@ import type { UsageItem } from "@/lib/types";
 import styles from "./UsageMeter.module.css";
 
 /** Plan usage for one QR kind. Over-limit (after a downgrade) is explicit, nothing is disabled. */
-export function UsageMeter({ label, usage }: { label: string; usage: UsageItem }) {
+export function UsageMeter({
+  label,
+  usage,
+  format = (value: number) => String(value),
+}: {
+  label: string;
+  usage: UsageItem;
+  format?: (value: number) => string;
+}) {
   const { used, limit, over_limit: over } = usage;
   const percent = limit === null ? 0 : limit === 0 ? 100 : Math.min(100, (used / limit) * 100);
   const tone = over ? styles.over : !usage.can_create ? styles.full : "";
@@ -12,7 +20,7 @@ export function UsageMeter({ label, usage }: { label: string; usage: UsageItem }
       <div className={styles.top}>
         <span>{label}</span>
         <strong>
-          {used} / {limitLabel(limit)}
+          {format(used)} / {limit === null ? limitLabel(null) : format(limit)}
         </strong>
       </div>
       {limit !== null && (
@@ -30,7 +38,7 @@ export function UsageMeter({ label, usage }: { label: string; usage: UsageItem }
       {over && (
         <p className={styles.note}>
           Oltre il limite del piano: i QR esistenti restano attivi, ma non puoi crearne di nuovi
-          finché non ne elimini {used - (limit ?? 0)}.
+          finché non rientri nel limite.
         </p>
       )}
       {!over && !usage.can_create && <p className={styles.note}>Limite raggiunto.</p>}

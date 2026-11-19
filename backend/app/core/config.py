@@ -42,6 +42,16 @@ class Settings(BaseSettings):
     smtp_from_name: str = "Vorya QR"
     smtp_timeout: int = Field(default=10, ge=1, le=30)
 
+    # File storage: "local" (Docker volume, default) or "s3" (any S3-compatible service).
+    storage_driver: Literal["local", "s3"] = "local"
+    storage_local_path: str = "/data/uploads"
+    storage_s3_endpoint: str = ""
+    storage_s3_region: str = ""
+    storage_s3_bucket: str = ""
+    storage_s3_prefix: str = "vorya-qr/"
+    storage_s3_access_key: SecretStr = SecretStr("")
+    storage_s3_secret_key: SecretStr = SecretStr("")
+
     model_config = SettingsConfigDict(env_file="../.env", extra="ignore", hide_input_in_errors=True)
 
     @field_validator("public_base_url")

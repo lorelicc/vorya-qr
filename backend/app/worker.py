@@ -11,7 +11,7 @@ from collections.abc import Callable
 from sqlalchemy import delete, select, text, update
 from sqlalchemy.orm import Session
 
-from .core.database import session_factory
+from .core.database import get_engine, session_factory
 from .core.security import now
 from .models import AuthSession, Company, CompanyTransfer, PasswordReset, QrCode, ScanEvent
 
@@ -68,6 +68,34 @@ def purge_companies(session: Session) -> int:
 
 
 @job
+def purge_files(session: Session) -> int:
+    """Deletes the bytes of files removed 30+ days ago (and of QR codes deleted 30+ days ago)."""
+    from .models import StoredFile
+    from .storage.backends import get_storage
+    from .storage.usage import mark_files_of_deleted_qr
+
+    mark_files_of_deleted_qr(session)
+    files = list(
+        session.scalars(
+            select(StoredFile)
+            .where(
+                StoredFile.deleted_at.is_not(None),
+                StoredFile.purge_after <= now(),
+                StoredFile.purged_at.is_(None),
+            )
+            .with_for_update(skip_locked=True)
+            .limit(200)
+        )
+    )
+    storage = get_storage()
+    for file in files:
+        for variant in file.variants.values():
+            storage.delete(variant["key"])
+        file.purged_at = now()
+    return len(files)
+
+
+@job
 def cleanup_tokens(session: Session) -> int:
     a = session.execute(delete(AuthSession).where(AuthSession.expires_at <= now())).rowcount
     b = session.execute(delete(PasswordReset).where(PasswordReset.expires_at <= now())).rowcount
@@ -75,23 +103,24 @@ def cleanup_tokens(session: Session) -> int:
 
 
 def run_once() -> dict[str, int]:
+    """Runs every job once. The advisory lock lives on its own connection: a Session may
+    switch pooled connections between commits, which would leave a session lock dangling."""
     results: dict[str, int] = {}
-    with session_factory()() as session:
-        if not session.execute(
-            text("SELECT pg_try_advisory_lock(:k)"), {"k": WORKER_LOCK}
-        ).scalar():
+    with get_engine().connect() as lock:
+        if not lock.execute(text("SELECT pg_try_advisory_lock(:k)"), {"k": WORKER_LOCK}).scalar():
             return results
         try:
-            for fn in JOBS:
-                try:
-                    results[fn.__name__] = fn(session)
-                    session.commit()
-                except Exception as exc:  # noqa: BLE001 - one failing job must not stop the others
-                    session.rollback()
-                    log.warning("Job %s failed (%s)", fn.__name__, type(exc).__name__)
+            with session_factory()() as session:
+                for fn in JOBS:
+                    try:
+                        results[fn.__name__] = fn(session)
+                        session.commit()
+                    except Exception as exc:  # noqa: BLE001 - one failing job must not stop others
+                        session.rollback()
+                        log.warning("Job %s failed (%s)", fn.__name__, type(exc).__name__)
         finally:
-            session.execute(text("SELECT pg_advisory_unlock(:k)"), {"k": WORKER_LOCK})
-            session.commit()
+            lock.execute(text("SELECT pg_advisory_unlock(:k)"), {"k": WORKER_LOCK})
+            lock.commit()
     return results
 
 
