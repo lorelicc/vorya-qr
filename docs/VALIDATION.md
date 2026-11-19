@@ -87,8 +87,8 @@ psql -U vorya_qr -d vorya_qr -c "UPDATE workspaces SET trial_ends_at = now() - i
 
 | # | Verifica | Dove | Atteso | Esito |
 | --- | --- | --- | --- | --- |
-| 7.1 | Il cliente ricarica la dashboard | PC | "Prova terminata" con "Il periodo di prova è terminato, contattaci per attivare un piano" e il pulsante email verso `SUPPORT_EMAIL` | |
-| 7.2 | Scansiona un QR dinamico del cliente | iPhone | **Il redirect funziona ancora** e la scansione viene registrata | |
+| 7.1 | Il cliente ricarica la dashboard | PC | "Prova terminata" con il pulsante «Scegli un piano» (dalla 0.3: porta a `/account/plan`) | |
+| 7.2 | Scansiona un QR dinamico del cliente | iPhone | **Il redirect funziona ancora** (per 30 giorni dalla scadenza, poi «QR non attivo») e la scansione viene registrata | |
 | 7.3 | L'admin assegna un piano | PC | Il cliente torna alla dashboard | |
 
 ## 8. Backup
@@ -169,3 +169,66 @@ Crea e stampa (PDF a 3 cm di lato) questi QR, poi scansionali con la Fotocamera 
 | 14.6 | Carica un PDF di 20 MB su un account Pro | PC | Barra di avanzamento reale e upload completato (nessun errore 413 da CloudPanel) | |
 | 14.7 | Trascina un file sulla dropzone | PC | L'area reagisce al trascinamento; un file SVG o EXE viene rifiutato con un messaggio chiaro | |
 | 14.8 | Backup del volume dei file ([VPS.md](../deploy/VPS.md#backup-dei-file-caricati-02)) | VPS | Archivio `.tgz` creato | |
+
+---
+
+# Verifiche della 0.3
+
+Con **un iPhone reale** (Safari, WhatsApp e Instagram installati). Prima dell'aggiornamento annota la destinazione di un QR dinamico della 0.2 stampato.
+
+## 15. Link esistenti dopo l'aggiornamento
+
+| # | Verifica | Dove | Atteso | Esito |
+| --- | --- | --- | --- | --- |
+| 15.1 | Scansiona un QR stampato con la 0.2 | iPhone | Apre la stessa destinazione di prima | |
+| 15.2 | Apri `/r/{slug}` di quel QR da Safari | iPhone | Stessa destinazione; la scansione compare nelle statistiche | |
+| 15.3 | Account con prova già scaduta prima dell'aggiornamento | iPhone | I suoi QR continuano a funzionare per 30 giorni dal deploy | |
+
+## 16. Link breve da WhatsApp e Instagram
+
+| # | Verifica | Dove | Atteso | Esito |
+| --- | --- | --- | --- | --- |
+| 16.1 | Crea un link breve (solo link) e invialo a te stesso su WhatsApp | PC + iPhone | L'anteprima è sensata; il tap apre la destinazione | |
+| 16.2 | Incolla il link nella bio o in una storia di Instagram e aprilo dall'app | iPhone | Si apre nel browser interno senza errori e la scansione viene contata | |
+| 16.3 | Aggiungi un UTM dal costruttore e riapri il link | iPhone | La destinazione contiene i parametri UTM, senza duplicati | |
+
+## 17. QR stampato con back-half
+
+| # | Verifica | Dove | Atteso | Esito |
+| --- | --- | --- | --- | --- |
+| 17.1 | Su un link Pro aggiungi il back-half `prova-vorya`, genera il QR e stampalo (3 cm) | PC | `/prova-vorya` apre la destinazione; il QR si legge subito | |
+| 17.2 | Scansiona il QR stampato | iPhone | Apre la destinazione | |
+| 17.3 | Cambia il tipo a vCard dal pannello e riscansiona lo stesso foglio | iPhone | Si apre la vCard senza ristampare; ripristina la versione precedente e riscansiona: torna la destinazione di prima | |
+| 17.4 | Scansiona un QR **statico** | iPhone | Funziona; in dashboard compare l'avviso rosso «Questo QR è statico…» | |
+
+## 18. Password, scadenza e programmazione
+
+| # | Verifica | Dove | Atteso | Esito |
+| --- | --- | --- | --- | --- |
+| 18.1 | Imposta una password su un link e aprilo | iPhone | Pagina di sblocco con illustrazione; password errata → errore; corretta → destinazione | |
+| 18.2 | Riapri subito il link | iPhone | Si apre senza richiedere la password (cookie 24 h) | |
+| 18.3 | Scadenza fra 2 minuti con URL di ripiego, poi riapri dopo la scadenza | iPhone | Va all'URL di ripiego (senza ripiego: pagina «Link scaduto») | |
+
+## 19. Menu e carta dei vini
+
+| # | Verifica | Dove | Atteso | Esito |
+| --- | --- | --- | --- | --- |
+| 19.1 | Crea un Menu con una sezione Cucina e una Vini, allergeni e badge | iPhone | L'editor è usabile con il pollice; la pagina è veloce | |
+| 19.2 | Attiva la lingua inglese e apri la pagina | iPhone | Selettore IT/EN; le voci senza traduzione restano in italiano | |
+| 19.3 | Segna una voce «Esaurita» dal telefono | iPhone | Sulla pagina pubblica la voce risulta esaurita subito | |
+| 19.4 | Barra delle sezioni, ricerca e filtri per allergeni | iPhone | Scorrimento fluido alla sezione, ricerca nella pagina, legenda degli allergeni | |
+
+## 20. Pagamenti Stripe
+
+Prima in **modalità test** (chiavi `sk_test_`, webhook di test configurato), poi, solo dopo il via libera, in live con `STRIPE_LIVE_ALLOWED=true`.
+
+| # | Verifica | Dove | Atteso | Esito |
+| --- | --- | --- | --- | --- |
+| 20.1 | Admin → Pagamenti: collega i prezzi di test a Start/Pro/Plus (mensile e annuale) | PC | I prezzi compaiono su `/plans` con l'importo letto da Stripe | |
+| 20.2 | Da un account di prova scegli Pro: inserisci dati di fatturazione (P.IVA errata → errore, corretta → avanti) | iPhone | Si apre Stripe Checkout | |
+| 20.3 | Paga con la carta di prova `4242 4242 4242 4242` | iPhone | Pagina «Pagamento ricevuto»; piano Pro attivo; email di conferma | |
+| 20.4 | Dashboard Stripe → Developers → Webhooks | PC | Eventi consegnati con risposta 200 | |
+| 20.5 | Passa da Pro a Plus | PC | Anteprima del conguaglio, conferma, nuovi limiti subito | |
+| 20.6 | Carta `4000 0000 0000 0341` al rinnovo (o «Pay» fallita da Stripe) | PC | Banner «Pagamento non riuscito», email, accesso attivo fino alla fine della tolleranza | |
+| 20.7 | Annulla l'abbonamento dal portale clienti | PC | Piano attivo fino a fine periodo; poi dashboard bloccata con invito ai piani, QR ancora funzionanti | |
+| 20.8 | Admin → Pagamenti → Esporta CSV | PC | I pagamenti con i dati di fatturazione, apribili in Excel | |

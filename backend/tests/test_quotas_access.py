@@ -72,7 +72,7 @@ def test_trial_expired_blocks_user_api_but_not_login(client, db):
     response = client.get(f"{qrs(client)}")
     assert response.status_code == 423
     assert response.json() == {
-        "detail": "Il periodo di prova è terminato, contattaci per attivare un piano.",
+        "detail": "Il periodo di prova è terminato: scegli un piano per continuare.",
         "code": "trial_expired",
     }
     me = client.get("/api/auth/me").json()

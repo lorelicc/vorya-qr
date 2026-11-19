@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     public_base_url: str = ""
     short_link_base_url: str = ""
     public_registration_enabled: bool = True
+    # Sign-ups per IP per hour (the e2e suite creates many accounts from one address).
+    register_rate_limit: int = Field(default=10, ge=1, le=10000)
     support_email: str = "supporto@vorya.it"
 
     mail_transport: Literal["smtp", "file"] = "smtp"

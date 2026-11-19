@@ -79,7 +79,8 @@ const rules: Rule[] = [
   r("GET", "company-transfers"),
   r("POST", "company-transfers/by-token"),
   r("POST", `company-transfers/${ID}/(accept|decline|cancel)`),
-  // Billing
+  // Billing (the webhook is signature-verified by the backend; Stripe cannot send cookies)
+  r("POST", "public/stripe-webhook"),
   r("GET", "public/plans"),
   r("GET", "account/billing"),
   r("PUT", "account/billing/profile"),

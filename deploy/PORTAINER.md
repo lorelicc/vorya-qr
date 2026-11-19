@@ -1,4 +1,4 @@
-# Vorya QR 0.2: stack in Portainer
+# Vorya QR 0.3: stack in Portainer
 
 Configurazione per **Portainer CE / Docker Standalone**, con lo stesso schema di Vorya Sign: stack Git, build delle immagini sul server, CloudPanel come reverse proxy sullo stesso host. Per il sito in CloudPanel, i certificati e i backup vedere [VPS.md](VPS.md).
 
@@ -10,7 +10,7 @@ Configurazione per **Portainer CE / Docker Standalone**, con lo stesso schema di
 | Nome stack | `vorya-qr` |
 | Metodo | Repository Git |
 | Repository | `https://github.com/lorelicc/vorya-qr` |
-| Reference | `refs/heads/main` dopo il merge della PR (oppure `refs/heads/vorya-qr-v0.2` per una prova) |
+| Reference | `refs/heads/main` dopo il merge della PR (oppure `refs/heads/vorya-qr-v0.3` per una prova) |
 | **Compose path** | **`deploy/compose.portainer.yaml`** |
 
 Non incollare il file nel Web editor: le build hanno bisogno dei sorgenti `backend/` e `frontend/` del repository.
@@ -35,6 +35,9 @@ Inserirle in **Environment variables** (l'elenco completo, con segnaposto, è in
 | `POSTGRES_USER` / `POSTGRES_DB` | No | `vorya_qr` | Lasciare i default. Cambiarli dopo il primo avvio non modifica un volume esistente. |
 | `SAFE_BROWSING_API_KEY` | No (0.2) | vuoto | Chiave di Google Safe Browsing v4 per controllare le destinazioni. Vuota = controllo saltato (lo segnala il log). Vedi la nota sui termini d'uso in [docs/V02.md](../docs/V02.md). |
 | `STORAGE_DRIVER` | No (0.2) | `local` | `local` salva i file caricati nel volume `uploads_data`; `s3` su un servizio compatibile S3. |
+| `STRIPE_SECRET_KEY` | Per i pagamenti (0.3) | vuoto | Chiave segreta (`sk_test_…`/`rk_test_…` per provare, `sk_live_…` in produzione). Senza chiave i pagamenti online restano spenti e `/plans` mostra solo i piani. **Mai** committarla. I prezzi non vanno in nessuna variabile: si collegano da **Admin → Pagamenti**. |
+| `STRIPE_WEBHOOK_SECRET` | Per i pagamenti (0.3) | vuoto | Segreto di firma (`whsec_…`) dell'endpoint webhook (vedi sotto). Senza, il webhook risponde 503. |
+| `STRIPE_LIVE_ALLOWED` | No (0.3) | `false` | Con `false` le chiavi `live` sono rifiutate: serve `true` solo quando si passa davvero in produzione. |
 | `STORAGE_S3_*` | Solo con `s3` | vuoto | `ENDPOINT`, `REGION`, `BUCKET`, `PREFIX`, `ACCESS_KEY`, `SECRET_KEY`. Il bucket deve restare privato: i file passano sempre da `/f/`. |
 
 `DATABASE_URL`, `APP_ENV=production`, `MAIL_TRANSPORT=smtp`, `API_INTERNAL_URL`, `STORAGE_LOCAL_PATH` e `GEOIP_DB_PATH` sono già fissati nel Compose. Le variabili restano in Portainer e non in GitHub: chi amministra Portainer può leggerle.
@@ -86,6 +89,36 @@ Le migrazioni 0.2 sono additive, ma il codice 0.1 non conosce le aziende né le 
 2. Ripristinare il dump fatto al punto 1 ([VPS.md](VPS.md#restore)).
 3. Nello stack rimettere la reference annotata (0.1) e fare **Update the stack**. `migrate` della 0.1 trova lo schema `0001` del dump e non fa nulla.
 4. I volumi `uploads_data` e `geoip_data` possono restare: la 0.1 li ignora. QR, pagine e file creati dopo l'aggiornamento vanno persi con il rollback.
+
+## Aggiornare da 0.2 a 0.3
+
+La 0.3 aggiunge solo tabelle e colonne (migrazioni `0008`–`0013`, nessuna cancellazione): **tutti i QR e i link esistenti continuano ad aprire la stessa destinazione** e `/r/{slug}` non cambia. Gli account la cui prova era già scaduta con la 0.2 ricevono una nuova finestra di 30 giorni di redirect (non vengono spenti al deploy).
+
+1. **Backup** del database ([VPS.md](VPS.md#backup-e-restore-del-database)) e del volume dei file. Annotare la reference attuale (es. `refs/heads/vorya-qr-v0.2`).
+2. In Portainer, nello stack `vorya-qr` → **Editor**: reference `refs/heads/vorya-qr-v0.3` (o `main` dopo il merge). I pagamenti sono facoltativi: senza `STRIPE_*` tutto il resto funziona.
+3. **Update the stack** con **Re-pull image and redeploy**. Ordine atteso: `migrate` applica `0008`–`0013` ed esce con 0; ripartono `backend`, `worker` e `frontend`.
+4. Controllare: `curl --fail http://127.0.0.1:3200/api/health` deve rispondere `"version":"0.3.0"`, e un QR stampato con la 0.2 deve aprire la stessa destinazione di prima.
+5. Eseguire le sezioni 0.3 di [docs/VALIDATION.md](../docs/VALIDATION.md).
+
+### Configurare il webhook Stripe
+
+Stripe invia gli eventi (abbonamenti, pagamenti) a un endpoint pubblico dell'app.
+
+1. In Stripe → **Developers → Webhooks → Add endpoint**: URL `https://qr.vorya.it/api/public/stripe-webhook` (passa dal frontend e dal reverse proxy di CloudPanel, nessuna regola aggiuntiva).
+2. Eventi da selezionare: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`, `invoice.payment_failed`.
+3. Copiare il **Signing secret** in `STRIPE_WEBHOOK_SECRET` (Environment variables dello stack) insieme a `STRIPE_SECRET_KEY`, poi **Update the stack**. Usare chiavi e webhook **di test** finché non si è pronti: chiavi di test e segreto di test vanno insieme; le chiavi `live` sono rifiutate se `STRIPE_LIVE_ALLOWED` non è `true`.
+4. In Stripe creare i prodotti **di Vorya QR** (separati da quelli di Vorya Sign, stesso account) con i prezzi ricorrenti mensili e annuali di Start, Pro e Plus. In **Admin → Pagamenti** incollare i relativi ID `price_…` nel piano e nel ciclo giusti: importo e intervallo vengono letti da Stripe.
+5. Verifica: in Stripe → Webhooks → **Send test event**, risposta attesa `200`. Dopo un acquisto di prova (carta `4242 4242 4242 4242`) gli eventi devono risultare consegnati.
+6. Per il portale clienti (metodo di pagamento, ricevute): attivarlo in Stripe → **Settings → Billing → Customer portal**.
+
+### Rollback a 0.2
+
+Le migrazioni 0.3 sono additive, ma il codice 0.2 non conosce link brevi, alias, versioni né pagamenti: per tornare indietro si ripristina il backup.
+
+1. Fermare `frontend`, `backend` e `worker`.
+2. Ripristinare il dump fatto al punto 1 ([VPS.md](VPS.md#restore)).
+3. Nello stack rimettere la reference annotata (0.2) e fare **Update the stack**.
+4. Link brevi, alias, versioni, importazioni e abbonamenti creati dopo l'aggiornamento vanno persi con il rollback: **gli abbonamenti Stripe restano attivi** e vanno gestiti (o annullati) dal dashboard di Stripe. Per disattivare solo i pagamenti basta svuotare `STRIPE_SECRET_KEY` e fare **Update the stack**, senza tornare indietro di versione.
 
 ## Aggiornare lo stack
 

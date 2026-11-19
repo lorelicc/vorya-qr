@@ -1,4 +1,4 @@
-# Vorya QR 0.2: VPS, CloudPanel e backup
+# Vorya QR 0.3: VPS, CloudPanel e backup
 
 Percorso previsto: **stack Portainer sul Docker del VPS → sito Reverse Proxy di CloudPanel sullo stesso VPS → HTTPS con Let's Encrypt**. Lo stack si crea seguendo [PORTAINER.md](PORTAINER.md).
 
@@ -18,7 +18,7 @@ Da SSH, sul VPS:
 curl --fail http://127.0.0.1:3200/api/health
 ```
 
-Risposta attesa: `{"status":"ok","database":"connected","version":"0.2.0"}`. La porta 3200 (o quella impostata in `VORYA_QR_HTTP_PORT`) non va aperta nel firewall: è solo su loopback.
+Risposta attesa: `{"status":"ok","database":"connected","version":"0.3.0"}`. La porta 3200 (o quella impostata in `VORYA_QR_HTTP_PORT`) non va aperta nel firewall: è solo su loopback.
 
 ## 3. Sito Reverse Proxy in CloudPanel
 
@@ -43,6 +43,12 @@ curl -sI https://qr.vorya.it/r/abcdefg
 Il primo deve rispondere `200`. Il secondo deve rispondere `404` con `cache-control: no-store`: è la pagina "QR non attivo" per un link inesistente.
 
 > I link brevi `/r/{slug}` passano dallo stesso sito: non aggiungere cache di CloudPanel (Varnish o simili) sul percorso `/r/`, altrimenti i cambi di destinazione e la pausa non avrebbero effetto immediato. L'app invia sempre `Cache-Control: no-store`.
+
+## Link brevi e webhook Stripe (0.3)
+
+- I link brevi `/{slug}` (alla radice) e `/r/{slug}` passano dallo stesso sito: nessuna regola aggiuntiva e, come sopra, **nessuna cache** di CloudPanel su questi percorsi.
+- Il webhook di Stripe (`/api/public/stripe-webhook`) deve essere raggiungibile da Internet: non metterlo dietro Basic Auth, IP allowlist o cache. La sicurezza è la firma verificata dall'app. Configurazione completa in [PORTAINER.md](PORTAINER.md#configurare-il-webhook-stripe).
+- L'importazione CSV carica file di poche centinaia di KB: bastano i 60 MB già impostati per gli upload.
 
 ## Upload dei file (0.2)
 

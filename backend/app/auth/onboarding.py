@@ -53,9 +53,9 @@ def register(
     check_origin(request)
     if not get_settings().public_registration_enabled:
         raise HTTPException(403, "La registrazione pubblica non è attiva.")
-    if not rate_limit(session, "register-ip", client_ip(request), 10, 3600) or not rate_limit(
-        session, "register-email", payload.email, 3, 3600
-    ):
+    if not rate_limit(
+        session, "register-ip", client_ip(request), get_settings().register_rate_limit, 3600
+    ) or not rate_limit(session, "register-email", payload.email, 3, 3600):
         raise too_many(3600)
     user = session.scalar(select(User).where(User.email == payload.email).with_for_update())
     if user is not None and (user.email_verified_at or user.role != "company_admin"):

@@ -54,6 +54,9 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
         Cookie: request.headers.get("cookie") ?? "",
         Origin: request.headers.get("origin") ?? "",
         "X-CSRF-Token": request.headers.get("x-csrf-token") ?? "",
+        ...(key === "public/stripe-webhook"
+          ? { "Stripe-Signature": request.headers.get("stripe-signature") ?? "" }
+          : {}),
         "X-Vorya-Public-Origin": browserOrigin(request),
         "X-Vorya-Client-IP":
           request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() ?? "unknown",

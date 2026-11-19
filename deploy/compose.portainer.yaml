@@ -56,6 +56,10 @@ services:
       GEOIP_DB_PATH: /data/geoip/dbip-city-lite.mmdb
       # 0.2: Google Safe Browsing key; empty = check skipped (logged).
       SAFE_BROWSING_API_KEY: ${SAFE_BROWSING_API_KEY:-}
+      # 0.3: Stripe. Only keys; plan prices are linked from /admin/billing (never in env or code).
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_LIVE_ALLOWED: ${STRIPE_LIVE_ALLOWED:-false}
     networks: [data]
     depends_on:
       db:

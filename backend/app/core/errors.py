@@ -32,7 +32,7 @@ class AccessBlocked(Exception):
 
 
 ACCESS_MESSAGES = {
-    "trial_expired": "Il periodo di prova è terminato, contattaci per attivare un piano.",
+    "trial_expired": "Il periodo di prova è terminato: scegli un piano per continuare.",
     "payment_blocked": "Abbonamento non attivo: scegli un piano per riprendere.",
     "suspended": "Account sospeso. Contattaci per maggiori informazioni.",
 }

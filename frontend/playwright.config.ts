@@ -57,6 +57,7 @@ export default defineConfig({
         STORAGE_LOCAL_PATH: path.resolve(here, ".e2e-uploads"),
         GEOIP_DB_PATH: path.resolve(here, ".e2e-uploads/missing.mmdb"),
         // 0.3 billing: a local fake of the Stripe API (e2e/fake-stripe.mjs), never the real one.
+        REGISTER_RATE_LIMIT: "500",
         STRIPE_SECRET_KEY: "sk_test_e2e_fake",
         STRIPE_WEBHOOK_SECRET: "whsec_e2e",
         STRIPE_API_BASE: "http://127.0.0.1:8210",
