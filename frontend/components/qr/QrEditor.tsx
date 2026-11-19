@@ -1,7 +1,9 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { Repeat } from "lucide-react";
 import { Badge, Button, Card, useToast } from "@/components/ui";
+import { ChangeTypeModal } from "./ChangeTypeModal";
 import { api, errorMessage, fieldErrors, type FieldErrors } from "@/lib/api";
 import { useCompany } from "@/lib/company-context";
 import type { PageDoc, PageFiles } from "@/lib/page-types";
@@ -10,7 +12,7 @@ import { ThemeFields } from "./pages/shared";
 import { PhonePreview } from "./PhonePreview";
 import { QrPreview } from "./QrPreview";
 import { DesignPanel } from "./design/DesignPanel";
-import { TYPE_BY_KEY, isPageType } from "./types/meta";
+import { TYPE_BY_KEY, isPageType, type QrTypeKey } from "./types/meta";
 import { TypePicker } from "./types/TypePicker";
 import { ContentFields } from "./ContentFields";
 import { useQrDraft } from "./useQrDraft";
@@ -37,6 +39,7 @@ export function QrEditor({ initial, initialPage, initialFiles, onSaved }: Props)
   const [scan, setScan] = useState<Scannability | null>(null);
   const onScannability = useCallback((result: Scannability | null) => setScan(result), []);
   const editing = Boolean(initial);
+  const [changing, setChanging] = useState(false);
   const type = draft.qr_type;
   const page = type && isPageType(type) ? draft.page : null;
 
@@ -80,7 +83,24 @@ export function QrEditor({ initial, initialPage, initialFiles, onSaved }: Props)
         {type && (
           <Card
             title="Contenuto"
-            actions={editing ? <Badge tone="info">{TYPE_BY_KEY[type].label}</Badge> : undefined}
+            actions={
+              editing ? (
+                <span
+                  style={{ display: "inline-flex", gap: "var(--space-2)", alignItems: "center" }}
+                >
+                  <Badge tone={q.typeChanged ? "warning" : "info"}>{TYPE_BY_KEY[type].label}</Badge>
+                  {initial?.kind === "dynamic" && (
+                    <Button
+                      variant="ghost"
+                      icon={<Repeat size={14} />}
+                      onClick={() => setChanging(true)}
+                    >
+                      Cambia tipo
+                    </Button>
+                  )}
+                </span>
+              ) : undefined
+            }
           >
             <ContentFields q={q} editing={editing} errors={errors} />
           </Card>
@@ -151,10 +171,29 @@ export function QrEditor({ initial, initialPage, initialFiles, onSaved }: Props)
               className={styles.save}
               disabled={scan !== null && !scan.scannable}
             >
-              {editing ? "Salva modifiche" : "Crea codice QR"}
+              {editing
+                ? q.typeChanged
+                  ? "Salva e cambia tipo"
+                  : "Salva modifiche"
+                : "Crea codice QR"}
             </Button>
           </Card>
         </aside>
+      )}
+      {initial && (
+        <ChangeTypeModal
+          open={changing}
+          current={initial.qr_type as QrTypeKey}
+          allowed={plan?.features.allowed_types ?? []}
+          history={plan?.features.version_history ?? false}
+          onClose={() => setChanging(false)}
+          onConfirm={(next, prefill) => {
+            q.chooseType(next);
+            q.update({ dynamic: true, ...prefill });
+            setChanging(false);
+          }}
+          qrId={initial.id}
+        />
       )}
     </form>
   );

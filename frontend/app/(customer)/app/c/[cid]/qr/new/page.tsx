@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
-import { QrWizard } from "@/components/qr/wizard/QrWizard";
+import { NewQr } from "@/components/qr/wizard/NewQr";
 
 export const metadata: Metadata = { title: "Nuovo QR" };
 
-export default function NewQrPage() {
+export default async function NewQrPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
+  const from = Number((await searchParams).from);
   return (
     <div className="page">
       <div className="page-header">
@@ -12,7 +17,7 @@ export default function NewQrPage() {
           <p>Quattro passaggi: tipo, contenuto, design, salva e scarica.</p>
         </div>
       </div>
-      <QrWizard />
+      <NewQr fromId={Number.isSafeInteger(from) && from > 0 ? from : null} />
     </div>
   );
 }

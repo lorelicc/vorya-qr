@@ -14,7 +14,7 @@ export const typeLabel = (qr: QrCode) =>
   !qr.has_qr
     ? `Link breve · ${(qr.root_url ?? "").replace(/^https?:\/\//, "")}`
     : `${TYPE_BY_KEY[qr.qr_type as keyof typeof TYPE_BY_KEY]?.label ?? qr.qr_type} · ${
-        qr.kind === "dynamic" ? "dinamico" : "statico"
+        qr.kind === "dynamic" ? "dinamico" : "statico · non modificabile"
       }`;
 
 const columnsFor = (base: string, actions: QrActions): Column<QrCode>[] => [

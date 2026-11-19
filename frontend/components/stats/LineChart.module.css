@@ -113,3 +113,60 @@
   font-size: var(--fs-xs);
   color: var(--color-muted);
 }
+
+.canvas {
+  position: relative;
+}
+
+.marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 18px;
+  margin-left: -9px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: help;
+  z-index: 1;
+}
+
+.marker span {
+  display: block;
+  width: 2px;
+  height: 100%;
+  margin: 0 auto;
+  background: repeating-linear-gradient(to bottom, var(--color-warning) 0 4px, transparent 4px 8px);
+  transform-origin: top;
+  animation: marker var(--dur-slow) var(--ease-out) 500ms both;
+}
+
+.marker::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: var(--radius-round);
+  background: var(--color-warning);
+  border: 2px solid var(--color-surface);
+}
+
+.marker:focus-visible {
+  outline: 2px solid var(--color-focus);
+  border-radius: var(--radius-xs);
+}
+
+@keyframes marker {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marker span {
+    animation: none;
+  }
+}

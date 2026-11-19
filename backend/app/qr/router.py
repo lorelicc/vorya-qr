@@ -21,6 +21,7 @@ from .designer import svg_to_pdf, svg_to_png
 from .render import PNG_DEFAULT, PNG_MAX, PNG_MIN, PREVIEW_SLUG, short_link
 from .scan_check import check
 from .service import (
+    apply_content_change,
     encoded_content_of,
     get_owned,
     insert_qr,
@@ -29,7 +30,6 @@ from .service import (
     require_dynamic,
     scan_counts,
     sparklines,
-    update_content,
     validate_content,
 )
 
@@ -148,8 +148,12 @@ def update_qr(
     qr.name = payload.name
     for field in STYLE_FIELDS:
         setattr(qr, field, getattr(payload, field))
-    if update_content(session, ctx, qr, payload):
+    change = apply_content_change(session, ctx, qr, payload)
+    if change == "destination":
         audit(session, ctx.user, "qr.target_changed", ctx.workspace.id, ctx.company.id, qr_id=qr.id)
+    elif change == "type":
+        audit(session, ctx.user, "link.type_changed", ctx.workspace.id, ctx.company.id,
+              qr_id=qr.id, qr_type=qr.qr_type)  # fmt: skip
     session.commit()
     return qr_out(qr, scan_counts(session, [qr.id]).get(qr.id, 0))
 

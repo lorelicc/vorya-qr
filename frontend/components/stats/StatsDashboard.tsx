@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { Card, buttonClass } from "@/components/ui";
 import { formatDay, formatNumber } from "@/lib/format";
 import { useCountUp } from "@/lib/motion";
-import type { StatsSummary } from "@/lib/types";
+import type { StatsMarker, StatsSummary } from "@/lib/types";
 import { NoStats } from "@/components/illustrations";
 import { Breakdown } from "./Breakdown";
 import { LineChart } from "./LineChart";
@@ -46,6 +46,7 @@ export function StatsDashboard({
   csvHref,
   extra,
   showClicks,
+  markers,
 }: {
   stats: StatsSummary;
   range: RangeValue;
@@ -53,6 +54,7 @@ export function StatsDashboard({
   csvHref: string;
   extra?: ReactNode;
   showClicks: boolean;
+  markers?: StatsMarker[];
 }) {
   const period = `${formatDay(stats.range.first)} – ${formatDay(stats.range.last)}`;
   const countries = stats.countries.map((c) => ({ ...c, label: countryName(c.key) }));
@@ -92,6 +94,7 @@ export function StatsDashboard({
         ) : (
           <LineChart
             days={stats.daily}
+            markers={markers}
             series={[
               { key: "count", label: "Scansioni", tone: "main" },
               { key: "unique", label: "Visitatori unici (stima)", tone: "soft" },
@@ -131,7 +134,10 @@ export function StatsDashboard({
       <p className={styles.footnote}>
         Non salviamo indirizzi IP: luogo approssimativo e stima dei visitatori unici sono calcolati
         al momento e l&apos;IP viene scartato. Bot e anteprime dei link sono esclusi (
-        {formatNumber(stats.bot_scans)} nel periodo).{" "}
+        {formatNumber(stats.bot_scans)} nel periodo).
+        {stats.blocked_scans
+          ? ` ${formatNumber(stats.blocked_scans)} aperture bloccate da password o scadenza.`
+          : ""}{" "}
         {stats.geo_available && (
           <a href={stats.attribution.url} target="_blank" rel="noopener noreferrer">
             {stats.attribution.text}

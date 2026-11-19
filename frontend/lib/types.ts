@@ -96,6 +96,7 @@ export type StatsSummary = {
   unique_estimate: number;
   clicks: number;
   bot_scans: number;
+  blocked_scans?: number;
   daily: StatsDay[];
   devices: Breakdown;
   os: Breakdown;
@@ -108,7 +109,14 @@ export type StatsSummary = {
   attribution: { text: string; url: string };
 };
 
+export type StatsMarker = {
+  date: string;
+  change: "type" | "destination" | "restore";
+  qr_type: string;
+};
+
 export type QrStats = StatsSummary & {
+  markers?: StatsMarker[];
   total_scans: number;
   last_scan_at: string | null;
   scans_last_30_days: number | null;

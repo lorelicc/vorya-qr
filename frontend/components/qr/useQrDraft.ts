@@ -68,7 +68,13 @@ export function useQrDraft(
     return { static_data: draft.static_data };
   }, [draft]);
 
-  const payload = () => ({ name: draft.name, design: draft.design, ...content });
+  const typeChanged = Boolean(initial && draft.qr_type && draft.qr_type !== initial.qr_type);
+  const payload = () => ({
+    name: draft.name,
+    design: draft.design,
+    ...content,
+    ...(typeChanged ? { qr_type: draft.qr_type } : {}),
+  });
   const createPayload = () => ({ ...payload(), qr_type: draft.qr_type, dynamic: draft.dynamic });
   const previewPayload = {
     qr_type: draft.qr_type ?? "website",
@@ -84,6 +90,7 @@ export function useQrDraft(
     files,
     addFile,
     kind,
+    typeChanged,
     payload,
     createPayload,
     previewPayload,

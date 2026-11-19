@@ -48,6 +48,7 @@ export function StatsView({ id }: { id: number }) {
         onRange={setRange}
         csvHref={csvHref}
         showClicks={qr.destination === "page"}
+        markers={data.markers}
       />
     </div>
   );

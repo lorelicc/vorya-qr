@@ -2,7 +2,11 @@ import { Badge } from "@/components/ui";
 import type { QrCode } from "@/lib/types";
 
 export function KindBadge({ kind }: { kind: QrCode["kind"] }) {
-  return kind === "dynamic" ? <Badge tone="info">Dinamico</Badge> : <Badge>Statico</Badge>;
+  return kind === "dynamic" ? (
+    <Badge tone="info">Dinamico</Badge>
+  ) : (
+    <Badge tone="danger">Statico · non modificabile</Badge>
+  );
 }
 
 export function StatusBadge({ qr }: { qr: Pick<QrCode, "kind" | "status"> }) {

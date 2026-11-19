@@ -17,6 +17,7 @@ import { QrPreview } from "../QrPreview";
 import { TYPE_BY_KEY, isPageType } from "../types/meta";
 import { TypePicker } from "../types/TypePicker";
 import { useQrDraft } from "../useQrDraft";
+import { StaticNotice } from "../StaticNotice";
 import { Celebration } from "./Celebration";
 import { STEPS, Stepper } from "./Stepper";
 import styles from "./wizard.module.css";
@@ -24,17 +25,17 @@ import styles from "./wizard.module.css";
 const CONTENT_FIELDS = ["name", "target_url", "static_data", "page", "destination"];
 
 /** New QR in four steps: type, content, design, save & download. */
-export function QrWizard() {
+export function QrWizard({ source }: { source?: QrCode }) {
   const router = useRouter();
   const toast = useToast();
   const reduced = useReducedMotion();
   const { api: base, app, company } = useCompany();
-  const q = useQrDraft(company);
+  const q = useQrDraft(company, source ? { ...source, name: `${source.name} (copia)` } : undefined);
   const { draft, update } = q;
   const [plan, setPlan] = useState<AccountPlan | null>(null);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(source ? 1 : 0);
   const [direction, setDirection] = useState(1);
-  const [maxReached, setMaxReached] = useState(0);
+  const [maxReached, setMaxReached] = useState(source ? 3 : 0);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [busy, setBusy] = useState(false);
   const [scan, setScan] = useState<Scannability | null>(null);
@@ -84,6 +85,16 @@ export function QrWizard() {
     }
   }
 
+  const isStatic = Boolean(type) && q.kind === "static";
+  const useDynamic =
+    type === "website"
+      ? () =>
+          update({
+            dynamic: true,
+            target_url: String(draft.static_data.url ?? "") || "https://",
+          })
+      : undefined;
+
   const canNext =
     step === 0 ? Boolean(type) : step === 2 ? !(scan !== null && !scan.scannable) : true;
   const offset = reduced ? 0 : 48;
@@ -122,6 +133,12 @@ export function QrWizard() {
 
   return (
     <div className={styles.wizard}>
+      {source && (
+        <p className={styles.fromBanner} role="note">
+          Stai creando un <strong>nuovo QR</strong> a partire da «{source.name}». I codici già
+          stampati resteranno invariati.
+        </p>
+      )}
       <Stepper step={step} onJump={go} maxReached={maxReached} />
       <div className={styles.stage}>
         <AnimatePresence mode="wait" initial={false} custom={direction}>
@@ -139,14 +156,19 @@ export function QrWizard() {
               {STEPS[step]}
             </h2>
             {step === 0 && (
-              <TypePicker
-                value={type}
-                allowed={plan?.features.allowed_types ?? []}
-                onChange={(t) => {
-                  q.chooseType(t);
-                  setMaxReached(1);
-                }}
-              />
+              <>
+                <TypePicker
+                  value={type}
+                  allowed={plan?.features.allowed_types ?? []}
+                  onChange={(t) => {
+                    q.chooseType(t);
+                    setMaxReached(1);
+                  }}
+                />
+                <div style={{ marginTop: "var(--space-5)" }}>
+                  <StaticNotice show={isStatic} onUseDynamic={useDynamic} />
+                </div>
+              </>
             )}
             {step > 0 && (
               <div className={styles.split}>
@@ -180,28 +202,31 @@ export function QrWizard() {
                     </Card>
                   )}
                   {step === 3 && (
-                    <Card title="Riepilogo">
-                      <dl className={styles.summary}>
-                        <dt>Nome</dt>
-                        <dd>{draft.name}</dd>
-                        <dt>Tipo</dt>
-                        <dd>
-                          {type ? TYPE_BY_KEY[type].label : ""} ·{" "}
-                          {q.kind === "dynamic" ? "dinamico" : "statico"}
-                        </dd>
-                        {type === "website" && q.kind === "dynamic" && (
-                          <>
-                            <dt>Destinazione</dt>
-                            <dd className={styles.url}>{draft.target_url}</dd>
-                          </>
-                        )}
-                      </dl>
-                      <p className="muted">
-                        Dopo il salvataggio potrai scaricarlo in PNG, SVG o PDF.
-                        {q.kind === "dynamic" &&
-                          " Il link breve viene creato ora e non cambia più."}
-                      </p>
-                    </Card>
+                    <>
+                      <StaticNotice show={isStatic} onUseDynamic={useDynamic} />
+                      <Card title="Riepilogo">
+                        <dl className={styles.summary}>
+                          <dt>Nome</dt>
+                          <dd>{draft.name}</dd>
+                          <dt>Tipo</dt>
+                          <dd>
+                            {type ? TYPE_BY_KEY[type].label : ""} ·{" "}
+                            {q.kind === "dynamic" ? "dinamico" : "statico"}
+                          </dd>
+                          {type === "website" && q.kind === "dynamic" && (
+                            <>
+                              <dt>Destinazione</dt>
+                              <dd className={styles.url}>{draft.target_url}</dd>
+                            </>
+                          )}
+                        </dl>
+                        <p className="muted">
+                          Dopo il salvataggio potrai scaricarlo in PNG, SVG o PDF.
+                          {q.kind === "dynamic" &&
+                            " Il link breve viene creato ora e non cambia più."}
+                        </p>
+                      </Card>
+                    </>
                   )}
                 </div>
                 <aside className={styles.side}>

@@ -219,6 +219,10 @@ def insert_qr(session: Session, ctx, payload: QrCreate) -> QrCode:
             savepoint.commit()
             gate_design(session, ctx, qr, payload)
             save_page(session, qr, page)
+            if kind == "dynamic":
+                from ..links.versions import record_version
+
+                record_version(session, qr, ctx.user, "created")
             return qr
         except IntegrityError:
             savepoint.rollback()
@@ -241,3 +245,24 @@ def encoded_content_of(qr: QrCode) -> str:
     if qr.kind == "dynamic":
         return short_link(qr.slug)
     return encode_static(qr.qr_type, qr.static_data or {"url": qr.target_url})
+
+
+def apply_content_change(
+    session: Session, ctx, qr: QrCode, content: QrContent, change: str | None = None
+) -> str | None:
+    """Saves new content (and a type change, for dynamic links) and records a version.
+
+    Returns "type", "destination" or "content" for dynamic links, None for static ones."""
+    from ..links.versions import apply_type, check_type_change, record_version
+
+    new_type = getattr(content, "qr_type", None)
+    type_changed = bool(new_type and new_type != qr.qr_type)
+    if type_changed:
+        _, destination = check_type_change(session, ctx.workspace, qr, new_type)
+        apply_type(session, qr, new_type, destination)
+    changed = update_content(session, ctx, qr, content)
+    if qr.kind != "dynamic":
+        return None
+    kind = change or ("type" if type_changed else "destination" if changed else "content")
+    record_version(session, qr, ctx.user, kind)
+    return kind

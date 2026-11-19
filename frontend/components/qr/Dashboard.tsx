@@ -97,11 +97,10 @@ export function Dashboard() {
           {error}
         </p>
       )}
+      {/* One stable instance: it must not remount when the list finishes loading. */}
+      <QuickLinkBar onCreated={(link) => setItems((all) => (all ? [link, ...all] : [link]))} />
       {firstRun ? (
-        <>
-          <QuickLinkBar onCreated={(link) => setItems([link])} />
-          <OnboardingPanel canCreate={canCreate} />
-        </>
+        <OnboardingPanel canCreate={canCreate} />
       ) : (
         <>
           {plan && (
@@ -112,7 +111,6 @@ export function Dashboard() {
               </div>
             </Card>
           )}
-          <QuickLinkBar onCreated={(link) => setItems((all) => (all ? [link, ...all] : [link]))} />
           <ViewTabs value={filters} onChange={setFilters} />
           <div className={styles.toolbar}>
             <QrFilters value={filters} onChange={setFilters} />

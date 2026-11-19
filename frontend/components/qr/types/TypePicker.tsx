@@ -2,7 +2,12 @@ import { Lock } from "lucide-react";
 import { TYPES, type QrTypeKey } from "./meta";
 import styles from "./TypePicker.module.css";
 
-type Props = { value: QrTypeKey | null; allowed: string[]; onChange: (key: QrTypeKey) => void };
+type Props = {
+  value: QrTypeKey | null;
+  allowed: string[];
+  onChange: (key: QrTypeKey) => void;
+  dynamicOnly?: boolean; // type change of a dynamic link: static types do not apply
+};
 
 const GROUPS = [
   {
@@ -19,10 +24,10 @@ const GROUPS = [
 ] as const;
 
 /** Type grid. Types outside the plan stay visible with a lock. */
-export function TypePicker({ value, allowed, onChange }: Props) {
+export function TypePicker({ value, allowed, onChange, dynamicOnly }: Props) {
   return (
     <div className={styles.groups}>
-      {GROUPS.map((group) => (
+      {GROUPS.filter((g) => !dynamicOnly || g.key !== "static").map((group) => (
         <fieldset key={group.key} className={styles.group}>
           <legend>
             {group.title} <small>{group.hint}</small>

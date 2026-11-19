@@ -66,12 +66,14 @@ class QrContent(QrStyle):
 
 class QrUpdate(QrContent):
     name: str = Field(min_length=1, max_length=120)
+    # 0.3: dynamic links can change type; static QR codes never can (409).
+    qr_type: QrType | None = None
 
     _name = field_validator("name")(classmethod(lambda cls, v: _name(v)))
 
 
 class QrCreate(QrUpdate):
-    qr_type: QrType = "website"
+    qr_type: QrType = "website"  # type: ignore[assignment]
     dynamic: bool = True  # only meaningful for "website"; other types have a fixed kind
     has_qr: bool = True  # 0.3: false = short link only (dynamic types), QR can be added later
 

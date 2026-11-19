@@ -38,6 +38,26 @@ def _meta(retention):
             "attribution": ATTRIBUTION}  # fmt: skip
 
 
+def _markers(session: Session, qr_id: int, first: date, last: date) -> list[dict]:
+    """Type and destination changes in the period, for the chart tooltips."""
+    from ..models import LinkVersion
+    from .periods import bounds
+    from .queries import local_day
+
+    start, end = bounds(first, last)
+    rows = session.execute(
+        select(local_day(LinkVersion.created_at), LinkVersion.change, LinkVersion.qr_type)
+        .where(
+            LinkVersion.qr_code_id == qr_id,
+            LinkVersion.change.in_(("type", "destination", "restore")),
+            LinkVersion.created_at >= start,
+            LinkVersion.created_at < end,
+        )
+        .order_by(LinkVersion.created_at)
+    ).all()
+    return [{"date": d.isoformat(), "change": c, "qr_type": t} for d, c, t in rows]
+
+
 @router.get("/qr-codes/{qr_id}/stats")
 def qr_stats(
     qr_id: int,
@@ -56,7 +76,9 @@ def qr_stats(
             ScanEvent.qr_code_id == qr.id, ScanEvent.is_bot.is_(False), ScanEvent.outcome == "ok"
         )
     ).one()
-    return {**data, **_meta(retention), "total_scans": total, "last_scan_at": last_scan,
+    markers = _markers(session, qr.id, first, last)
+    return {**data, **_meta(retention), "markers": markers, "total_scans": total,
+            "last_scan_at": last_scan,
             "scans_last_30_days": data["scans"] if range == "30d" else None}  # fmt: skip
 
 

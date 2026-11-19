@@ -13,12 +13,12 @@ from ..core.config import get_settings
 from ..core.database import get_session
 from ..core.errors import CodedError
 from ..core.security import now
-from ..models import LinkAlias, Plan, UtmTemplate
+from ..models import LinkAlias, LinkVersion, Plan, StoredFile, UtmTemplate
 from ..plans import features_of, locked
 from ..qr.render import root_link
 from ..qr.service import get_owned, insert_qr, qr_out
 from ..quotas import reserve_slot
-from ..schemas.qr import LinkQuickCreate, QrCreate, QrOut
+from ..schemas.qr import LinkQuickCreate, QrCreate, QrOut, QrUpdate
 from .service import (
     UNLOCK_SECONDS,
     LinkRules,
@@ -32,6 +32,7 @@ from .service import (
     rules_out,
     unlock_token,
 )  # fmt: skip
+from .versions import KEEP, authors_of, require_history, version_out
 
 router = APIRouter(prefix="/api/companies/{company_id}/links", tags=["links"])
 
@@ -233,3 +234,74 @@ def unlock(slug: str, body: UnlockIn, request: Request, response: Response,
         secure=get_settings().is_production, path="/",
     )  # fmt: skip
     return {"ok": True}
+
+
+# ---------------------------------------------------------------- versions
+
+
+@links_qr.get("/{qr_id}/versions")
+def list_versions(
+    qr_id: int,
+    qr_type: str = Query(default="", max_length=16),
+    ctx: CompanyContext = Depends(owned_company),
+    session: Session = Depends(get_session),
+):
+    require_history(session, ctx.workspace)
+    link = get_owned(session, ctx, qr_id)
+    query = select(LinkVersion).where(LinkVersion.qr_code_id == link.id)
+    if qr_type:
+        query = query.where(LinkVersion.qr_type == qr_type)
+    rows = session.scalars(query.order_by(LinkVersion.number.desc()).limit(KEEP)).all()
+    authors = authors_of(session, rows)
+    return [version_out(v, authors, detail=bool(qr_type)) for v in rows]
+
+
+@links_qr.get("/{qr_id}/versions/{number}")
+def get_version(
+    qr_id: int, number: int, ctx: CompanyContext = Depends(owned_company),
+    session: Session = Depends(get_session),
+):  # fmt: skip
+    require_history(session, ctx.workspace)
+    link = get_owned(session, ctx, qr_id)
+    version = session.scalar(
+        select(LinkVersion).where(LinkVersion.qr_code_id == link.id, LinkVersion.number == number)
+    )
+    if version is None:
+        raise HTTPException(404, "Versione non trovata.")
+    wanted = select(StoredFile).where(StoredFile.id.in_(version.file_ids or []))
+    files = {}
+    for f in session.scalars(wanted):
+        if f.deleted_at is None:
+            urls = {n: f"/f/{f.id}/{n}" for n in f.variants}
+            files[f.id] = {"kind": f.kind, "name": f.original_name, "urls": urls,
+                           "pages": f.page_count}  # fmt: skip
+    return {**version_out(version, authors_of(session, [version]), detail=True), "files": files}
+
+
+@links_qr.post("/{qr_id}/versions/{number}/restore")
+def restore_version(
+    qr_id: int, number: int, ctx: CompanyContext = Depends(owned_company),
+    session: Session = Depends(get_session),
+):  # fmt: skip
+    require_history(session, ctx.workspace)
+    link = get_owned(session, ctx, qr_id, lock=True)
+    version = session.scalar(
+        select(LinkVersion).where(LinkVersion.qr_code_id == link.id, LinkVersion.number == number)
+    )
+    if version is None:
+        raise HTTPException(404, "Versione non trovata.")
+    from ..qr.service import apply_content_change, qr_out
+    from ..schemas.page import Page
+
+    page = Page.model_validate(version.page) if version.page else None
+    content = QrUpdate(name=link.name, qr_type=version.qr_type, target_url=version.target_url,
+                       page=page, design=None)  # fmt: skip
+    # The design belongs to the QR, not to the content: keep the one in use.
+    from ..qr.design_service import design_of
+
+    content.design = design_of(link)
+    apply_content_change(session, ctx, link, content, change="restore")
+    audit(session, ctx.user, "link.version_restored", ctx.workspace.id, ctx.company.id,
+          qr_id=link.id, number=number)  # fmt: skip
+    session.commit()
+    return qr_out(link)

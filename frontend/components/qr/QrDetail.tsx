@@ -10,6 +10,7 @@ import type { AccountPlan, QrCode } from "@/lib/types";
 import type { UploadedFile } from "@/lib/upload";
 import { toPageFile } from "./pages/shared";
 import { DownloadPanel } from "./DownloadPanel";
+import { VersionsCard } from "@/components/links/VersionsCard";
 import { AliasesCard } from "@/components/links/AliasesCard";
 import { RulesCard } from "@/components/links/RulesCard";
 import { GenerateQrCard } from "@/components/links/GenerateQrCard";
@@ -47,12 +48,13 @@ export function QrDetail({ id }: { id: number }) {
     ])
       .then(async ([loaded, listing]) => {
         setFiles(Object.fromEntries(listing.files.map((f) => [f.id, toPageFile(f)])));
-        if (loaded.destination === "page")
-          setPage(await api<PageDoc>(`${base}/qr-codes/${id}/page`));
+        setPage(
+          loaded.destination === "page" ? await api<PageDoc>(`${base}/qr-codes/${id}/page`) : null,
+        );
         setQr(loaded);
       })
       .catch((err) => setError(errorMessage(err)));
-  }, [base, id]);
+  }, [base, id, version]);
 
   if (error) return <p role="alert">{error}</p>;
   if (!qr || !files)
@@ -103,16 +105,26 @@ export function QrDetail({ id }: { id: number }) {
           <RulesCard qr={qr} plan={plan} />
         </div>
       )}
-      <QrEditor
-        key={qr.updated_at}
-        initial={qr}
-        initialPage={page}
-        initialFiles={files}
-        onSaved={(saved) => {
-          setQr(saved);
-          setVersion((v) => v + 1);
-        }}
-      />
+      {qr.kind === "dynamic" && (
+        <VersionsCard
+          qr={qr}
+          plan={plan}
+          key={`versions-${version}`}
+          onRestored={() => setVersion((v) => v + 1)}
+        />
+      )}
+      {qr.kind === "dynamic" && (
+        <QrEditor
+          key={qr.updated_at}
+          initial={qr}
+          initialPage={page}
+          initialFiles={files}
+          onSaved={(saved) => {
+            setQr(saved);
+            setVersion((v) => v + 1);
+          }}
+        />
+      )}
     </div>
   );
 }

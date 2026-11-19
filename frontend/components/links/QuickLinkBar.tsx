@@ -33,7 +33,11 @@ export function QuickLinkBar({ onCreated }: { onCreated: (link: QrCode) => void 
       const short = link.root_url ?? link.short_url ?? "";
       let copied = false;
       try {
-        await navigator.clipboard.writeText(short);
+        // Never wait forever: some browsers leave the promise pending while asking permission.
+        await Promise.race([
+          navigator.clipboard.writeText(short),
+          new Promise((_, reject) => window.setTimeout(reject, 800)),
+        ]);
         copied = true;
       } catch {
         /* clipboard blocked (permissions): the link stays visible below */

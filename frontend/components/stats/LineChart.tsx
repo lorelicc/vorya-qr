@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
 import { formatDay, formatNumber } from "@/lib/format";
-import type { StatsDay } from "@/lib/types";
+import type { StatsDay, StatsMarker } from "@/lib/types";
 import styles from "./LineChart.module.css";
 
 type Series = { key: "count" | "unique" | "clicks"; label: string; tone: "main" | "soft" };
@@ -22,7 +22,21 @@ function path(days: StatsDay[], key: Series["key"], max: number, W: number): str
  * mount (stroke-dashoffset on a normalised pathLength), skipped with reduced motion. Labels are HTML so they keep their size;
  * a hidden table gives screen readers the exact values.
  */
-export function LineChart({ days, series }: { days: StatsDay[]; series: Series[] }) {
+const MARKER_TEXT = {
+  type: "Cambio di tipo",
+  destination: "Nuova destinazione",
+  restore: "Versione ripristinata",
+} as const;
+
+export function LineChart({
+  days,
+  series,
+  markers = [],
+}: {
+  days: StatsDay[];
+  series: Series[];
+  markers?: StatsMarker[];
+}) {
   const gradient = useId();
   const box = useRef<HTMLDivElement>(null);
   const [W, setW] = useState(600);
@@ -58,7 +72,25 @@ export function LineChart({ days, series }: { days: StatsDay[]; series: Series[]
             <span key={tick}>{formatNumber(tick)}</span>
           ))}
         </div>
-        <div ref={box}>
+        <div ref={box} className={styles.canvas}>
+          {markers.map((m, i) => {
+            const index = days.findIndex((d) => d.date === m.date);
+            if (index < 0) return null;
+            const left = days.length > 1 ? (index / (days.length - 1)) * 100 : 0;
+            const text = `${formatDay(m.date)}: ${MARKER_TEXT[m.change]}`;
+            return (
+              <button
+                key={`${m.date}-${i}`}
+                type="button"
+                className={styles.marker}
+                style={{ left: `${left}%` }}
+                title={text}
+                aria-label={text}
+              >
+                <span aria-hidden="true" />
+              </button>
+            );
+          })}
           <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true" key={key}>
             <defs>
               <linearGradient id={gradient} x1="0" y1="0" x2="0" y2="1">

@@ -257,3 +257,12 @@ li[data-state="current"] .label {
     display: block;
   }
 }
+
+.fromBanner {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-info-soft);
+  color: var(--color-info);
+  font-size: var(--fs-sm);
+}

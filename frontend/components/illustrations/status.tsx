@@ -139,3 +139,30 @@ export function PasswordGate() {
     </Illustration>
   );
 }
+
+/** 0.3: static QR warning. Palette art + danger red; the QR "freezes" (slow pulse + ring). */
+export function StaticWarning() {
+  return (
+    <Illustration size={150}>
+      <Blob x={120} y={96} r={58} tone="danger" />
+      <Blob x={190} y={52} r={20} tone="peach" slow />
+      <g className={art.float}>
+        <Paper x={74} y={46} w={92} h={92} r={16} />
+        <MiniQr x={92} y={64} cell={8} tone="dark" />
+        <path
+          d="M70 142h100"
+          stroke="var(--color-danger)"
+          strokeWidth={4}
+          strokeLinecap="round"
+          opacity={0.35}
+        />
+      </g>
+      <g className={art.pulse}>
+        <circle cx={166} cy={46} r={17} fill="var(--color-danger)" />
+        <path d="M166 38v10" stroke="var(--art-paper)" strokeWidth={3.2} strokeLinecap="round" />
+        <circle cx={166} cy={54} r={2} fill="var(--art-paper)" />
+      </g>
+      <Stroke d="M44 70c8-12 20-16 32-12" tone="dark" width={2.5} />
+    </Illustration>
+  );
+}

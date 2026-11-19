@@ -133,6 +133,27 @@ def stats_retention(session: Session) -> int:
 
 
 @job
+def prune_versions(session: Session) -> int:
+    """Keeps the last 20 versions per link; files only they used are removed."""
+    from .links.versions import prune
+
+    return prune(session)
+
+
+@job
+def release_aliases(session: Session) -> int:
+    """Aliases removed 90+ days ago are free for anyone again: drop the quarantine rows."""
+    from datetime import timedelta
+
+    from .models import LinkAlias
+
+    cutoff = now() - timedelta(days=90)
+    return session.execute(
+        delete(LinkAlias).where(LinkAlias.removed_at.is_not(None), LinkAlias.removed_at <= cutoff)
+    ).rowcount
+
+
+@job
 def cleanup_tokens(session: Session) -> int:
     a = session.execute(delete(AuthSession).where(AuthSession.expires_at <= now())).rowcount
     b = session.execute(delete(PasswordReset).where(PasswordReset.expires_at <= now())).rowcount
