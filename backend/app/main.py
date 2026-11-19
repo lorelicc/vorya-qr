@@ -18,6 +18,7 @@ from .companies.transfers import router as transfers_router
 from .core.config import get_settings
 from .core.database import get_engine
 from .core.errors import install_handlers
+from .imports.router import router as imports_router
 from .links.organization import router as organization_router
 from .links.organization import search_router
 from .links.router import links_qr as links_qr_router
@@ -57,6 +58,7 @@ def create_app() -> FastAPI:
         files_router,
         files_public_router,
         styles_router,
+        imports_router,
         organization_router,
         search_router,
         links_router,

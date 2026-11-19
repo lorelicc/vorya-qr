@@ -3,7 +3,7 @@ import { backendPath, isAllowed } from "@/lib/allowlist";
 
 const MAX_BODY = 512 * 1024; // JSON bodies (page blocks included)
 const MAX_UPLOAD = 60 * 1024 * 1024; // multipart uploads; the backend enforces the plan limit
-const UPLOAD = /^companies\/\d+\/(files|logo)$/;
+const UPLOAD = /^companies\/\d+\/(files|logo|imports)$/;
 const PASS_HEADERS = [
   "content-type",
   "content-disposition",

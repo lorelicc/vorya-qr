@@ -30,13 +30,13 @@ export default defineConfig({
     {
       name: "desktop",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: /(mobile|companies|links|organize)\.spec\.ts/,
+      testIgnore: /(mobile|companies|links|organize|import)\.spec\.ts/,
     },
     // v0.2 scenario: reduced motion, as requested for deterministic runs.
     {
       name: "reduced-motion",
       use: { ...devices["Desktop Chrome"], contextOptions: { reducedMotion: "reduce" } },
-      testMatch: /(companies|links|organize)\.spec\.ts/,
+      testMatch: /(companies|links|organize|import)\.spec\.ts/,
     },
     { name: "mobile", use: { ...devices["Pixel 7"] }, testMatch: /mobile\.spec\.ts/ },
   ],
@@ -56,6 +56,21 @@ export default defineConfig({
         SUPPORT_EMAIL: "supporto@example.com",
         STORAGE_LOCAL_PATH: path.resolve(here, ".e2e-uploads"),
         GEOIP_DB_PATH: path.resolve(here, ".e2e-uploads/missing.mmdb"),
+      },
+    },
+    {
+      // 0.3: the worker renders the ZIP of bulk imports (e2e/worker.mjs wraps it).
+      command: "node e2e/worker.mjs",
+      url: "http://127.0.0.1:8200",
+      reuseExistingServer: false,
+      env: {
+        PYTHON: python,
+        WORKER_CWD: path.resolve(here, "../backend"),
+        DATABASE_URL: process.env.E2E_DATABASE_URL ?? "",
+        APP_ENV: "test",
+        STORAGE_LOCAL_PATH: path.resolve(here, ".e2e-uploads"),
+        WORKER_PORT: "8200",
+        PATH: process.env.PATH ?? "",
       },
     },
     {

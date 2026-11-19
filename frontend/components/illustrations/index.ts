@@ -4,6 +4,7 @@ export { Illustration } from "./Illustration";
 export { Onboarding } from "./onboarding";
 export {
   AccessDenied,
+  ImportArt,
   Locked,
   NotFound,
   PasswordGate,

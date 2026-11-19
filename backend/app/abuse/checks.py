@@ -146,3 +146,21 @@ def check_destinations(session: Session, *values) -> None:
             "Destinazione segnalata come pericolosa (phishing o malware): non può essere usata.",
             "unsafe_url",
         )
+
+
+def blocked_domains_of(session: Session) -> list[str]:
+    """All blocked domains, loaded once (bulk imports check thousands of URLs in memory)."""
+    return list(session.scalars(select(BlockedDomain.domain)))
+
+
+def host_blocked(domains: list[str], host: str) -> bool:
+    return any(host == d or host.endswith("." + d) for d in domains)
+
+
+def flagged_urls(urls: list[str]) -> set[str]:
+    """URLs the reputation provider flags, asked in batches of 500."""
+    unique = list(dict.fromkeys(urls))
+    found: set[str] = set()
+    for start in range(0, len(unique), 500):
+        found |= provider().flagged(unique[start : start + 500])
+    return found

@@ -15,6 +15,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..auth.deps import CompanyContext, owned_company
+from ..core.csvsafe import safe_row
 from ..core.database import get_session
 from ..models import Plan, QrCode, ScanEvent
 from ..plans import features_of
@@ -109,8 +110,7 @@ def _csv(rows: list[list], filename: str) -> Response:
     buffer = io.StringIO()
     writer = csv.writer(buffer, delimiter=";")  # Excel in Italian locale expects ";"
     for row in rows:
-        writer.writerow(["'" + v if isinstance(v, str) and v[:1] in "=+-@\t\r" else v
-                         for v in row])  # fmt: skip
+        writer.writerow(safe_row(row))
     return Response(
         "﻿" + buffer.getvalue(),  # BOM: accents open correctly in Excel
         media_type="text/csv; charset=utf-8",

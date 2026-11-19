@@ -2,7 +2,7 @@ from .abuse import AbuseReport, BlockedDomain
 from .company import Company, CompanyTransfer
 from .file import StoredFile
 from .identity import ROLES, AuditLog, AuthRateLimit, AuthSession, PasswordReset, Registration, User
-from .link import Folder, LinkAlias, LinkTag, LinkVersion, Tag, UtmTemplate
+from .link import Folder, ImportJob, LinkAlias, LinkTag, LinkVersion, Tag, UtmTemplate
 from .qr import DailySalt, PageEvent, QrCode, QrPage, ReservedWord, ScanEvent
 from .style import StylePreset
 from .tenancy import MailLog, Plan, PlatformSetting, Workspace
@@ -21,6 +21,7 @@ __all__ = [
     "PageEvent",
     "PasswordReset",
     "Folder",
+    "ImportJob",
     "LinkAlias",
     "LinkTag",
     "LinkVersion",

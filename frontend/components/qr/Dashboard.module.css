@@ -50,3 +50,9 @@
   color: var(--vorya-green-dark);
   box-shadow: var(--shadow-sm);
 }
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

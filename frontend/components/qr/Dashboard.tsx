@@ -1,8 +1,16 @@
 "use client";
-import { Folder, LayoutGrid, List, Plus } from "lucide-react";
+import { FileDown, Folder, LayoutGrid, List, Plus, Upload } from "lucide-react";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { EmptySearch, NoResults } from "@/components/illustrations";
-import { Button, ButtonLink, Card, EmptyState, SkeletonList, useToast } from "@/components/ui";
+import {
+  Button,
+  ButtonLink,
+  Card,
+  EmptyState,
+  SkeletonList,
+  buttonClass,
+  useToast,
+} from "@/components/ui";
 import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/hooks";
@@ -140,11 +148,25 @@ export function Dashboard() {
           <h1>{company.name}</h1>
           <p>Link brevi e codici QR dell’azienda: crea, modifica e misura.</p>
         </div>
-        {canCreate && !firstRun && (
-          <ButtonLink href={`${app}/qr/new`} icon={<Plus size={16} />}>
-            Nuovo QR
+        <div className={styles.headerActions}>
+          <ButtonLink href={`${app}/import`} variant="secondary" icon={<Upload size={16} />}>
+            Importa CSV
           </ButtonLink>
-        )}
+          {!firstRun && (
+            <a
+              className={buttonClass({ variant: "secondary" })}
+              href={`/api/${base}/qr-codes/export.csv?${query}`}
+              download
+            >
+              <FileDown size={16} aria-hidden="true" /> Esporta CSV
+            </a>
+          )}
+          {canCreate && !firstRun && (
+            <ButtonLink href={`${app}/qr/new`} icon={<Plus size={16} />}>
+              Nuovo QR
+            </ButtonLink>
+          )}
+        </div>
       </div>
       {error && (
         <p role="alert" className={styles.error}>

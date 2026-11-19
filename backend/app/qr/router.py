@@ -57,65 +57,82 @@ def _tags_of(session: Session, ids: list[int]) -> dict[int, list[int]]:
     return found
 
 
+class ListFilters:
+    """Query parameters shared by the list and the CSV export (same filters, same order)."""
+
+    def __init__(
+        self,
+        search: str = Query(default="", max_length=120),
+        kind: Literal["", "static", "dynamic"] = "",
+        status: Literal["", "active", "paused", "blocked"] = "",
+        qr_type: str = Query(default="", max_length=16),
+        view: Literal["", "links", "dynamic_qr", "static"] = "",
+        folder: str = Query(default="", max_length=10),  # "", "none", or a folder id
+        tag_ids: list[int] = Query(default_factory=list, max_length=10),  # all of them
+        created_from: date | None = None,
+        created_to: date | None = None,
+        scans_min: int | None = Query(default=None, ge=0),
+        scans_max: int | None = Query(default=None, ge=0),
+        sort: Literal["created", "name", "scans", "updated"] = "created",
+        order: Literal["asc", "desc"] = "desc",
+    ):
+        self.__dict__.update(locals())
+
+    def query(self, company_id: int):
+        f = self
+        query = select(QrCode).where(QrCode.company_id == company_id, QrCode.deleted_at.is_(None))
+        if f.view == "links":  # 0.3 unified list: short links without a QR yet
+            query = query.where(QrCode.kind == "dynamic", QrCode.has_qr.is_(False))
+        elif f.view == "dynamic_qr":
+            query = query.where(QrCode.kind == "dynamic", QrCode.has_qr.is_(True))
+        elif f.view == "static":
+            query = query.where(QrCode.kind == "static")
+        if f.search.strip():
+            term = f"%{f.search.strip()}%"
+            query = query.where(
+                or_(QrCode.name.ilike(term), QrCode.target_url.ilike(term), QrCode.slug.ilike(term))
+            )
+        if f.folder == "none":
+            query = query.where(QrCode.folder_id.is_(None))
+        elif f.folder.isdigit():  # a folder includes its sub-folders
+            children = select(Folder.id).where(Folder.parent_id == int(f.folder))
+            query = query.where(
+                or_(QrCode.folder_id == int(f.folder), QrCode.folder_id.in_(children))
+            )
+        for tag_id in f.tag_ids:
+            query = query.where(
+                QrCode.id.in_(select(LinkTag.qr_code_id).where(LinkTag.tag_id == tag_id))
+            )
+        if f.created_from:
+            query = query.where(
+                QrCode.created_at >= datetime.combine(f.created_from, time.min, UTC)
+            )
+        if f.created_to:
+            end = datetime.combine(f.created_to + timedelta(days=1), time.min, UTC)
+            query = query.where(QrCode.created_at < end)
+        if f.scans_min is not None:
+            query = query.where(QrCode.scan_total >= f.scans_min)
+        if f.scans_max is not None:
+            query = query.where(QrCode.scan_total <= f.scans_max)
+        if f.kind:
+            query = query.where(QrCode.kind == f.kind)
+        if f.status:
+            query = query.where(QrCode.status == f.status)
+        if f.qr_type:
+            query = query.where(QrCode.qr_type == f.qr_type)
+        column = {"created": QrCode.created_at, "name": func.lower(QrCode.name),
+                  "scans": QrCode.scan_total, "updated": QrCode.updated_at}[f.sort]  # fmt: skip
+        direction = column.asc() if f.order == "asc" else column.desc()
+        return query.order_by(direction, QrCode.id.desc())
+
+
 @router.get("", response_model=list[QrOut])
 def list_qr(
-    search: str = Query(default="", max_length=120),
-    kind: Literal["", "static", "dynamic"] = "",
-    status: Literal["", "active", "paused", "blocked"] = "",
-    qr_type: str = Query(default="", max_length=16),
-    view: Literal["", "links", "dynamic_qr", "static"] = "",
-    folder: str = Query(default="", max_length=10),  # "" = all, "none" = unfiled, or a folder id
-    tag_ids: list[int] = Query(default_factory=list, max_length=10),  # all of them
-    created_from: date | None = None,
-    created_to: date | None = None,
-    scans_min: int | None = Query(default=None, ge=0),
-    scans_max: int | None = Query(default=None, ge=0),
-    sort: Literal["created", "name", "scans", "updated"] = "created",
-    order: Literal["asc", "desc"] = "desc",
+    filters: ListFilters = Depends(),
     ctx: CompanyContext = Depends(owned_company),
     session: Session = Depends(get_session),
 ):
-    query = select(QrCode).where(QrCode.company_id == ctx.company.id, QrCode.deleted_at.is_(None))
-    if view == "links":  # 0.3 unified list: short links without a QR yet
-        query = query.where(QrCode.kind == "dynamic", QrCode.has_qr.is_(False))
-    elif view == "dynamic_qr":
-        query = query.where(QrCode.kind == "dynamic", QrCode.has_qr.is_(True))
-    elif view == "static":
-        query = query.where(QrCode.kind == "static")
-    if search.strip():
-        term = f"%{search.strip()}%"
-        query = query.where(
-            or_(QrCode.name.ilike(term), QrCode.target_url.ilike(term), QrCode.slug.ilike(term))
-        )
-    if folder == "none":
-        query = query.where(QrCode.folder_id.is_(None))
-    elif folder.isdigit():  # a folder includes its sub-folders
-        children = select(Folder.id).where(Folder.parent_id == int(folder))
-        query = query.where(or_(QrCode.folder_id == int(folder), QrCode.folder_id.in_(children)))
-    for tag_id in tag_ids:
-        query = query.where(
-            QrCode.id.in_(select(LinkTag.qr_code_id).where(LinkTag.tag_id == tag_id))
-        )
-    if created_from:
-        query = query.where(QrCode.created_at >= datetime.combine(created_from, time.min, UTC))
-    if created_to:
-        query = query.where(
-            QrCode.created_at < datetime.combine(created_to + timedelta(days=1), time.min, UTC)
-        )
-    if scans_min is not None:
-        query = query.where(QrCode.scan_total >= scans_min)
-    if scans_max is not None:
-        query = query.where(QrCode.scan_total <= scans_max)
-    if kind:
-        query = query.where(QrCode.kind == kind)
-    if status:
-        query = query.where(QrCode.status == status)
-    if qr_type:
-        query = query.where(QrCode.qr_type == qr_type)
-    column = {"created": QrCode.created_at, "name": func.lower(QrCode.name),
-              "scans": QrCode.scan_total, "updated": QrCode.updated_at}[sort]  # fmt: skip
-    direction = column.asc() if order == "asc" else column.desc()
-    items = list(session.scalars(query.order_by(direction, QrCode.id.desc())))
+    items = list(session.scalars(filters.query(ctx.company.id)))
     tags = _tags_of(session, [qr.id for qr in items])
     counts = scan_counts(session, [qr.id for qr in items])
     sparks = sparklines(session, [qr.id for qr in items if qr.kind == "dynamic"])
@@ -126,6 +143,24 @@ def list_qr(
         item.tag_ids = tags.get(qr.id, [])
         out.append(item)
     return out
+
+
+@router.get("/export.csv")
+def export_csv(
+    filters: ListFilters = Depends(),
+    ctx: CompanyContext = Depends(owned_company),
+    session: Session = Depends(get_session),
+):
+    """Every link and QR of the company, with the same filters as the list."""
+    from ..imports.service import export_csv as build
+
+    links = list(session.scalars(filters.query(ctx.company.id).limit(50_000)))
+    return Response(
+        build(session, ctx.company, links),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="vorya-qr-link-e-qr.csv"',
+                 "Cache-Control": "no-store"},
+    )  # fmt: skip
 
 
 @router.post("", response_model=QrOut, status_code=201)

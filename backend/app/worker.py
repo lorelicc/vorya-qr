@@ -160,6 +160,66 @@ def cleanup_tokens(session: Session) -> int:
     return a + b
 
 
+def run_queue(session: Session) -> int:
+    """Short-interval work: ZIP rendering of confirmed imports, one job per tick."""
+    import uuid
+
+    from .imports.service import build_zip
+    from .models import ImportJob
+    from .storage.backends import get_storage
+
+    job = session.scalar(
+        select(ImportJob)
+        .where(ImportJob.status == "queued")
+        .order_by(ImportJob.id)
+        .with_for_update(skip_locked=True)
+        .limit(1)
+    )
+    if job is None:
+        return 0
+    job.status, job.processed = "running", 0
+    session.commit()
+
+    def progress(done: int) -> None:
+        job.processed = done
+        session.commit()
+
+    try:
+        data = build_zip(session, job, progress)
+        key = f"files/{uuid.uuid4()}/import"
+        get_storage().put(key, data, "application/zip")
+        job.result_key, job.status, job.finished_at, job.error = key, "done", now(), None
+    except Exception as exc:  # noqa: BLE001 - reported to the user, who can retry
+        session.rollback()
+        job = session.get(ImportJob, job.id)
+        job.status, job.error = (
+            "failed",
+            f"Generazione dello ZIP non riuscita ({type(exc).__name__}).",
+        )
+        log.warning("Import %s failed (%s)", job.id, type(exc).__name__)
+    session.commit()
+    return 1
+
+
+@job
+def purge_import_results(session: Session) -> int:
+    """Result ZIPs are kept 7 days: they can be downloaded again meanwhile."""
+    from datetime import timedelta
+
+    from .models import ImportJob
+    from .storage.backends import get_storage
+
+    old = session.scalars(
+        select(ImportJob).where(
+            ImportJob.result_key.is_not(None), ImportJob.finished_at <= now() - timedelta(days=7)
+        )
+    ).all()
+    for row in old:
+        get_storage().delete(row.result_key)
+        row.result_key = None
+    return len(old)
+
+
 def run_once() -> dict[str, int]:
     """Runs every job once. The advisory lock lives on its own connection: a Session may
     switch pooled connections between commits, which would leave a session lock dangling."""
@@ -182,12 +242,40 @@ def run_once() -> dict[str, int]:
     return results
 
 
+QUEUE_SECONDS = 2
+
+
+def run_queue_once() -> int:
+    """Drains the fast queue (own advisory lock: it never waits for the slow maintenance)."""
+    with get_engine().connect() as lock:
+        if not lock.execute(
+            text("SELECT pg_try_advisory_lock(:k)"), {"k": WORKER_LOCK + 1}
+        ).scalar():
+            return 0
+        try:
+            with session_factory()() as session:
+                return run_queue(session)
+        finally:
+            lock.execute(text("SELECT pg_advisory_unlock(:k)"), {"k": WORKER_LOCK + 1})
+            lock.commit()
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
-    log.info("Vorya QR worker avviato (ogni %ss)", INTERVAL_SECONDS)
+    log.info("Vorya QR worker avviato (coda ogni %ss, manutenzione ogni %ss)", QUEUE_SECONDS,
+             INTERVAL_SECONDS)  # fmt: skip
+    next_maintenance = 0.0
     while True:
-        log.info("Esecuzione job: %s", run_once())
-        time.sleep(INTERVAL_SECONDS)
+        try:
+            if time.monotonic() >= next_maintenance:
+                log.info("Esecuzione job: %s", run_once())
+                next_maintenance = time.monotonic() + INTERVAL_SECONDS
+            busy = run_queue_once()
+        except Exception as exc:  # noqa: BLE001 - e.g. database still migrating: keep running
+            log.warning("Worker in attesa (%s)", type(exc).__name__)
+            busy = 0
+        if not busy:
+            time.sleep(QUEUE_SECONDS)
 
 
 if __name__ == "__main__":

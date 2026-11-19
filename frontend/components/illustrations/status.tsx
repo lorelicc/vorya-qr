@@ -1,5 +1,5 @@
 import { Illustration, art } from "./Illustration";
-import { Badge, Blob, CLOCK, CROSS, LOCK, MiniQr, Paper, Stroke } from "./parts";
+import { Badge, Blob, CHECK, CLOCK, CROSS, LOCK, MiniQr, Paper, Stroke } from "./parts";
 
 /** Locked feature (plan), 404, access denied, trial expired, suspended account. */
 
@@ -163,6 +163,46 @@ export function StaticWarning() {
         <circle cx={166} cy={54} r={2} fill="var(--art-paper)" />
       </g>
       <Stroke d="M44 70c8-12 20-16 32-12" tone="dark" width={2.5} />
+    </Illustration>
+  );
+}
+
+/** 0.3 import: a stack of rows turning into QR codes. state: running | done | errors */
+export function ImportArt({ state }: { state: "running" | "done" | "errors" }) {
+  return (
+    <Illustration>
+      <Blob x={118} y={98} r={58} tone={state === "errors" ? "danger" : "mint"} />
+      <Blob x={190} y={58} r={22} tone={state === "done" ? "peach" : "lilac"} slow />
+      <g className={art.float}>
+        <Paper x={52} y={50} w={86} h={86} />
+        {[0, 1, 2, 3].map((i) => (
+          <rect
+            key={i}
+            x={64}
+            y={64 + i * 16}
+            width={62 - (i % 2) * 14}
+            height={7}
+            rx={3.5}
+            fill="var(--art-line)"
+          />
+        ))}
+      </g>
+      <g className={art.floatSlow}>
+        <Paper x={142} y={64} w={54} h={54} r={10} />
+        <MiniQr x={152} y={74} cell={5} tone="dark" />
+      </g>
+      {state === "running" && <Stroke d="M138 90c2-10 4-10 6 0" width={2.5} />}
+      {state === "running" && <Stroke d="M112 150c12 8 28 8 40 0" />}
+      {state === "done" && (
+        <Badge x={176} y={122} tone="green">
+          {CHECK}
+        </Badge>
+      )}
+      {state === "errors" && (
+        <Badge x={176} y={122} tone="danger">
+          {CROSS}
+        </Badge>
+      )}
     </Illustration>
   );
 }
