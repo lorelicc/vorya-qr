@@ -63,10 +63,12 @@ def download_geoip() -> str:
     target.parent.mkdir(parents=True, exist_ok=True)
     month = datetime.now(UTC).strftime("%Y-%m")
     url = f"https://download.db-ip.com/free/dbip-city-lite-{month}.mmdb.gz"
-    with tempfile.NamedTemporaryFile(dir=target.parent, delete=False) as tmp:
-        with urllib.request.urlopen(url, timeout=120) as response:  # noqa: S310 - fixed https URL
-            with gzip.GzipFile(fileobj=response) as data:
-                shutil.copyfileobj(data, tmp)
+    with (
+        tempfile.NamedTemporaryFile(dir=target.parent, delete=False) as tmp,
+        urllib.request.urlopen(url, timeout=120) as response,  # noqa: S310 - fixed https URL
+        gzip.GzipFile(fileobj=response) as data,
+    ):
+        shutil.copyfileobj(data, tmp)
     import maxminddb
 
     maxminddb.open_database(tmp.name).close()  # refuse a broken download
