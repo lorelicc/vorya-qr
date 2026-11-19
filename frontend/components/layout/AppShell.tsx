@@ -18,6 +18,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import type { Me } from "@/lib/types";
+import { PastDueNotice } from "@/components/billing/BillingBanner";
 import { Brand } from "./Brand";
 import { LegalFooter } from "./LegalFooter";
 import { UserMenu } from "./UserMenu";
@@ -159,6 +160,7 @@ export function AppShell({
           </div>
         </header>
         <main className={styles.content} id="main">
+          {me.workspace?.access === "past_due" && pathname !== "/account/plan" && <PastDueNotice />}
           {children}
         </main>
         <LegalFooter />

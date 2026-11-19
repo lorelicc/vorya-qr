@@ -1,4 +1,5 @@
 export { AuthArtwork } from "./auth";
+export { PaymentKo, PaymentOk, PlanCanceled } from "./billing";
 export { EmptySearch, NoCompanies, NoFolder, NoPresets, NoResults, NoQr, NoStats } from "./empty";
 export { Illustration } from "./Illustration";
 export { Onboarding } from "./onboarding";

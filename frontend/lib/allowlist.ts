@@ -79,7 +79,16 @@ const rules: Rule[] = [
   r("GET", "company-transfers"),
   r("POST", "company-transfers/by-token"),
   r("POST", `company-transfers/${ID}/(accept|decline|cancel)`),
+  // Billing
+  r("GET", "public/plans"),
+  r("GET", "account/billing"),
+  r("PUT", "account/billing/profile"),
+  r("POST", "account/billing/(checkout|portal|change-preview|change|cancel|refresh)"),
   // Admin
+  r("GET", "admin/billing/(status|prices|payments|payments\\.csv|events)"),
+  r("PUT", "admin/billing/settings"),
+  r("POST", "admin/billing/prices"),
+  r("DELETE", `admin/billing/prices/${ID}`),
   r("GET", "admin/(workspaces|plans|company-transfers|reports|blocked-domains|reserved-words)"),
   r("POST", "admin/reserved-words"),
   r("DELETE", "admin/reserved-words/[a-z0-9-]{2,50}"),

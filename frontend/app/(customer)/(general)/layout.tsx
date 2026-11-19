@@ -16,10 +16,9 @@ export default async function GeneralLayout({ children }: { children: React.Reac
     workspace.access === "trial" ? (
       <SidebarPromo
         title={`Prova Pro: ${daysLeft(workspace.trial_ends_at)} giorni`}
-        footer={<Link href="/account/plan">Vedi utilizzo</Link>}
+        footer={<Link href="/account/plan">Scegli un piano</Link>}
       >
-        Al termine della prova i QR dinamici continuano a funzionare. Contattaci per attivare un
-        piano.
+        Scegli un piano prima della fine della prova per non interrompere le modifiche.
       </SidebarPromo>
     ) : undefined;
   return (

@@ -1,5 +1,11 @@
 export type Role = "super_admin" | "platform_admin" | "company_admin";
-export type Access = "active" | "trial" | "trial_expired" | "suspended";
+export type Access =
+  | "active"
+  | "trial"
+  | "trial_expired"
+  | "suspended"
+  | "past_due"
+  | "payment_blocked";
 export type QrKind = "static" | "dynamic";
 export type ErrorCorrection = "L" | "M" | "Q" | "H";
 

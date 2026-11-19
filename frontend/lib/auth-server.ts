@@ -33,7 +33,8 @@ export async function requireCustomer(): Promise<Me> {
   if (!me) redirect("/login");
   if (me.role !== "company_admin") redirect("/admin");
   const access = me.workspace?.access;
-  if (access === "trial_expired" || access === "suspended") redirect("/suspended");
+  if (access === "trial_expired" || access === "suspended" || access === "payment_blocked")
+    redirect("/suspended");
   return me;
 }
 
@@ -63,4 +64,13 @@ export async function serverGet<T>(path: string): Promise<T | null> {
   if (response.status === 423) redirect("/suspended");
   if (!response.ok) throw new Error("Impossibile caricare i dati.");
   return (await response.json()) as T;
+}
+
+/** Billing pages: any customer, also when the workspace is blocked (they must be able to pay). */
+export async function requireBillingCustomer(): Promise<Me> {
+  const me = await fetchMe();
+  if (!me) redirect("/login");
+  if (me.role !== "company_admin") redirect("/admin");
+  if (me.workspace?.access === "suspended") redirect("/suspended");
+  return me;
 }

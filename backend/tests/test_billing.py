@@ -7,7 +7,7 @@ from datetime import timedelta
 import pytest
 from sqlalchemy import select, update
 
-from app.billing import gateway, jobs, service
+from app.billing import gateway, jobs
 from app.billing.mail import send_pending
 from app.billing.validation import BillingProfileIn, valid_tax_code, valid_vat
 from app.core.security import now

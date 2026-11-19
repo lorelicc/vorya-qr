@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { NoCompanies } from "@/components/illustrations";
 import { Lock, Plus, RotateCcw } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -96,12 +97,7 @@ export function CompaniesPage() {
         <p className={styles.locked} role="status">
           <Lock size={16} aria-hidden="true" /> Hai raggiunto il numero di aziende del piano{" "}
           {plan?.plan.name}. Per aggiungerne altre passa a un piano superiore:{" "}
-          <a
-            href={`mailto:${plan?.support_email}?subject=${encodeURIComponent("Upgrade piano Vorya QR")}`}
-          >
-            contattaci
-          </a>
-          .
+          <Link href="/plans">vedi i piani</Link>.
         </p>
       )}
       <TransfersPanel
