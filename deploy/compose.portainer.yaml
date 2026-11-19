@@ -76,7 +76,8 @@ services:
     environment:
       API_INTERNAL_URL: http://backend:8000
     ports:
-      - "127.0.0.1:3200:3000"
+      # Loopback only. Change VORYA_QR_HTTP_PORT if 3200 is taken (and update CloudPanel).
+      - "127.0.0.1:${VORYA_QR_HTTP_PORT:-3200}:3000"
     networks: [app]
     depends_on:
       backend:

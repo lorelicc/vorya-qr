@@ -18,7 +18,7 @@ Da SSH, sul VPS:
 curl --fail http://127.0.0.1:3200/api/health
 ```
 
-Risposta attesa: `{"status":"ok","database":"connected","version":"0.1.0"}`. La porta 3200 non va aperta nel firewall: è solo su loopback.
+Risposta attesa: `{"status":"ok","database":"connected","version":"0.1.0"}`. La porta 3200 (o quella impostata in `VORYA_QR_HTTP_PORT`) non va aperta nel firewall: è solo su loopback.
 
 ## 3. Sito Reverse Proxy in CloudPanel
 

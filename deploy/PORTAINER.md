@@ -31,6 +31,7 @@ Inserirle in **Environment variables** (l'elenco completo, con segnaposto, è in
 | `SMTP_FROM_NAME` | No | `Vorya QR` | |
 | `SUPPORT_EMAIL` | No | `supporto@vorya.it` | Indirizzo del pulsante "Contattaci" a fine prova o con account sospeso. |
 | `PUBLIC_REGISTRATION_ENABLED` | No | `true` | `false` chiude le nuove registrazioni. |
+| `VORYA_QR_HTTP_PORT` | No | `3200` | Porta su `127.0.0.1` del frontend. Cambiarla solo se la 3200 è occupata, e usare la stessa in CloudPanel. |
 | `POSTGRES_USER` / `POSTGRES_DB` | No | `vorya_qr` | Lasciare i default. Cambiarli dopo il primo avvio non modifica un volume esistente. |
 
 `DATABASE_URL`, `APP_ENV=production`, `MAIL_TRANSPORT=smtp` e `API_INTERNAL_URL` sono già fissati nel Compose. Le variabili restano in Portainer e non in GitHub: chi amministra Portainer può leggerle.
@@ -60,6 +61,20 @@ Inserirle in **Environment variables** (l'elenco completo, con segnaposto, è in
 1. Fare un backup del database ([VPS.md](VPS.md#backup-e-restore-del-database)).
 2. In Portainer: **Pull and redeploy** sullo stack. `migrate` riparte, applica le nuove migrazioni ed esce; poi ripartono backend e frontend.
 3. Non eliminare il volume `postgres_data` e non rinominare lo stack: un nome diverso crea un volume nuovo e vuoto.
+
+## Errore "port is already allocated"
+
+Se il deploy fallisce con `Bind for 127.0.0.1:3200 failed: port is already allocated`, un altro processo usa già la porta. Dal VPS:
+
+```bash
+sudo ss -ltnp 'sport = :3200'
+```
+
+```bash
+docker ps -a --format '{{.Names}}\t{{.Ports}}' | grep 3200
+```
+
+Se è un container rimasto da un tentativo precedente, eliminarlo; altrimenti impostare `VORYA_QR_HTTP_PORT` su una porta libera (es. `3201`), rifare il deploy e usare la stessa porta nel Reverse Proxy URL di CloudPanel.
 
 ## Note
 
