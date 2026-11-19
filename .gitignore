@@ -24,6 +24,8 @@ playwright-report/
 test-results/
 .mail-outbox/
 .e2e-uploads/
+.uploads/
+.geoip/
 
 # Sistema
 .DS_Store

@@ -38,6 +38,19 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-noreply@vorya.it}
       SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Vorya QR}
+      # 0.2: uploaded files (local volume by default, or any S3-compatible service).
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      STORAGE_LOCAL_PATH: /data/uploads
+      STORAGE_S3_ENDPOINT: ${STORAGE_S3_ENDPOINT:-}
+      STORAGE_S3_REGION: ${STORAGE_S3_REGION:-}
+      STORAGE_S3_BUCKET: ${STORAGE_S3_BUCKET:-}
+      STORAGE_S3_PREFIX: ${STORAGE_S3_PREFIX:-vorya-qr/}
+      STORAGE_S3_ACCESS_KEY: ${STORAGE_S3_ACCESS_KEY:-}
+      STORAGE_S3_SECRET_KEY: ${STORAGE_S3_SECRET_KEY:-}
+      # 0.2: approximate scan places (DB-IP Lite, downloaded with `python -m app.cli download-geoip`).
+      GEOIP_DB_PATH: /data/geoip/dbip-city-lite.mmdb
+      # 0.2: Google Safe Browsing key; empty = check skipped (logged).
+      SAFE_BROWSING_API_KEY: ${SAFE_BROWSING_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy
@@ -46,6 +59,9 @@ services:
   backend:
     build: ./backend
     environment: *backend_environment
+    volumes:
+      - uploads_data:/data/uploads
+      - geoip_data:/data/geoip
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -54,6 +70,18 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
+
+  worker:
+    build: ./backend
+    command: ["python", "-m", "app.worker"]
+    environment: *backend_environment
+    volumes:
+      - uploads_data:/data/uploads
+      - geoip_data:/data/geoip
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   frontend:
@@ -69,3 +97,5 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
+  geoip_data:

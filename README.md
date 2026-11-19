@@ -3,11 +3,12 @@
 SaaS per creare e gestire **codici QR statici e dinamici**, su [qr.vorya.it](https://qr.vorya.it). Fa parte della famiglia **Vorya Apps** insieme a Vorya Sign, con cui condivide identità visiva, layout, autenticazione e modalità di deploy.
 
 - **QR statici**: l'URL è scritto direttamente nel codice.
-- **QR dinamici**: il codice punta a `https://qr.vorya.it/r/{slug}`. La destinazione si cambia in qualsiasi momento, si può mettere in pausa e ogni scansione viene contata (senza IP né geolocalizzazione).
-- Export PNG e SVG con colori, margine e correzione d'errore personalizzabili, anteprima live e avviso se il contrasto non basta per la scansione.
+- **QR dinamici**: il codice punta a `https://qr.vorya.it/r/{slug}`. La destinazione (un link o una pagina ospitata: vCard, PDF, musica, link in bio, galleria, pagina attività) si cambia in qualsiasi momento, si può mettere in pausa e ogni scansione viene contata senza salvare l'indirizzo IP.
+- **Più aziende per account**, con trasferimento tra account, file caricati, design del QR verificato con decodifica, statistiche con luoghi approssimativi e gestione degli abusi.
+- Export PNG, SVG e PDF con forme, colori, gradienti e logo, anteprima live e blocco del salvataggio se il QR non è scansionabile.
 - Prova gratuita di 14 giorni con i limiti del piano Pro. Il piano si assegna dall'area admin (nessun pagamento online nella 0.1).
 
-Versione: **0.1.0**. Funzionalità e scelte architetturali: [docs/V01.md](docs/V01.md).
+Versione: **0.2.0**. Novità e decisioni della 0.2: [docs/V02.md](docs/V02.md); base della 0.1: [docs/V01.md](docs/V01.md).
 
 ## Stack
 
@@ -16,8 +17,8 @@ Versione: **0.1.0**. Funzionalità e scelte architetturali: [docs/V01.md](docs/V
 | Frontend / BFF | Next.js 16 (App Router, output standalone), React 19, TypeScript, CSS Modules con i token Vorya |
 | API | FastAPI su Python 3.12, SQLAlchemy 2, Pydantic 2 |
 | Database | PostgreSQL 17, migrazioni Alembic in un servizio one-shot |
-| QR | `segno` (PNG e SVG lato server) |
-| Analytics | `ua-parser` sullo user-agent: dispositivo, sistema operativo, browser, bot |
+| QR | `segno` (matrice) + renderer SVG proprio, `cairosvg` per PNG/PDF, `zxing-cpp` per la verifica |
+| Analytics | `ua-parser` sullo user-agent; DB-IP Lite (`maxminddb`) per paese e città, IP mai salvato |
 | Test | pytest, Vitest + Testing Library, Playwright |
 | Qualità | ruff, ESLint, Prettier, GitHub Actions |
 | Deploy | Docker, stack Git in Portainer, CloudPanel come reverse proxy |

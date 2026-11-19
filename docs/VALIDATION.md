@@ -1,4 +1,4 @@
-# Vorya QR 0.1: checklist di validazione dopo il deploy
+# Vorya QR 0.2: checklist di validazione dopo il deploy
 
 Da eseguire dopo ogni deploy in produzione su `https://qr.vorya.it`, **da un PC** (Chrome, Edge o Firefox recenti) e **da un iPhone reale** (Safari, iOS aggiornato). Segnare ogni riga con ✅ o ❌ e annotare data, versione (`/api/health`) e chi ha eseguito il test.
 
@@ -8,8 +8,8 @@ Serve: una casella email raggiungibile per la registrazione, l'account super adm
 
 | # | Verifica | Dove | Atteso | Esito |
 | --- | --- | --- | --- | --- |
-| 1.1 | In Portainer, stato dei servizi | PC | `db`, `backend` e `frontend` healthy; `migrate` exited (0) | |
-| 1.2 | Apri `https://qr.vorya.it/api/health` | PC | `status: ok`, `database: connected`, `version: 0.1.0` | |
+| 1.1 | In Portainer, stato dei servizi | PC | `db`, `backend` e `frontend` healthy; `worker` running; `migrate` exited (0) | |
+| 1.2 | Apri `https://qr.vorya.it/api/health` | PC | `status: ok`, `database: connected`, `version: 0.2.0` | |
 | 1.3 | Lucchetto del browser su `https://qr.vorya.it` | PC + iPhone | Certificato Let's Encrypt valido, nessun avviso | |
 | 1.4 | Apri `http://qr.vorya.it` (senza la s) | PC | Reindirizza a HTTPS | |
 | 1.5 | Apri `https://qr.vorya.it/api/openapi.json` | PC | 404: documentazione API non esposta in produzione | |
@@ -97,3 +97,75 @@ psql -U vorya_qr -d vorya_qr -c "UPDATE workspaces SET trial_ends_at = now() - i
 | --- | --- | --- | --- | --- |
 | 8.1 | Esegui il backup di [deploy/VPS.md](../deploy/VPS.md#backup-e-restore-del-database) | VPS | File `.dump` creato e leggibile con `pg_restore --list` | |
 | 8.2 | Copia il file fuori dal VPS | VPS | Copia presente nello storage esterno | |
+
+---
+
+# Verifiche della 0.2
+
+Dopo l'aggiornamento, con **un iPhone reale** (Safari, iOS aggiornato). Per i test di stampa usare carta bianca opaca; per lo schermo, luminosità al massimo.
+
+## 9. QR della 0.1 dopo l'aggiornamento
+
+| # | Verifica | Dove | Atteso | Esito |
+| --- | --- | --- | --- | --- |
+| 9.1 | Scansiona un QR dinamico **stampato con la 0.1** | iPhone | Apre la stessa destinazione di prima dell'aggiornamento | |
+| 9.2 | Accedi con l'account che lo ha creato | PC | Il QR è nella prima azienda (nome dello spazio di lavoro), con le statistiche di prima | |
+| 9.3 | Cambia la destinazione e riscansiona lo stesso foglio | iPhone | Apre la nuova destinazione | |
+
+## 10. Scansione di QR con stili e logo diversi
+
+Crea e stampa (PDF a 3 cm di lato) questi QR, poi scansionali con la Fotocamera di iPhone:
+
+| # | Stile | Atteso | Esito |
+| --- | --- | --- | --- |
+| 10.1 | Moduli quadrati, nero su bianco | Letto subito | |
+| 10.2 | Pallini + cornice cerchio + centro cerchio | Letto subito | |
+| 10.3 | Fluidi + gradiente lineare verde scuro → nero | Letto subito | |
+| 10.4 | Classy + gradiente radiale + colore occhi diverso | Letto subito | |
+| 10.5 | Logo al 25% (correzione H forzata) | Letto subito | |
+| 10.6 | Logo al 30% con sfondo trasparente, stampato su carta bianca | Letto, eventualmente avvicinando il telefono | |
+| 10.7 | Nel designer, colore dei moduli `#e0e0e0` | Badge rosso, "Crea codice QR" disabilitato | |
+| 10.8 | Export PNG 2048 px aperto su un monitor | Letto dallo schermo | |
+
+## 11. Pagine ospitate
+
+| # | Verifica | Dove | Atteso | Esito |
+| --- | --- | --- | --- | --- |
+| 11.1 | Scansiona un QR **vCard** e tocca "Salva contatto" | iPhone | Si apre la scheda Contatti con nome, azienda, telefono, email e indirizzo corretti (accenti compresi); "Crea nuovo contatto" lo salva | |
+| 11.2 | Scansiona un QR **PDF** e apri il documento | iPhone | Anteprime delle prime pagine visibili subito; "Apri" mostra il PDF intero e si può scorrere e ingrandire | |
+| 11.3 | Scansiona un QR **Musica** e premi play | iPhone | L'audio parte; trascinando la barra di avanzamento la riproduzione salta al punto scelto senza ripartire da capo | |
+| 11.4 | Durante la riproduzione blocca lo schermo | iPhone | Nessun errore alla riapertura; i link alle piattaforme aprono le app corrispondenti | |
+| 11.5 | Link in bio e Pagina attività: tocca pulsanti e social | iPhone | Si aprono le destinazioni; nelle statistiche compaiono i clic per elemento | |
+| 11.6 | Nessuna barra di scorrimento orizzontale su tutte le pagine | iPhone | Contenuto entro lo schermo, testo leggibile senza zoom | |
+
+## 12. Bottom sheet, swipe e movimento
+
+| # | Verifica | Dove | Atteso | Esito |
+| --- | --- | --- | --- | --- |
+| 12.1 | Apri un modale (es. "Crea azienda") | iPhone | Si apre dal basso come bottom sheet | |
+| 12.2 | Trascina il bottom sheet verso il basso | iPhone | Segue il dito e si chiude con uno swipe deciso o trascinato abbastanza in basso; altrimenti torna su | |
+| 12.3 | Wizard "Nuovo QR": avanti e indietro tra gli step | iPhone | Transizione orizzontale fluida, barra di avanzamento che si riempie | |
+| 12.4 | Crea un QR | iPhone | Animazione di conferma breve (check che si disegna), una volta sola | |
+| 12.5 | Attiva **Impostazioni → Accessibilità → Movimento → Riduci movimento** e ripeti 12.1–12.4 | iPhone | Niente scorrimenti né rimbalzi: solo dissolvenze brevi o cambi istantanei; grafici e numeri compaiono già completi | |
+
+## 13. Aziende e trasferimento
+
+| # | Verifica | Dove | Atteso | Esito |
+| --- | --- | --- | --- | --- |
+| 13.1 | Crea una seconda azienda e passa dall'una all'altra | PC | Il selettore mostra entrambe; ricaricando si riapre l'ultima usata | |
+| 13.2 | Trasferisci un'azienda a un secondo account di test | PC | Il destinatario riceve l'email e vede la richiesta in Aziende | |
+| 13.3 | Il destinatario accetta; scansiona un QR dell'azienda | iPhone | Il QR funziona come prima; il mittente non vede più l'azienda | |
+| 13.4 | Elimina un'azienda di test e ripristinala | PC | I QR mostrano "QR non attivo" mentre è eliminata e tornano attivi dopo il ripristino | |
+
+## 14. Statistiche, abusi e upload
+
+| # | Verifica | Dove | Atteso | Esito |
+| --- | --- | --- | --- | --- |
+| 14.1 | Dopo alcune scansioni apri le statistiche | PC | Paese e città (se scaricato il database DB-IP), visitatori unici stimati, attribuzione DB-IP in fondo | |
+| 14.2 | Esporta il CSV e aprilo in Excel | PC | Colonne separate, accenti corretti | |
+| 14.3 | Apri `/report` e invia una segnalazione per un QR di test | iPhone | Messaggio di conferma; la segnalazione compare in Admin → Segnalazioni | |
+| 14.4 | Admin: "Blocca il QR" | PC | Lo slug mostra "QR non attivo"; il cliente non può riattivarlo | |
+| 14.5 | Admin: aggiungi un dominio bloccato e prova a usarlo in un QR | PC | Errore "Questa destinazione non è consentita" | |
+| 14.6 | Carica un PDF di 20 MB su un account Pro | PC | Barra di avanzamento reale e upload completato (nessun errore 413 da CloudPanel) | |
+| 14.7 | Trascina un file sulla dropzone | PC | L'area reagisce al trascinamento; un file SVG o EXE viene rifiutato con un messaggio chiaro | |
+| 14.8 | Backup del volume dei file ([VPS.md](../deploy/VPS.md#backup-dei-file-caricati-02)) | VPS | Archivio `.tgz` creato | |

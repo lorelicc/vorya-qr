@@ -1,4 +1,4 @@
-# Vorya QR 0.1: VPS, CloudPanel e backup
+# Vorya QR 0.2: VPS, CloudPanel e backup
 
 Percorso previsto: **stack Portainer sul Docker del VPS → sito Reverse Proxy di CloudPanel sullo stesso VPS → HTTPS con Let's Encrypt**. Lo stack si crea seguendo [PORTAINER.md](PORTAINER.md).
 
@@ -18,7 +18,7 @@ Da SSH, sul VPS:
 curl --fail http://127.0.0.1:3200/api/health
 ```
 
-Risposta attesa: `{"status":"ok","database":"connected","version":"0.1.0"}`. La porta 3200 (o quella impostata in `VORYA_QR_HTTP_PORT`) non va aperta nel firewall: è solo su loopback.
+Risposta attesa: `{"status":"ok","database":"connected","version":"0.2.0"}`. La porta 3200 (o quella impostata in `VORYA_QR_HTTP_PORT`) non va aperta nel firewall: è solo su loopback.
 
 ## 3. Sito Reverse Proxy in CloudPanel
 
@@ -43,6 +43,30 @@ curl -sI https://qr.vorya.it/r/abcdefg
 Il primo deve rispondere `200`. Il secondo deve rispondere `404` con `cache-control: no-store`: è la pagina "QR non attivo" per un link inesistente.
 
 > I link brevi `/r/{slug}` passano dallo stesso sito: non aggiungere cache di CloudPanel (Varnish o simili) sul percorso `/r/`, altrimenti i cambi di destinazione e la pausa non avrebbero effetto immediato. L'app invia sempre `Cache-Control: no-store`.
+
+## Upload dei file (0.2)
+
+Dalla 0.2 si caricano immagini, PDF e audio (fino a 50 MB per file nel piano Plus). Nginx di CloudPanel accetta di default corpi più piccoli: in **Sites → qr.vorya.it → Vhost** aggiungere dentro il blocco `server { ... }` (quello in ascolto su 443):
+
+```nginx
+client_max_body_size 60m;
+```
+
+Salvare: CloudPanel ricarica Nginx. Senza questa riga gli upload grandi falliscono con errore 413 prima di arrivare all'app. Non serve altro: le risposte di `/f/` supportano già le richieste parziali (Range) usate dai lettori audio e PDF di iPhone.
+
+## Database dei luoghi (0.2)
+
+Le statistiche mostrano paese e città approssimativi grazie a DB-IP Lite City (licenza CC BY 4.0; l'attribuzione compare nella pagina delle statistiche). Il file sta nel volume `geoip_data` e si aggiorna una volta al mese dalla console del container `backend`:
+
+```bash
+python -m app.cli download-geoip
+```
+
+Poi riavviare `backend`. Da SSH, per una riga cron mensile:
+
+```bash
+20 4 3 * * docker exec vorya-qr-backend-1 python -m app.cli download-geoip && docker restart vorya-qr-backend-1
+```
 
 ## Backup e restore del database
 
@@ -73,7 +97,7 @@ Copiare poi il file **fuori dal VPS** (storage esterno o un altro server): un ba
 Il restore sovrascrive i dati attuali. Fermare prima backend e frontend, così nessuno scrive durante l'operazione:
 
 ```bash
-docker stop vorya-qr-frontend-1 vorya-qr-backend-1
+docker stop vorya-qr-frontend-1 vorya-qr-backend-1 vorya-qr-worker-1
 ```
 
 ```bash
@@ -81,10 +105,26 @@ docker exec -i vorya-qr-db-1 sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES
 ```
 
 ```bash
-docker start vorya-qr-backend-1 vorya-qr-frontend-1
+docker start vorya-qr-backend-1 vorya-qr-worker-1 vorya-qr-frontend-1
 ```
 
 Se il backup è di una versione precedente, fare **Pull and redeploy** dello stack in Portainer: il servizio `migrate` porta lo schema all'ultima versione.
+
+### Backup dei file caricati (0.2)
+
+Con `STORAGE_DRIVER=local` i file sono nel volume `uploads_data`. Archivio compresso, eseguito da un container temporaneo che legge il volume:
+
+```bash
+docker run --rm -v vorya-qr_uploads_data:/data:ro -v "$PWD":/backup alpine tar czf /backup/vorya-qr-uploads-$(date +%Y%m%d).tgz -C /data .
+```
+
+Restore (con `backend` e `worker` fermi):
+
+```bash
+docker run --rm -v vorya-qr_uploads_data:/data -v "$PWD":/backup alpine sh -c 'rm -rf /data/* && tar xzf /backup/vorya-qr-uploads-AAAAMMGG.tgz -C /data'
+```
+
+Fare database e file nello stesso momento: il database contiene l'elenco dei file, il volume i loro byte. Il nome del volume dipende dal nome dello stack: verificarlo con `docker volume ls | grep vorya-qr`.
 
 ### Frequenza consigliata
 
