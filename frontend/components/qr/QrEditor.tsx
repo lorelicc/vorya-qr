@@ -96,7 +96,7 @@ export function QrEditor({ initial, initialPage, initialFiles, onSaved }: Props)
             />
           </Card>
         )}
-        {type && (
+        {type && initial?.has_qr !== false && (
           <Card title="Aspetto del QR">
             <DesignPanel
               value={draft.design}
@@ -132,6 +132,10 @@ export function QrEditor({ initial, initialPage, initialFiles, onSaved }: Props)
             )}
             {page && view === "page" ? (
               <PhonePreview page={page} files={q.files} />
+            ) : initial?.has_qr === false ? (
+              <p className="muted">
+                Link breve senza QR. Usa «Genera QR» per ottenere anche il codice da stampare.
+              </p>
             ) : (
               <QrPreview
                 payload={q.previewPayload}

@@ -1,25 +1,37 @@
 "use client";
-import { BarChart3, Copy, Download, Pause, Play } from "lucide-react";
+import { BarChart3, Copy, Download, Pause, Play, QrCode } from "lucide-react";
 import Link from "next/link";
 import { useCompany } from "@/lib/company-context";
-import type { QrCode } from "@/lib/types";
+import type { QrCode as Qr } from "@/lib/types";
 import type { QrActions } from "./useQrActions";
 import styles from "./QrList.module.css";
 
-export function QrQuickActions({ qr, actions }: { qr: QrCode; actions: QrActions }) {
+export function QrQuickActions({ qr, actions }: { qr: Qr; actions: QrActions }) {
   const { app } = useCompany();
   const busy = actions.busy === qr.id;
   const dynamic = qr.kind === "dynamic";
   return (
     <div className={styles.quick}>
-      <a
-        href={actions.image(qr, "png")}
-        download
-        title="Scarica PNG"
-        aria-label={`Scarica ${qr.name} in PNG`}
-      >
-        <Download size={16} />
-      </a>
+      {qr.has_qr ? (
+        <a
+          href={actions.image(qr, "png")}
+          download
+          title="Scarica PNG"
+          aria-label={`Scarica ${qr.name} in PNG`}
+        >
+          <Download size={16} />
+        </a>
+      ) : (
+        <button
+          type="button"
+          onClick={() => actions.generateQr(qr)}
+          disabled={busy}
+          title="Genera QR"
+          aria-label={`Genera QR per ${qr.name}`}
+        >
+          <QrCode size={16} />
+        </button>
+      )}
       <button
         type="button"
         onClick={() => actions.duplicate(qr)}

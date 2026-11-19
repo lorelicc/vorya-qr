@@ -12,6 +12,7 @@ from sqlalchemy import (
     LargeBinary,
     String,
     func,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -20,7 +21,10 @@ from ..core.database import Base
 
 class QrCode(Base):
     __tablename__ = "qr_codes"
-    __table_args__ = (Index("ix_qr_codes_workspace_deleted", "workspace_id", "deleted_at"),)
+    __table_args__ = (
+        Index("ix_qr_codes_workspace_deleted", "workspace_id", "deleted_at"),
+        Index("ix_qr_codes_lower_slug", func.lower(text("slug"))),
+    )
     id: Mapped[int] = mapped_column(primary_key=True)
     # Denormalized owner, kept in sync with companies.workspace_id (quotas, redirect).
     workspace_id: Mapped[int] = mapped_column(ForeignKey("workspaces.id"))
@@ -44,6 +48,15 @@ class QrCode(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+    # 0.3: a dynamic row is a short link; `has_qr` says whether it also has a QR format.
+    has_qr: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    scan_total: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    # 0.3 link rules, on the same row so the redirect stays a single query.
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    max_scans: Mapped[int | None] = mapped_column(Integer)
+    fallback_url: Mapped[str | None] = mapped_column(String(2048))
+    password_hash: Mapped[str | None] = mapped_column(String(255))
+    schedule: Mapped[list | None] = mapped_column(JSON)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
@@ -60,6 +73,7 @@ class ScanEvent(Base):
     browser: Mapped[str] = mapped_column(String(40))
     referrer_host: Mapped[str | None] = mapped_column(String(255))
     is_bot: Mapped[bool] = mapped_column(Boolean, default=False)
+    outcome: Mapped[str] = mapped_column(String(12), default="ok", server_default="ok")
     # 0.2: approximate place from DB-IP Lite (the IP itself is discarded) and a daily-salted
     # hash used only to estimate unique visitors within one day.
     country_code: Mapped[str | None] = mapped_column(String(2))
@@ -102,3 +116,13 @@ class QrPage(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class ReservedWord(Base):
+    """Back-halves that can never be used: app routes (fixed) and misleading words (admin)."""
+
+    __tablename__ = "reserved_words"
+    word: Mapped[str] = mapped_column(String(50), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(8))  # route | blocked
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

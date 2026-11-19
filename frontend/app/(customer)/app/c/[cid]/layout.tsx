@@ -19,7 +19,7 @@ export default async function CompanyLayout({
   if (!company) notFound();
   const base = `/app/c/${cid}`;
   const nav: NavItem[] = [
-    { href: base, label: "Codici QR", icon: "qr" },
+    { href: base, label: "Link e QR", icon: "qr" },
     { href: `${base}/qr/new`, label: "Nuovo QR", icon: "new" },
     { href: `${base}/stats`, label: "Statistiche", icon: "stats" },
     { href: `${base}/styles`, label: "Stili", icon: "styles" },

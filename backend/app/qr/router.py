@@ -52,10 +52,17 @@ def list_qr(
     kind: Literal["", "static", "dynamic"] = "",
     status: Literal["", "active", "paused", "blocked"] = "",
     qr_type: str = Query(default="", max_length=16),
+    view: Literal["", "links", "dynamic_qr", "static"] = "",
     ctx: CompanyContext = Depends(owned_company),
     session: Session = Depends(get_session),
 ):
     query = select(QrCode).where(QrCode.company_id == ctx.company.id, QrCode.deleted_at.is_(None))
+    if view == "links":  # 0.3 unified list: short links without a QR yet
+        query = query.where(QrCode.kind == "dynamic", QrCode.has_qr.is_(False))
+    elif view == "dynamic_qr":
+        query = query.where(QrCode.kind == "dynamic", QrCode.has_qr.is_(True))
+    elif view == "static":
+        query = query.where(QrCode.kind == "static")
     if search.strip():
         term = f"%{search.strip()}%"
         query = query.where(or_(QrCode.name.ilike(term), QrCode.target_url.ilike(term)))
@@ -181,6 +188,22 @@ def duplicate_qr(
     audit(session, ctx.user, "qr.duplicated", ctx.workspace.id, ctx.company.id, qr_id=qr.id)
     session.commit()
     return qr_out(qr)
+
+
+@router.post("/{qr_id}/generate-qr", response_model=QrOut)
+def generate_qr(
+    qr_id: int,
+    ctx: CompanyContext = Depends(owned_company),
+    session: Session = Depends(get_session),
+):
+    """A short link gets its QR format: same slug, so the QR encodes the existing link."""
+    qr = get_owned(session, ctx, qr_id, lock=True)
+    require_dynamic(qr)
+    if not qr.has_qr:
+        qr.has_qr = True
+        audit(session, ctx.user, "link.qr_generated", ctx.workspace.id, ctx.company.id, qr_id=qr.id)
+        session.commit()
+    return qr_out(qr, scan_counts(session, [qr.id]).get(qr.id, 0))
 
 
 @router.post("/{qr_id}/{action}", response_model=QrOut)

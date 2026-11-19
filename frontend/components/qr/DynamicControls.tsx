@@ -49,7 +49,7 @@ export function DynamicControls({ qr, onChange }: { qr: QrCode; onChange: (qr: Q
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(qr.short_url ?? "");
+      await navigator.clipboard.writeText(qr.root_url ?? qr.short_url ?? "");
       toast.show("Link breve copiato.");
     } catch {
       toast.show("Copia non riuscita: seleziona il link e copialo a mano.", "error");
@@ -66,11 +66,16 @@ export function DynamicControls({ qr, onChange }: { qr: QrCode; onChange: (qr: Q
           </p>
         )}
         <div className={styles.link}>
-          <code>{qr.short_url}</code>
+          <code>{qr.root_url ?? qr.short_url}</code>
           <Button variant="secondary" icon={<Copy size={16} />} onClick={copy}>
             Copia
           </Button>
         </div>
+        {qr.has_qr && (
+          <p className={styles.hint}>
+            Nel QR stampato c’è <code>{qr.short_url}</code>: funzionano entrambi, per sempre.
+          </p>
+        )}
         <div className={styles.actions}>
           <ButtonLink
             variant="secondary"

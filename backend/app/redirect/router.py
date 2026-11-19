@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 
 from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from ..access import redirects_enabled
 from ..auth.service import client_ip
@@ -53,6 +53,10 @@ def record_scan(qr_id: int, user_agent: str, referrer: str, ip: str = "unknown")
                     visitor_hash=hashed,
                 )
             )
+            if not info.is_bot:  # 0.3: counter used by "expires after N scans"
+                session.execute(
+                    update(QrCode).where(QrCode.id == qr_id).values(scan_total=QrCode.scan_total + 1)
+                )
             session.commit()
     except Exception as exc:  # noqa: BLE001 - analytics must never affect redirects
         logger.warning("Scan not recorded (%s)", type(exc).__name__)
@@ -74,6 +78,7 @@ def follow(slug: str, request: Request, tasks: BackgroundTasks):
                 QrCode.status,
                 QrCode.deleted_at,
                 QrCode.destination,
+                QrCode.slug,
                 Company.deleted_at.label("company_deleted_at"),
                 Workspace.status.label("workspace_status"),
             )
@@ -100,5 +105,8 @@ def follow(slug: str, request: Request, tasks: BackgroundTasks):
         )
     if row.destination == "page":
         # The hosted page is rendered by the frontend on the same URL (no extra hop).
-        return Response(status_code=200, headers={**HEADERS, "X-Vorya-Destination": "page"})
+        return Response(
+            status_code=200,
+            headers={**HEADERS, "X-Vorya-Destination": "page", "X-Vorya-Slug": row.slug},
+        )
     return RedirectResponse(row.target_url, status_code=302, headers=HEADERS)

@@ -10,6 +10,7 @@ import type { QrCode } from "@/lib/types";
 import type { UploadedFile } from "@/lib/upload";
 import { toPageFile } from "./pages/shared";
 import { DownloadPanel } from "./DownloadPanel";
+import { GenerateQrCard } from "@/components/links/GenerateQrCard";
 import { DynamicControls } from "./DynamicControls";
 import { KindBadge, StatusBadge } from "./QrBadges";
 import { QrEditor } from "./QrEditor";
@@ -82,7 +83,11 @@ export function QrDetail({ id }: { id: number }) {
         ) : (
           <StaticControls qr={qr} />
         )}
-        <DownloadPanel qrId={qr.id} key={version} />
+        {qr.has_qr ? (
+          <DownloadPanel qrId={qr.id} key={version} />
+        ) : (
+          <GenerateQrCard qr={qr} onDone={setQr} />
+        )}
       </div>
       <QrEditor
         key={qr.updated_at}

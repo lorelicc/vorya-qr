@@ -5,9 +5,35 @@ import styles from "./QrFilters.module.css";
 
 export type Filters = {
   search: string;
-  kind: "" | "static" | "dynamic";
+  view: "" | "links" | "dynamic_qr" | "static";
   status: "" | "active" | "paused" | "blocked";
 };
+
+export const VIEWS: { value: Filters["view"]; label: string }[] = [
+  { value: "", label: "Tutti" },
+  { value: "links", label: "Link brevi" },
+  { value: "dynamic_qr", label: "QR dinamici" },
+  { value: "static", label: "QR statici" },
+];
+
+/** Tutti / Link brevi / QR dinamici / QR statici. */
+export function ViewTabs({ value, onChange }: { value: Filters; onChange: (f: Filters) => void }) {
+  return (
+    <div className={styles.views} role="radiogroup" aria-label="Mostra">
+      {VIEWS.map((v) => (
+        <button
+          key={v.value || "all"}
+          type="button"
+          role="radio"
+          aria-checked={value.view === v.value}
+          onClick={() => onChange({ ...value, view: v.value })}
+        >
+          {v.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function QrFilters({
   value,
@@ -28,18 +54,6 @@ export function QrFilters({
           value={value.search}
           onChange={(event) => onChange({ ...value, search: event.target.value })}
         />
-      </label>
-      <label>
-        <span className="visually-hidden">Tipo</span>
-        <select
-          className={`${fieldStyles.control} ${fieldStyles.select}`}
-          value={value.kind}
-          onChange={(event) => onChange({ ...value, kind: event.target.value as Filters["kind"] })}
-        >
-          <option value="">Tutti i tipi</option>
-          <option value="dynamic">Dinamici</option>
-          <option value="static">Statici</option>
-        </select>
       </label>
       <label>
         <span className="visually-hidden">Stato</span>

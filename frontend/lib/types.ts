@@ -39,6 +39,9 @@ export type QrCode = QrStyle & {
   slug: string | null;
   short_url: string | null;
   status: "active" | "paused" | "blocked";
+  has_qr: boolean;
+  scan_total: number;
+  root_url: string | null;
   blocked_reason?: string | null;
   scan_count: number;
   spark?: number[] | null;

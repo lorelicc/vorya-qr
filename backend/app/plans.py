@@ -54,6 +54,14 @@ class PlanFeatures(BaseModel):
     remove_branding: bool = False
     stats_retention_days: int | None = Field(default=90, ge=1, le=36_500)
     max_style_presets: int | None = Field(default=3, ge=0, le=10_000)
+    # 0.3
+    custom_back_half: bool = False
+    max_aliases_per_link: int | None = Field(default=0, ge=0, le=1000)
+    link_rules: bool = False  # expiry, password, scheduled destination
+    utm_templates: bool = False
+    max_bulk_rows: int = Field(default=0, ge=0, le=100_000)
+    version_history: bool = False
+    menu_type: bool = False
 
     @field_validator("allowed_types")
     @classmethod

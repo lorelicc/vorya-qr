@@ -9,7 +9,8 @@ import { useDebouncedValue } from "@/lib/hooks";
 import type { AccountPlan, QrCode } from "@/lib/types";
 import { OnboardingPanel } from "./OnboardingPanel";
 import { QrCards } from "./QrCards";
-import { QrFilters, type Filters } from "./QrFilters";
+import { QuickLinkBar } from "@/components/links/QuickLinkBar";
+import { QrFilters, ViewTabs, type Filters } from "./QrFilters";
 import { QrTable } from "./QrTable";
 import { UsageMeter } from "./UsageMeter";
 import { useQrActions } from "./useQrActions";
@@ -41,7 +42,7 @@ export function Dashboard() {
   const [plan, setPlan] = useState<AccountPlan | null>(null);
   const [items, setItems] = useState<QrCode[] | null>(null);
   const [error, setError] = useState("");
-  const [filters, setFilters] = useState<Filters>({ search: "", kind: "", status: "" });
+  const [filters, setFilters] = useState<Filters>({ search: "", view: "", status: "" });
   const view = useSyncExternalStore(subscribeView, storedView, () => "cards" as View);
   const search = useDebouncedValue(filters.search);
   const actions = useQrActions(
@@ -59,11 +60,11 @@ export function Dashboard() {
       .catch((err) => setError(errorMessage(err)));
   }, []);
   useEffect(() => {
-    const query = new URLSearchParams({ search, kind: filters.kind, status: filters.status });
+    const query = new URLSearchParams({ search, view: filters.view, status: filters.status });
     api<QrCode[]>(`${base}/qr-codes?${query}`)
       .then(setItems)
       .catch((err) => setError(errorMessage(err)));
-  }, [base, search, filters.kind, filters.status]);
+  }, [base, search, filters.view, filters.status]);
 
   function choose(next: View) {
     try {
@@ -74,7 +75,7 @@ export function Dashboard() {
     window.dispatchEvent(new Event(VIEW_KEY));
   }
 
-  const filtered = Boolean(search || filters.kind || filters.status);
+  const filtered = Boolean(search || filters.view || filters.status);
   const canCreate = plan ? plan.usage.static.can_create || plan.usage.dynamic.can_create : true;
   const firstRun = items !== null && items.length === 0 && !filtered;
 
@@ -83,7 +84,7 @@ export function Dashboard() {
       <div className="page-header">
         <div>
           <h1>{company.name}</h1>
-          <p>Codici QR dell’azienda: crea, modifica e misura.</p>
+          <p>Link brevi e codici QR dell’azienda: crea, modifica e misura.</p>
         </div>
         {canCreate && !firstRun && (
           <ButtonLink href={`${app}/qr/new`} icon={<Plus size={16} />}>
@@ -97,7 +98,10 @@ export function Dashboard() {
         </p>
       )}
       {firstRun ? (
-        <OnboardingPanel canCreate={canCreate} />
+        <>
+          <QuickLinkBar onCreated={(link) => setItems([link])} />
+          <OnboardingPanel canCreate={canCreate} />
+        </>
       ) : (
         <>
           {plan && (
@@ -108,6 +112,8 @@ export function Dashboard() {
               </div>
             </Card>
           )}
+          <QuickLinkBar onCreated={(link) => setItems((all) => (all ? [link, ...all] : [link]))} />
+          <ViewTabs value={filters} onChange={setFilters} />
           <div className={styles.toolbar}>
             <QrFilters value={filters} onChange={setFilters} />
             <div className={styles.views} role="radiogroup" aria-label="Vista">

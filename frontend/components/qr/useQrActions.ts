@@ -11,13 +11,16 @@ export function useQrActions(onCreated: (qr: QrCode) => void, onUpdated: (qr: Qr
   const toast = useToast();
   const [busy, setBusy] = useState<number | null>(null);
 
-  async function run(qr: QrCode, action: "duplicate" | "pause" | "resume") {
+  async function run(qr: QrCode, action: "duplicate" | "pause" | "resume" | "generate-qr") {
     setBusy(qr.id);
     try {
       const result = await api<QrCode>(`${base}/qr-codes/${qr.id}/${action}`, "POST");
       if (action === "duplicate") {
         onCreated(result);
         toast.show(`Creato «${result.name}».`);
+      } else if (action === "generate-qr") {
+        onUpdated({ ...qr, has_qr: true });
+        toast.show("QR generato: stesso link, ora anche da stampare.");
       } else {
         onUpdated({ ...qr, status: result.status });
         toast.show(action === "pause" ? "QR in pausa." : "QR riattivato.");
@@ -32,6 +35,7 @@ export function useQrActions(onCreated: (qr: QrCode) => void, onUpdated: (qr: Qr
   return {
     busy,
     duplicate: (qr: QrCode) => run(qr, "duplicate"),
+    generateQr: (qr: QrCode) => run(qr, "generate-qr"),
     toggle: (qr: QrCode) => run(qr, qr.status === "paused" ? "resume" : "pause"),
     image: (qr: QrCode, ext: "svg" | "png") =>
       `/api/${base}/qr-codes/${qr.id}/image.${ext}${ext === "png" ? "?size=1024" : ""}`,

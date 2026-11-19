@@ -11,7 +11,7 @@ from ..models import Plan, QrCode, QrPage, ScanEvent, StoredFile
 from ..plans import PAGE_TYPES, STATIC_TYPES, require_type
 from ..schemas.page import Page
 from ..schemas.qr import QrContent, QrCreate, QrOut, valid_url
-from .render import new_slug, short_link
+from .render import new_slug, root_link, short_link
 from .static_types import STATIC_SCHEMAS, encode_static
 
 SLUG_ATTEMPTS = 8
@@ -58,9 +58,11 @@ def qr_out(qr: QrCode, scan_count: int = 0) -> QrOut:
         id=qr.id, name=qr.name, kind=qr.kind, qr_type=qr.qr_type, destination=qr.destination,
         content_type=qr.content_type, target_url=qr.target_url, static_data=qr.static_data,
         slug=qr.slug, short_url=short_link(qr.slug) if qr.slug else None, status=qr.status,
+        root_url=root_link(qr.slug) if qr.slug else None,
         fg_color=qr.fg_color, bg_color=qr.bg_color, margin=qr.margin,
         error_correction=qr.error_correction, design=qr.design, scan_count=scan_count,
         created_at=qr.created_at, updated_at=qr.updated_at, blocked_reason=qr.blocked_reason,
+        has_qr=qr.has_qr, scan_total=qr.scan_total,
     )  # fmt: skip
 
 
@@ -190,13 +192,15 @@ def insert_qr(session: Session, ctx, payload: QrCreate) -> QrCode:
     """Creates the QR (fresh unique slug for dynamic ones, retried on the rare collision)."""
     require_type(session.get(Plan, ctx.workspace.plan_id), payload.qr_type)
     kind, destination = kind_of(payload.qr_type, payload.dynamic)
+    if kind == "static" and not payload.has_qr:
+        raise invalid("Un QR statico esiste solo come QR.", "has_qr")
     target_url, static_data, page = resolve_content(session, ctx, payload.qr_type, kind, payload)
     style = {f: getattr(payload, f) for f in STYLE_FIELDS}
     for _ in range(SLUG_ATTEMPTS):
         qr = QrCode(
             workspace_id=ctx.workspace.id, company_id=ctx.company.id, status="active",
             name=payload.name, kind=kind, qr_type=payload.qr_type, destination=destination,
-            target_url=target_url, static_data=static_data, **style,
+            target_url=target_url, static_data=static_data, has_qr=payload.has_qr, **style,
         )  # fmt: skip
         if kind == "dynamic":
             qr.slug = new_slug()

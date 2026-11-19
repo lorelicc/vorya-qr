@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isRootShortLink } from "./lib/reserved";
 
 const apiBase = () => process.env.API_INTERNAL_URL ?? "http://127.0.0.1:8000";
 const RELAY = ["location", "cache-control", "content-type", "x-robots-tag"];
+const PRIVATE = /^\/(app|account|admin|companies)(\/|$)/;
 
 /**
  * /r/{slug}: the backend decides (and counts the scan). Redirects are relayed untouched (302,
@@ -22,7 +24,11 @@ async function shortLink(request: NextRequest, slug: string) {
       signal: AbortSignal.timeout(8000),
     });
     if (response.headers.get("x-vorya-destination") === "page") {
-      const rewritten = NextResponse.rewrite(new URL(`/p/${slug}`, request.url));
+      // Aliases resolve to the canonical slug: the page is always rendered from it.
+      const canonical = response.headers.get("x-vorya-slug") ?? slug;
+      const rewritten = NextResponse.rewrite(
+        new URL(`/p/${encodeURIComponent(canonical)}`, request.url),
+      );
       rewritten.headers.set("Cache-Control", "no-store");
       return rewritten;
     }
@@ -48,6 +54,11 @@ async function shortLink(request: NextRequest, slug: string) {
 export function proxy(request: NextRequest) {
   const short = request.nextUrl.pathname.match(/^\/r\/([^/]+)$/);
   if (short) return shortLink(request, short[1]);
+  // 0.3: https://qr.vorya.it/{slug-or-alias}, same decision as /r/{slug}.
+  const root = request.nextUrl.pathname.match(/^\/([^/]+)$/);
+  if (root && isRootShortLink(root[1])) return shortLink(request, root[1]);
+  // The /:slug matcher also sees public pages (/login, /report…): only private areas are gated.
+  if (!PRIVATE.test(request.nextUrl.pathname)) return NextResponse.next();
   if (!request.cookies.has("vorya_qr_session")) {
     const login = new URL("/login", request.url);
     login.searchParams.set("next", request.nextUrl.pathname);
@@ -57,5 +68,12 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/r/:slug", "/app/:path*", "/account/:path*", "/admin/:path*", "/companies/:path*"],
+  matcher: [
+    "/r/:slug",
+    "/:slug",
+    "/app/:path*",
+    "/account/:path*",
+    "/admin/:path*",
+    "/companies/:path*",
+  ],
 };

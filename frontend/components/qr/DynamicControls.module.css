@@ -28,3 +28,9 @@
   color: var(--color-danger);
   font-size: var(--fs-sm);
 }
+
+.hint {
+  font-size: var(--fs-xs);
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}

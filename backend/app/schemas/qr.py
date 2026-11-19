@@ -22,7 +22,9 @@ def valid_url(value: str) -> str:
     if parts.username or parts.password:
         raise ValueError("L'URL non può contenere credenziali")
     short = urlsplit(get_settings().short_link_base_url)
-    if parts.hostname == short.hostname and parts.path.startswith("/r/"):
+    path = parts.path.strip("/")
+    if parts.hostname == short.hostname and (path.startswith("r/") or (path and "/" not in path)):
+        # /r/{slug} and, from 0.3, /{slug}: a short link pointing to a short link loops.
         raise ValueError("La destinazione non può essere un altro link breve Vorya QR")
     return value
 
@@ -67,6 +69,15 @@ class QrUpdate(QrContent):
 class QrCreate(QrUpdate):
     qr_type: QrType = "website"
     dynamic: bool = True  # only meaningful for "website"; other types have a fixed kind
+    has_qr: bool = True  # 0.3: false = short link only (dynamic types), QR can be added later
+
+
+class LinkQuickCreate(BaseModel):
+    """0.3 quick short link: paste a URL, get a link (no QR yet)."""
+
+    model_config = ConfigDict(extra="forbid")
+    target_url: str = Field(min_length=1, max_length=2048)
+    name: str = Field(default="", max_length=120)
 
 
 class QrPreview(QrContent):
@@ -86,7 +97,10 @@ class QrOut(BaseModel):
     static_data: dict | None
     slug: str | None
     short_url: str | None
+    root_url: str | None = None  # 0.3: https://qr.vorya.it/{slug}
     status: str
+    has_qr: bool = True
+    scan_total: int = 0
     blocked_reason: str | None = None
     fg_color: str
     bg_color: str

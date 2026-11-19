@@ -16,6 +16,7 @@ ignore = ["B008"]
 # SVG markup templates read better on one line each.
 "app/qr/designer.py" = ["E501"]
 "app/redirect/pages.py" = ["E501"]  # inline HTML and SVG
+"migrations/versions/*.py" = ["E501"]  # one column per line reads better
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

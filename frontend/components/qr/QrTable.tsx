@@ -11,9 +11,11 @@ import type { QrActions } from "./useQrActions";
 import styles from "./QrList.module.css";
 
 export const typeLabel = (qr: QrCode) =>
-  `${TYPE_BY_KEY[qr.qr_type as keyof typeof TYPE_BY_KEY]?.label ?? qr.qr_type} · ${
-    qr.kind === "dynamic" ? "dinamico" : "statico"
-  }`;
+  !qr.has_qr
+    ? `Link breve · ${(qr.root_url ?? "").replace(/^https?:\/\//, "")}`
+    : `${TYPE_BY_KEY[qr.qr_type as keyof typeof TYPE_BY_KEY]?.label ?? qr.qr_type} · ${
+        qr.kind === "dynamic" ? "dinamico" : "statico"
+      }`;
 
 const columnsFor = (base: string, actions: QrActions): Column<QrCode>[] => [
   {
