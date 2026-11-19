@@ -35,7 +35,7 @@ def qr_out(qr: QrCode, scan_count: int = 0) -> QrOut:
         slug=qr.slug, short_url=short_link(qr.slug) if qr.slug else None, status=qr.status,
         fg_color=qr.fg_color, bg_color=qr.bg_color, margin=qr.margin,
         error_correction=qr.error_correction, design=qr.design, scan_count=scan_count,
-        created_at=qr.created_at, updated_at=qr.updated_at,
+        created_at=qr.created_at, updated_at=qr.updated_at, blocked_reason=qr.blocked_reason,
     )  # fmt: skip
 
 

@@ -38,7 +38,8 @@ export type QrCode = QrStyle & {
   target_url: string;
   slug: string | null;
   short_url: string | null;
-  status: "active" | "paused";
+  status: "active" | "paused" | "blocked";
+  blocked_reason?: string | null;
   scan_count: number;
   created_at: string;
   updated_at: string;
@@ -112,6 +113,8 @@ export type Plan = {
   description: string;
   max_qr_static: number | null;
   max_dynamic_qr: number | null;
+  max_companies?: number | null;
+  features?: PlanFeatures;
   position: number;
 };
 
@@ -181,3 +184,40 @@ export type Scannability = {
 };
 
 export type StylePresetItem = { id: number; name: string; design: QrDesign; created_at: string };
+
+export type AbuseReport = {
+  id: number;
+  created_at: string;
+  slug: string | null;
+  reason: "phishing" | "malware" | "spam" | "illegal" | "other";
+  details: string;
+  reporter_email: string | null;
+  status: "open" | "resolved";
+  resolution: "dismiss" | "block_qr" | "suspend_workspace" | null;
+  resolved_at: string | null;
+  qr: {
+    id: number;
+    name: string;
+    status: string;
+    qr_type: string;
+    destination: string;
+    target_url: string;
+    deleted: boolean;
+  } | null;
+  company: { id: number; name: string } | null;
+  workspace: { id: number; name: string; status: string } | null;
+};
+
+export type BlockedDomain = { id: number; domain: string; reason: string; created_at: string };
+
+export type AdminTransfer = {
+  id: number;
+  company: string;
+  from_workspace: { id: number; name: string | null };
+  to_workspace: { id: number | null; name: string | null };
+  to_email: string;
+  status: string;
+  failure_reason: string | null;
+  created_at: string;
+  decided_at: string | null;
+};

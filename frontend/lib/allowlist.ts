@@ -48,12 +48,17 @@ const rules: Rule[] = [
   // Public hosted pages
   r("GET", "public/pages/[A-Za-z0-9]{7}/vcard/[A-Za-z0-9_-]{1,24}\\.vcf"),
   r("POST", "public/pages/[A-Za-z0-9]{7}/events"),
+  r("POST", "public/reports"),
   // Transfers
   r("GET", "company-transfers"),
   r("POST", "company-transfers/by-token"),
   r("POST", `company-transfers/${ID}/(accept|decline|cancel)`),
   // Admin
-  r("GET", "admin/(workspaces|plans|company-transfers)"),
+  r("GET", "admin/(workspaces|plans|company-transfers|reports|blocked-domains)"),
+  r("POST", `admin/reports/${ID}/resolve`),
+  r("POST", `admin/qr-codes/${ID}/unblock`),
+  r("POST", "admin/blocked-domains"),
+  r("DELETE", `admin/blocked-domains/${ID}`),
   r("GET", `admin/workspaces/${ID}`),
   r("PUT", `admin/workspaces/${ID}/plan`),
   r("POST", `admin/workspaces/${ID}/(suspend|reactivate)`),

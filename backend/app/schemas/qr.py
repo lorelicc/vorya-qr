@@ -87,6 +87,7 @@ class QrOut(BaseModel):
     slug: str | None
     short_url: str | None
     status: str
+    blocked_reason: str | None = None
     fg_color: str
     bg_color: str
     margin: int

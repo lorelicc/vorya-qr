@@ -21,8 +21,8 @@ export function PlanList({ canWrite }: { canWrite: boolean }) {
         <div>
           <h1>Piani</h1>
           <p>
-            Limiti provvisori della 0.1. Ridurre un limite non disattiva i QR esistenti: blocca solo
-            le nuove creazioni.
+            Limiti e funzioni provvisori della 0.2. Ridurre un limite non disattiva i QR esistenti:
+            blocca solo le nuove creazioni.
           </p>
         </div>
       </div>

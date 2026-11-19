@@ -59,6 +59,12 @@ export function DynamicControls({ qr, onChange }: { qr: QrCode; onChange: (qr: Q
   return (
     <Card title="Link dinamico" description={scansLabel(qr.scan_count)}>
       <div className="stack">
+        {qr.status === "blocked" && (
+          <p role="alert" className={styles.blocked}>
+            Questo QR è stato bloccato dal team Vorya ({qr.blocked_reason || "segnalazione"}): chi
+            lo scansiona vede “QR non attivo”. Per chiarimenti scrivi al supporto.
+          </p>
+        )}
         <div className={styles.link}>
           <code>{qr.short_url}</code>
           <Button variant="secondary" icon={<Copy size={16} />} onClick={copy}>
@@ -73,14 +79,16 @@ export function DynamicControls({ qr, onChange }: { qr: QrCode; onChange: (qr: Q
           >
             Statistiche
           </ButtonLink>
-          <Button
-            variant="secondary"
-            loading={busy}
-            onClick={toggle}
-            icon={paused ? <Play size={16} /> : <Pause size={16} />}
-          >
-            {paused ? "Riattiva" : "Metti in pausa"}
-          </Button>
+          {qr.status !== "blocked" && (
+            <Button
+              variant="secondary"
+              loading={busy}
+              onClick={toggle}
+              icon={paused ? <Play size={16} /> : <Pause size={16} />}
+            >
+              {paused ? "Riattiva" : "Metti in pausa"}
+            </Button>
+          )}
           <Button variant="ghost" onClick={() => setConfirming(true)} icon={<Trash2 size={16} />}>
             Elimina
           </Button>

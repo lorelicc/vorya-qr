@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { Button, Card, Input, useToast } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
 import type { Plan } from "@/lib/types";
+import { PlanFeaturesFields } from "./PlanFeaturesFields";
 import styles from "./admin.module.css";
 
 function parseLimit(value: FormDataEntryValue | null): number | null {
@@ -32,6 +33,15 @@ export function PlanEditor({
         description: form.get("description"),
         max_qr_static: parseLimit(form.get("max_qr_static")),
         max_dynamic_qr: parseLimit(form.get("max_dynamic_qr")),
+        max_companies: parseLimit(form.get("max_companies")),
+        features: {
+          allowed_types: form.getAll("allowed_types"),
+          storage_mb: parseLimit(form.get("storage_mb")),
+          max_file_mb: Number(form.get("max_file_mb")),
+          remove_branding: form.get("remove_branding") === "on",
+          stats_retention_days: parseLimit(form.get("stats_retention_days")),
+          max_style_presets: parseLimit(form.get("max_style_presets")),
+        },
       });
       onSaved(saved);
       toast.show(`Piano ${saved.name} aggiornato.`);
@@ -70,7 +80,16 @@ export function PlanEditor({
               defaultValue={plan.max_dynamic_qr ?? ""}
               hint="Vuoto = illimitati"
             />
+            <Input
+              label="Aziende"
+              name="max_companies"
+              type="number"
+              min={0}
+              defaultValue={plan.max_companies ?? ""}
+              hint="Vuoto = illimitate"
+            />
           </div>
+          <PlanFeaturesFields features={plan.features} />
         </fieldset>
         {canWrite && (
           <Button type="submit" variant="secondary" loading={busy}>

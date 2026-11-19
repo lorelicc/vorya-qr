@@ -67,3 +67,129 @@
     max-width: 520px;
   }
 }
+
+.tabs {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+}
+
+.tabs button {
+  border: 0;
+  background: transparent;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-size: var(--fs-sm);
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.tabs button[aria-checked="true"] {
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: var(--fw-semibold);
+  box-shadow: var(--shadow-sm);
+}
+
+.reportHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.reportHead > span {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+}
+
+.report dl {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+.report dt {
+  color: var(--color-muted);
+}
+
+.report dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.url,
+.details {
+  overflow-wrap: anywhere;
+}
+
+.details {
+  white-space: pre-wrap;
+}
+
+.reportActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.domainForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font-size: var(--fs-sm);
+}
+
+.check {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  font-size: var(--fs-sm);
+}
+
+.check input {
+  margin-top: 3px;
+}
+
+.types legend {
+  font-weight: var(--fw-semibold);
+  margin-bottom: var(--space-2);
+}
+
+.types label {
+  display: inline-flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+@media (max-width: 759px) {
+  .report dl,
+  .domainForm,
+  .features {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
