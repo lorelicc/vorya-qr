@@ -36,7 +36,12 @@ const rules: Rule[] = [
   r("PUT", `${QR}/${ID}`),
   r("DELETE", `${QR}/${ID}`),
   r("POST", `${QR}/${ID}/(pause|resume)`),
-  r("GET", `${QR}/${ID}/(stats|image\\.svg|image\\.png)`),
+  r("GET", `${QR}/${ID}/(stats|image\\.svg|image\\.png|image\\.pdf)`),
+  r("POST", `${QR}/${ID}/apply-style`),
+  r("GET", `${C}/styles`),
+  r("POST", `${C}/styles`),
+  r("PUT", `${C}/styles/${ID}`),
+  r("DELETE", `${C}/styles/${ID}`),
   r("GET", `${QR}/${ID}/page`),
   r("POST", `${QR}/${ID}/duplicate`),
   // Public hosted pages

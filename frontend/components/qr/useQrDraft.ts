@@ -1,11 +1,11 @@
 "use client";
 import { useMemo, useState } from "react";
 import type { PageDoc, PageFiles } from "@/lib/page-types";
-import type { Company, QrCode, QrStyle } from "@/lib/types";
+import { designForCompany, designOf } from "@/lib/design";
+import type { Company, QrCode, QrDesign } from "@/lib/types";
 import type { UploadedFile } from "@/lib/upload";
 import { cleanPage, defaultPage } from "./pages/defaults";
 import { toPageFile } from "./pages/shared";
-import { DEFAULT_STYLE } from "./StylePanel";
 import { STATIC_DEFAULTS } from "./types/StaticForm";
 import { isPageType, type QrTypeKey } from "./types/meta";
 
@@ -16,12 +16,8 @@ export type Draft = {
   target_url: string;
   static_data: Record<string, string | boolean>;
   page: PageDoc | null;
-  style: QrStyle;
+  design: QrDesign;
 };
-
-const styleOf = (qr: QrCode): QrStyle => ({
-  fg_color: qr.fg_color, bg_color: qr.bg_color, margin: qr.margin, error_correction: qr.error_correction,
-}); // prettier-ignore
 
 /** Editor state for every QR type, plus the payload builder sent to the API. */
 export function useQrDraft(
@@ -37,7 +33,7 @@ export function useQrDraft(
     target_url: initial?.target_url || "https://",
     static_data: (initial?.static_data as Draft["static_data"]) ?? {},
     page: initialPage ?? null,
-    style: initial ? styleOf(initial) : { ...DEFAULT_STYLE, fg_color: "#091411" },
+    design: initial ? designOf(initial) : designForCompany(company),
   }));
   const [files, setFiles] = useState<PageFiles>(initialFiles);
 
@@ -72,13 +68,13 @@ export function useQrDraft(
     return { static_data: draft.static_data };
   }, [draft]);
 
-  const payload = () => ({ name: draft.name, ...draft.style, ...content });
+  const payload = () => ({ name: draft.name, design: draft.design, ...content });
   const createPayload = () => ({ ...payload(), qr_type: draft.qr_type, dynamic: draft.dynamic });
   const previewPayload = {
     qr_type: draft.qr_type ?? "website",
     dynamic: draft.dynamic,
     ...content,
-    ...draft.style,
+    design: draft.design,
   };
 
   return {

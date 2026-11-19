@@ -1,16 +1,16 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Badge, Button, Card, Input, useToast } from "@/components/ui";
 import { api, errorMessage, fieldErrors, type FieldErrors } from "@/lib/api";
 import { useCompany } from "@/lib/company-context";
 import type { PageDoc, PageFiles } from "@/lib/page-types";
-import type { AccountPlan, QrCode } from "@/lib/types";
+import type { AccountPlan, QrCode, Scannability } from "@/lib/types";
 import { TemplateForm } from "./pages/TemplateForms";
 import { ThemeFields } from "./pages/shared";
 import { PhonePreview } from "./PhonePreview";
 import { QrPreview } from "./QrPreview";
-import { StylePanel } from "./StylePanel";
+import { DesignPanel } from "./design/DesignPanel";
 import { StaticForm } from "./types/StaticForm";
 import { TYPE_BY_KEY, isPageType } from "./types/meta";
 import { TypePicker } from "./types/TypePicker";
@@ -35,6 +35,8 @@ export function QrEditor({ initial, initialPage, initialFiles, onSaved }: Props)
   const [errors, setErrors] = useState<FieldErrors>({});
   const [busy, setBusy] = useState(false);
   const [view, setView] = useState<"qr" | "page">("qr");
+  const [scan, setScan] = useState<Scannability | null>(null);
+  const onScannability = useCallback((result: Scannability | null) => setScan(result), []);
   const editing = Boolean(initial);
   const type = draft.qr_type;
   const page = type && isPageType(type) ? draft.page : null;
@@ -149,7 +151,12 @@ export function QrEditor({ initial, initialPage, initialFiles, onSaved }: Props)
         )}
         {type && (
           <Card title="Aspetto del QR">
-            <StylePanel value={draft.style} onChange={(style) => update({ style })} />
+            <DesignPanel
+              value={draft.design}
+              onChange={(design) => update({ design })}
+              files={q.files}
+              addFile={q.addFile}
+            />
           </Card>
         )}
       </div>
@@ -183,9 +190,16 @@ export function QrEditor({ initial, initialPage, initialFiles, onSaved }: Props)
                 payload={q.previewPayload}
                 dynamic={q.kind === "dynamic"}
                 qrId={initial?.id}
+                onScannability={onScannability}
               />
             )}
-            <Button type="submit" loading={busy} block className={styles.save}>
+            <Button
+              type="submit"
+              loading={busy}
+              block
+              className={styles.save}
+              disabled={scan !== null && !scan.scannable}
+            >
               {editing ? "Salva modifiche" : "Crea codice QR"}
             </Button>
           </Card>

@@ -136,3 +136,28 @@ export type Transfer = {
   expires_at: string;
   decided_at: string | null;
 };
+
+export type ModuleShape = "square" | "rounded" | "dots" | "classy" | "extra_rounded";
+export type EyeFrame = "square" | "rounded" | "circle" | "leaf" | "extra_rounded";
+export type EyeBall = "square" | "rounded" | "circle" | "leaf";
+
+export type QrDesign = {
+  version: 1;
+  modules: ModuleShape;
+  eye_frame: EyeFrame;
+  eye_ball: EyeBall;
+  fill: { type: "solid" | "linear" | "radial"; color: string; color2: string; angle: number };
+  eye_color: string | null;
+  background: string;
+  transparent: boolean;
+  margin: number;
+  error_correction: ErrorCorrection;
+  logo: { file_id: string; size: number; padding: number; plate: boolean } | null;
+};
+
+export type Scannability = {
+  scannable: boolean;
+  reasons: { code: string; message: string; blocking: boolean }[];
+};
+
+export type StylePresetItem = { id: number; name: string; design: QrDesign; created_at: string };
