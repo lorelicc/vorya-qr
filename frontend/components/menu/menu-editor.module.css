@@ -184,3 +184,9 @@
   gap: var(--space-1);
   min-height: 32px;
 }
+
+.legend {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+}

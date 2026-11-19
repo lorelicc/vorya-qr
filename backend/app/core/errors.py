@@ -77,6 +77,7 @@ def install_handlers(app: FastAPI) -> None:
         errors = [
             {
                 "field": str(error["loc"][-1]) if error.get("loc") else "",
+                "path": ".".join(str(part) for part in error.get("loc", ()) if part != "body"),
                 "message": str(error.get("msg", "Valore non valido")).removeprefix("Value error, "),
             }
             for error in exc.errors()

@@ -18,8 +18,13 @@ BLOCK_ID = r"^[A-Za-z0-9_-]{1,24}$"
 SCHEMA_VERSION = 1
 
 
+HOST_ONLY = re.compile(r"^(www\.)?[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+([/?#]\S*)?$")
+
+
 def http_url(value: str) -> str:
     value = value.strip()
+    if HOST_ONLY.match(value):  # "www.sito.it" is what people type: complete it, don't refuse it
+        value = f"https://{value}"
     parts = urlsplit(value)
     if (
         parts.scheme not in ("http", "https")

@@ -202,3 +202,8 @@
   display: inline-flex;
   align-items: center;
 }
+
+.quick .danger:hover {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}

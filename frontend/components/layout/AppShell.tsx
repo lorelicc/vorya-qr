@@ -161,7 +161,10 @@ export function AppShell({
         </header>
         <main className={styles.content} id="main">
           {me.workspace?.access === "past_due" && pathname !== "/account/plan" && <PastDueNotice />}
-          {children}
+          {/* Keyed by path: each page eases in, the shell around it stays put. */}
+          <div key={pathname} className="route-enter">
+            {children}
+          </div>
         </main>
         <LegalFooter />
       </div>

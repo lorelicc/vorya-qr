@@ -176,3 +176,25 @@ def test_global_search_finds_name_slug_alias_url_and_tag(client):
                        json={"target_url": "https://example.com/promo", "name": "Promo due"}).json()  # fmt: skip
     assert found("promo") == [link["id"]]  # current company only
     assert sorted(found("promo", all_companies="true")) == sorted([link["id"], mine["id"]])
+
+
+def test_deleted_codes_stay_registered_show_inactive_and_free_the_quota(client):
+    """0.4: delete from the list. The row and slug stay (never reassigned), scans see "QR non attivo"."""
+    from tests.test_redirect import follow
+
+    signup(client)
+    first = short_link(client, "https://example.com/one")
+    second = short_link(client, "https://example.com/two")
+    assert follow(client, first["slug"]).status_code == 302
+    used = client.get("/api/account/plan").json()["usage"]["dynamic"]["used"]
+
+    done = post(client, "/qr-codes/bulk", ids=[first["id"]], action="delete")
+    assert done.status_code == 200 and done.json()["updated"] == 1
+    gone = follow(client, first["slug"])
+    assert gone.status_code == 410 and "QR non attivo" in gone.text  # the Vorya page
+    assert follow(client, second["slug"]).status_code == 302  # others untouched
+    listed = [q["id"] for q in client.get(qrs(client)).json()]
+    assert first["id"] not in listed and second["id"] in listed
+    assert client.get("/api/account/plan").json()["usage"]["dynamic"]["used"] == used - 1
+    # The address is never handed out again: deleting twice is a 404, not a second life.
+    assert post(client, "/qr-codes/bulk", ids=[first["id"]], action="delete").status_code == 404

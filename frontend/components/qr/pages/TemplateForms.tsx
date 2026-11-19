@@ -1,6 +1,6 @@
 "use client";
 import { Dropzone } from "@/components/files/Dropzone";
-import { Input, Select } from "@/components/ui";
+import { Disclosure, Input, Select } from "@/components/ui";
 import { useCompany } from "@/lib/company-context";
 import { MUSIC_LABEL, type ContactBlock, type MusicPlatform } from "@/lib/page-types";
 import type { UploadedFile } from "@/lib/upload";
@@ -42,14 +42,18 @@ export function ContactFields({ page, onChange }: Pick<FormProps, "page" | "onCh
       <ListEditor items={c.emails} onChange={(emails) => set({ emails })} max={6} addLabel="Aggiungi un’email" itemLabel={(i) => `email ${i + 1}`}
         create={() => ({ label: "work" as const, address: "" })}
         render={(e, update) => <Input label="Email" type="email" value={e.address} onChange={(ev) => update({ address: ev.target.value })} />} />
-      <Input label="Sito web" type="url" value={c.website} onChange={(e) => set({ website: e.target.value })} placeholder="https://" />
-      <div className={styles.inline}>
-        <Input label="Indirizzo" value={c.address.street} onChange={(e) => set({ address: { ...c.address, street: e.target.value } })} />
-        <Input label="Città" value={c.address.city} onChange={(e) => set({ address: { ...c.address, city: e.target.value } })} />
-        <Input label="CAP" value={c.address.postal_code} onChange={(e) => set({ address: { ...c.address, postal_code: e.target.value } })} />
-        <Input label="Paese" value={c.address.country} onChange={(e) => set({ address: { ...c.address, country: e.target.value } })} />
-      </div>
-      <TextArea label="Note" value={c.note} max={500} onChange={(e) => set({ note: e.target.value })} />
+      <Input label="Sito web" type="text" inputMode="url" value={c.website} onChange={(e) => set({ website: e.target.value })} placeholder="www.esempio.it" />
+      <Disclosure title="Indirizzo" summary={c.address.city || undefined} defaultOpen={Boolean(c.address.street || c.address.city)}>
+        <div className={styles.inline}>
+          <Input label="Indirizzo" value={c.address.street} onChange={(e) => set({ address: { ...c.address, street: e.target.value } })} />
+          <Input label="Città" value={c.address.city} onChange={(e) => set({ address: { ...c.address, city: e.target.value } })} />
+          <Input label="CAP" value={c.address.postal_code} onChange={(e) => set({ address: { ...c.address, postal_code: e.target.value } })} />
+          <Input label="Paese" value={c.address.country} onChange={(e) => set({ address: { ...c.address, country: e.target.value } })} />
+        </div>
+      </Disclosure>
+      <Disclosure title="Note" summary={c.note ? `${c.note.length}/500` : undefined} defaultOpen={Boolean(c.note)}>
+        <TextArea label="Note" value={c.note} max={500} onChange={(e) => set({ note: e.target.value })} />
+      </Disclosure>
     </div>
   );
 } // prettier-ignore
@@ -65,7 +69,7 @@ export function LinkFields({ page, onChange }: Pick<FormProps, "page" | "onChang
         render={(item, update) => (
           <>
             <Input label="Testo del bottone" value={item.label} maxLength={120} onChange={(e) => update({ label: e.target.value })} />
-            <Input label="URL" type="url" value={item.url} onChange={(e) => update({ url: e.target.value })} />
+            <Input label="URL" type="text" inputMode="url" value={item.url} onChange={(e) => update({ url: e.target.value })} />
           </>
         )} />
     </div>
@@ -125,7 +129,7 @@ export function MusicFields({ page, onChange, files, addFile }: FormProps) {
             <Select label="Piattaforma" value={l.platform} onChange={(e) => update({ platform: e.target.value as MusicPlatform })}>
               {PLATFORMS.map((p) => <option key={p} value={p}>{MUSIC_LABEL[p]}</option>)}
             </Select>
-            <Input label="Link" type="url" value={l.url} onChange={(e) => update({ url: e.target.value })} />
+            <Input label="Link" type="text" inputMode="url" value={l.url} onChange={(e) => update({ url: e.target.value })} />
           </>
         )} />
     </div>

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Button, Input, Modal, Select } from "@/components/ui";
+import { Button, Disclosure, Input, Modal, Select } from "@/components/ui";
 import { ImageField } from "@/components/qr/pages/shared";
 import { TextArea } from "@/components/qr/types/StaticForm";
 import {
@@ -102,8 +102,7 @@ export function ItemSheet({
           />
         )}
         {isWine && (
-          <fieldset className={styles.fieldset}>
-            <legend>Vino</legend>
+          <Disclosure title="Dati del vino" summary={wine.producer || undefined} defaultOpen>
             <div className={styles.grid}>
               <Input
                 label="Produttore"
@@ -171,18 +170,28 @@ export function ItemSheet({
                 onChange={(e) => setWine({ price_bottle: e.target.value || null })}
               />
             </div>
-          </fieldset>
+          </Disclosure>
         )}
-        <ImageField
-          label="Foto (facoltativa)"
-          purpose="image"
-          fileId={draft.photo_file_id}
-          files={files}
-          onPick={(id) => set({ photo_file_id: id })}
-          addFile={addFile}
-        />
-        <fieldset className={styles.fieldset}>
-          <legend>Allergeni (Reg. UE 1169/2011)</legend>
+        <Disclosure
+          title="Foto"
+          summary={draft.photo_file_id ? "Aggiunta" : "Facoltativa"}
+          defaultOpen={Boolean(draft.photo_file_id)}
+        >
+          <ImageField
+            label="Foto del piatto o del vino"
+            purpose="image"
+            fileId={draft.photo_file_id}
+            files={files}
+            onPick={(id) => set({ photo_file_id: id })}
+            addFile={addFile}
+          />
+        </Disclosure>
+        <Disclosure
+          title="Allergeni"
+          summary={draft.allergens.length ? `${draft.allergens.length} indicati` : "Nessuno"}
+          defaultOpen={draft.allergens.length > 0}
+        >
+          <p className={styles.legend}>Reg. UE 1169/2011: indica quelli presenti.</p>
           <div className={styles.checks}>
             {ALLERGENS.map((a) => {
               const Icon = ALLERGEN_META[a].icon;
@@ -198,9 +207,12 @@ export function ItemSheet({
               );
             })}
           </div>
-        </fieldset>
-        <fieldset className={styles.fieldset}>
-          <legend>Etichette</legend>
+        </Disclosure>
+        <Disclosure
+          title="Etichette"
+          summary={draft.badges.length ? `${draft.badges.length} attive` : "Nessuna"}
+          defaultOpen={draft.badges.length > 0}
+        >
           <div className={styles.checks}>
             {BADGES.map((b) => (
               <label key={b}>
@@ -213,7 +225,7 @@ export function ItemSheet({
               </label>
             ))}
           </div>
-        </fieldset>
+        </Disclosure>
       </div>
     </Modal>
   );

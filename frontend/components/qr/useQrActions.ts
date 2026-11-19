@@ -6,7 +6,11 @@ import { useCompany } from "@/lib/company-context";
 import type { QrCode } from "@/lib/types";
 
 /** Quick actions shared by the card and list views of the dashboard. */
-export function useQrActions(onCreated: (qr: QrCode) => void, onUpdated: (qr: QrCode) => void) {
+export function useQrActions(
+  onCreated: (qr: QrCode) => void,
+  onUpdated: (qr: QrCode) => void,
+  onDelete?: (qr: QrCode) => void,
+) {
   const { api: base } = useCompany();
   const toast = useToast();
   const [busy, setBusy] = useState<number | null>(null);
@@ -34,6 +38,7 @@ export function useQrActions(onCreated: (qr: QrCode) => void, onUpdated: (qr: Qr
 
   return {
     busy,
+    askDelete: onDelete,
     duplicate: (qr: QrCode) => run(qr, "duplicate"),
     generateQr: (qr: QrCode) => run(qr, "generate-qr"),
     toggle: (qr: QrCode) => run(qr, qr.status === "paused" ? "resume" : "pause"),

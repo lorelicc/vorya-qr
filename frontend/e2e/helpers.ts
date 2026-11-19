@@ -77,7 +77,7 @@ export async function createWithWizard(
   fill: () => Promise<void>,
 ): Promise<string> {
   await page
-    .getByRole("link", { name: /Nuovo QR|Crea il tuo primo QR/ })
+    .getByRole("link", { name: /Nuovo QR|Crea QR Code|Crea il tuo primo QR/ })
     .first()
     .click();
   await page.locator("label", { hasText: type }).first().click();

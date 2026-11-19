@@ -1,5 +1,5 @@
 "use client";
-import { BarChart3, Copy, Download, FolderInput, Pause, Play, QrCode } from "lucide-react";
+import { BarChart3, Copy, Download, FolderInput, Pause, Play, QrCode, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useSelection } from "@/components/organize/SelectionContext";
 import { useCompany } from "@/lib/company-context";
@@ -71,6 +71,18 @@ export function QrQuickActions({ qr, actions }: { qr: Qr; actions: QrActions }) 
           aria-label={`${qr.status === "paused" ? "Riattiva" : "Metti in pausa"} ${qr.name}`}
         >
           {qr.status === "paused" ? <Play size={16} /> : <Pause size={16} />}
+        </button>
+      )}
+      {actions.askDelete && (
+        <button
+          type="button"
+          className={styles.danger}
+          onClick={() => actions.askDelete?.(qr)}
+          disabled={busy}
+          title="Elimina"
+          aria-label={`Elimina ${qr.name}`}
+        >
+          <Trash2 size={16} />
         </button>
       )}
     </div>

@@ -16,6 +16,7 @@ from ..auth.deps import ClientContext, CompanyContext, client_context, owned_com
 from ..auth.service import audit
 from ..core.database import get_session
 from ..core.errors import CodedError
+from ..core.security import now
 from ..models import Company, Folder, LinkAlias, LinkTag, QrCode, Tag
 from ..qr.service import encoded_content_of
 
@@ -298,7 +299,7 @@ def set_folder(qr_id: int, body: SetFolder, ctx: CompanyContext = Depends(owned_
 class Bulk(BaseModel):
     model_config = ConfigDict(extra="forbid")
     ids: list[int] = Field(min_length=1, max_length=200)
-    action: Literal["move", "tag", "untag", "pause", "resume"]
+    action: Literal["move", "tag", "untag", "pause", "resume", "delete"]
     folder_id: int | None = None
     tag_ids: list[int] = Field(default_factory=list, max_length=20)
 
@@ -325,6 +326,11 @@ def bulk(body: Bulk, ctx: CompanyContext = Depends(owned_company),
             session.execute(
                 delete(LinkTag).where(LinkTag.qr_code_id.in_(ids), LinkTag.tag_id.in_(tags))
             )
+    elif body.action == "delete":
+        # Soft delete: the row, slug and aliases stay (never reassigned); the public address
+        # shows the Vorya "QR non attivo" page. The quota is freed.
+        for link in links:
+            link.deleted_at = now()
     else:
         for link in links:
             if link.kind != "dynamic":

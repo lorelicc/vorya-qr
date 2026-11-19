@@ -145,11 +145,12 @@
 }
 
 .photo {
+  order: 2;
   flex-shrink: 0;
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
   object-fit: cover;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
 }
 
 .itemBody {
@@ -168,7 +169,8 @@
 
 .itemHead h4 {
   margin: 0;
-  font-size: var(--fs-md);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
 }
 
 .price {

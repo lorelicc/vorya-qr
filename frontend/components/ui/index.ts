@@ -1,6 +1,7 @@
 export { Badge, type BadgeTone } from "./Badge";
 export { Button, ButtonLink, buttonClass } from "./Button";
 export { Card } from "./Card";
+export { Disclosure } from "./Disclosure";
 export { EmptyState } from "./EmptyState";
 export { Field, Input, Select, fieldStyles } from "./Field";
 export { IconButton } from "./IconButton";

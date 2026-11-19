@@ -28,7 +28,8 @@
 
 .rowActions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-self: flex-end;
 }
 
 .section {
@@ -38,7 +39,8 @@
 }
 
 .section h3 {
-  font-size: var(--fs-h3);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
 }
 
 .images {

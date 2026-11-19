@@ -1,5 +1,5 @@
 "use client";
-import { Download, FolderInput, Pause, Play, Tag, X } from "lucide-react";
+import { Download, FolderInput, Pause, Play, Tag, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Button, Modal, useToast } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
@@ -7,6 +7,7 @@ import { useCompany } from "@/lib/company-context";
 import { csrfHeaders } from "@/lib/auth-client";
 import { useReducedMotion } from "@/lib/motion";
 import type { QrCode } from "@/lib/types";
+import { DeleteDialog } from "@/components/qr/DeleteDialog";
 import { FolderPicker } from "./FolderPicker";
 import type { Organize } from "./useOrganize";
 import styles from "./organize.module.css";
@@ -31,6 +32,7 @@ export function SelectionBar({
   const [moving, setMoving] = useState(false);
   const [tagging, setTagging] = useState(false);
   const [zip, setZip] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [format, setFormat] = useState<"png" | "svg" | "pdf">("png");
   const [chosen, setChosen] = useState<number[]>([]);
   const [busy, setBusy] = useState(false);
@@ -115,10 +117,23 @@ export function SelectionBar({
         >
           Scarica ZIP
         </Button>
+        <Button variant="ghost" icon={<Trash2 size={16} />} onClick={() => setDeleting(true)}>
+          Elimina
+        </Button>
         <Button variant="secondary" icon={<X size={16} />} onClick={onClear}>
           Annulla
         </Button>
       </div>
+      {deleting && (
+        <DeleteDialog
+          items={items.filter((q) => selected.has(q.id))}
+          onClose={() => setDeleting(false)}
+          onDone={() => {
+            setDeleting(false);
+            onDone();
+          }}
+        />
+      )}
 
       <FolderPicker
         open={moving}

@@ -1,7 +1,7 @@
 "use client";
 import { Lock, X } from "lucide-react";
 import { Dropzone } from "@/components/files/Dropzone";
-import { Input, Select } from "@/components/ui";
+import { Disclosure, Input, Select } from "@/components/ui";
 import { useCompany } from "@/lib/company-context";
 import {
   SOCIAL_LABEL,
@@ -94,7 +94,6 @@ export function HeaderFields({
     );
   return (
     <div className={styles.section}>
-      <h3>Intestazione</h3>
       <div className={styles.inline}>
         <Input
           label={titleLabel}
@@ -109,24 +108,30 @@ export function HeaderFields({
           onChange={(e) => set({ subtitle: e.target.value })}
         />
       </div>
-      <div className={styles.inline}>
-        <ImageField
-          label="Immagine di copertina"
-          purpose="cover"
-          fileId={header?.cover_file_id}
-          files={files}
-          addFile={addFile}
-          onPick={(id) => set({ cover_file_id: id })}
-        />
-        <ImageField
-          label="Foto o logo"
-          purpose="avatar"
-          fileId={header?.avatar_file_id}
-          files={files}
-          addFile={addFile}
-          onPick={(id) => set({ avatar_file_id: id })}
-        />
-      </div>
+      <Disclosure
+        title="Immagini"
+        summary={header?.cover_file_id || header?.avatar_file_id ? "Aggiunte" : "Copertina e foto"}
+        defaultOpen={Boolean(header?.cover_file_id || header?.avatar_file_id)}
+      >
+        <div className={styles.inline}>
+          <ImageField
+            label="Immagine di copertina"
+            purpose="cover"
+            fileId={header?.cover_file_id}
+            files={files}
+            addFile={addFile}
+            onPick={(id) => set({ cover_file_id: id })}
+          />
+          <ImageField
+            label="Foto o logo"
+            purpose="avatar"
+            fileId={header?.avatar_file_id}
+            files={files}
+            addFile={addFile}
+            onPick={(id) => set({ avatar_file_id: id })}
+          />
+        </div>
+      </Disclosure>
     </div>
   );
 }
@@ -169,7 +174,8 @@ export function SocialFields({ page, onChange }: Pick<FormProps, "page" | "onCha
             </Select>
             <Input
               label="Link"
-              type="url"
+              type="text"
+              inputMode="url"
               value={item.url}
               onChange={(e) => update({ url: e.target.value })}
             />
@@ -196,7 +202,6 @@ export function ThemeFields({
     onChange({ ...page, settings: { ...page.settings, ...patch } });
   return (
     <div className={styles.section}>
-      <h3>Aspetto della pagina</h3>
       <div className={styles.inline}>
         <ColorField
           label="Colore principale"
@@ -267,34 +272,36 @@ export function ThemeFields({
         <option value="square">Squadrati</option>
         <option value="outline">Solo bordo</option>
       </Select>
-      <label className={styles.check}>
-        <input
-          type="checkbox"
-          checked={page.settings.indexable}
-          onChange={(e) => setSettings({ indexable: e.target.checked })}
-        />{" "}
-        Consenti l’indicizzazione sui motori di ricerca
-      </label>
-      <label className={styles.check}>
-        <input
-          type="checkbox"
-          disabled={!canRemoveBranding}
-          checked={!page.settings.show_branding}
-          onChange={(e) => setSettings({ show_branding: !e.target.checked })}
+      <Disclosure title="Opzioni avanzate" summary="Ricerca, marchio, condivisione">
+        <label className={styles.check}>
+          <input
+            type="checkbox"
+            checked={page.settings.indexable}
+            onChange={(e) => setSettings({ indexable: e.target.checked })}
+          />{" "}
+          Consenti l’indicizzazione sui motori di ricerca
+        </label>
+        <label className={styles.check}>
+          <input
+            type="checkbox"
+            disabled={!canRemoveBranding}
+            checked={!page.settings.show_branding}
+            onChange={(e) => setSettings({ show_branding: !e.target.checked })}
+          />
+          Nascondi “Creato con Vorya QR”{" "}
+          {!canRemoveBranding && (
+            <>
+              <Lock size={14} aria-hidden="true" /> disponibile nel piano Pro
+            </>
+          )}
+        </label>
+        <Input
+          label="Titolo per la condivisione (Open Graph)"
+          value={page.settings.og.title}
+          maxLength={120}
+          onChange={(e) => setSettings({ og: { ...page.settings.og, title: e.target.value } })}
         />
-        Nascondi “Creato con Vorya QR”{" "}
-        {!canRemoveBranding && (
-          <>
-            <Lock size={14} aria-hidden="true" /> disponibile nel piano Pro
-          </>
-        )}
-      </label>
-      <Input
-        label="Titolo per la condivisione (Open Graph)"
-        value={page.settings.og.title}
-        maxLength={120}
-        onChange={(e) => setSettings({ og: { ...page.settings.og, title: e.target.value } })}
-      />
+      </Disclosure>
     </div>
   );
 }

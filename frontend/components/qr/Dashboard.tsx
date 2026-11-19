@@ -1,21 +1,15 @@
 "use client";
-import { FileDown, Folder, LayoutGrid, List, Plus, Upload } from "lucide-react";
+import { Folder, LayoutGrid, List } from "lucide-react";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { EmptySearch, NoResults } from "@/components/illustrations";
-import {
-  Button,
-  ButtonLink,
-  Card,
-  EmptyState,
-  SkeletonList,
-  buttonClass,
-  useToast,
-} from "@/components/ui";
+import { Button, Card, EmptyState, SkeletonList, useToast } from "@/components/ui";
 import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/hooks";
 import type { AccountPlan, QrCode } from "@/lib/types";
 import { OnboardingPanel } from "./OnboardingPanel";
+import { DashboardActions } from "./DashboardActions";
+import { DeleteDialog } from "./DeleteDialog";
 import { QrCards } from "./QrCards";
 import { QuickLinkBar } from "@/components/links/QuickLinkBar";
 import { DashboardDnd } from "@/components/organize/DashboardDnd";
@@ -71,6 +65,7 @@ export function Dashboard() {
   const toast = useToast();
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [movingOne, setMovingOne] = useState<QrCode | null>(null);
+  const [deleting, setDeleting] = useState<QrCode[]>([]);
   const [showFolders, setShowFolders] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const view = useSyncExternalStore(subscribeView, storedView, () => "cards" as View);
@@ -82,6 +77,7 @@ export function Dashboard() {
       api<AccountPlan>("account/plan").then(setPlan, () => undefined);
     },
     (qr) => setItems((all) => all?.map((q) => (q.id === qr.id ? qr : q)) ?? null),
+    (qr) => setDeleting([qr]),
   );
 
   useEffect(() => {
@@ -148,25 +144,11 @@ export function Dashboard() {
           <h1>{company.name}</h1>
           <p>Link brevi e codici QR dell’azienda: crea, modifica e misura.</p>
         </div>
-        <div className={styles.headerActions}>
-          <ButtonLink href={`${app}/import`} variant="secondary" icon={<Upload size={16} />}>
-            Importa CSV
-          </ButtonLink>
-          {!firstRun && (
-            <a
-              className={buttonClass({ variant: "secondary" })}
-              href={`/api/${base}/qr-codes/export.csv?${query}`}
-              download
-            >
-              <FileDown size={16} aria-hidden="true" /> Esporta CSV
-            </a>
-          )}
-          {canCreate && !firstRun && (
-            <ButtonLink href={`${app}/qr/new`} icon={<Plus size={16} />}>
-              Nuovo QR
-            </ButtonLink>
-          )}
-        </div>
+        <DashboardActions
+          canCreate={canCreate && !firstRun}
+          showMore
+          exportHref={`/api/${base}/qr-codes/export.csv?${query}`}
+        />
       </div>
       {error && (
         <p role="alert" className={styles.error}>
@@ -284,6 +266,16 @@ export function Dashboard() {
             onDone={() => {
               setSelected(new Set());
               reload();
+            }}
+          />
+          <DeleteDialog
+            items={deleting}
+            onClose={() => setDeleting([])}
+            onDone={(ids) => {
+              setDeleting([]);
+              setItems((all) => all?.filter((q) => !ids.includes(q.id)) ?? null);
+              org.reload();
+              api<AccountPlan>("account/plan").then(setPlan, () => undefined);
             }}
           />
           <FolderPicker

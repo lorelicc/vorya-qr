@@ -72,7 +72,7 @@ export function QuickLinkBar({ onCreated }: { onCreated: (link: QrCode) => void 
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? "quick-link-error" : undefined}
         />
-        <Button type="submit" loading={busy} icon={<Plus size={16} />}>
+        <Button type="submit" variant="secondary" loading={busy} icon={<Plus size={16} />}>
           Crea link
         </Button>
       </form>

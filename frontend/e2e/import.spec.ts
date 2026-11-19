@@ -5,7 +5,8 @@ import { signUp, uniqueEmail } from "./helpers";
 test("import CSV di 10 righe con anteprima, avanzamento e download dello ZIP", async ({ page }) => {
   test.setTimeout(120_000);
   await signUp(page, uniqueEmail("import"), "Cantina Import");
-  await page.getByRole("link", { name: "Importa CSV" }).click();
+  await page.getByRole("button", { name: "Altre azioni" }).click();
+  await page.getByRole("menuitem", { name: "Importa da CSV" }).click();
   await expect(page.getByRole("heading", { name: "Importa da CSV" })).toBeVisible();
 
   // A file with a mistake first: nothing is created and the row is highlighted.

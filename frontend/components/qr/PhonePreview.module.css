@@ -1,7 +1,7 @@
 .phone {
   position: relative;
   width: 100%;
-  max-width: 300px;
+  max-width: 340px;
   aspect-ratio: 9 / 19;
   margin: 0 auto;
   padding: 12px;
@@ -27,6 +27,11 @@
   overflow-y: auto;
   border-radius: 34px;
   background: var(--color-surface);
-  /* The page is designed at phone width: scale its type down a little inside the mockup. */
-  font-size: 14px;
+  overflow-x: hidden;
+}
+
+/* Laid out at 390px, then scaled to the mockup width (see PhonePreview.tsx). */
+.canvas {
+  transform-origin: top left;
+  overflow-wrap: anywhere;
 }

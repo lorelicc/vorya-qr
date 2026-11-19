@@ -38,7 +38,7 @@ function Item({
   lang: Lang;
   files: PageFiles;
 }) {
-  const photo = item.photo_file_id ? files[item.photo_file_id]?.urls.medium : undefined;
+  const photo = item.photo_file_id ? files[item.photo_file_id]?.urls.thumb : undefined;
   const prices = item.wine
     ? [
         item.wine.price_glass &&

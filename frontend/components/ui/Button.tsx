@@ -45,10 +45,15 @@ export function ButtonLink({
   icon,
   block,
   children,
+  className,
   ...props
 }: AnchorHTMLAttributes<HTMLAnchorElement> & Common & { href: string }) {
   return (
-    <Link href={href} className={buttonClass({ variant, block })} {...props}>
+    <Link
+      href={href}
+      className={[buttonClass({ variant, block }), className].filter(Boolean).join(" ")}
+      {...props}
+    >
       {icon}
       {children}
     </Link>

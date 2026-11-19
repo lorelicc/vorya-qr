@@ -15,6 +15,19 @@ export class ApiError extends Error {
 
 const TIMEOUT_MS = 15000;
 
+const FIELD_LABELS: Record<string, string> = {
+  website: "Sito web",
+  number: "Telefono",
+  address: "Indirizzo o email",
+  url: "Link",
+  first_name: "Nome",
+  last_name: "Cognome",
+  organization: "Azienda",
+  price: "Prezzo",
+  title: "Titolo",
+  label: "Etichetta",
+};
+
 function redirectFor(status: number): string | null {
   if (typeof window === "undefined") return null;
   if (status === 423) return "/suspended";
@@ -43,6 +56,9 @@ export async function api<T>(path: string, method = "GET", body?: unknown): Prom
     const fields: FieldErrors = {};
     for (const item of data?.errors ?? []) {
       if (item?.field && !fields[item.field]) fields[item.field] = item.message;
+      // Errors inside the hosted page content: say which field, so the user can find it.
+      if (typeof item?.path === "string" && item.path.startsWith("page.") && !fields.page)
+        fields.page = `${FIELD_LABELS[item.field] ?? "Un campo"}: ${item.message}`;
     }
     throw new ApiError(
       typeof data?.detail === "string"

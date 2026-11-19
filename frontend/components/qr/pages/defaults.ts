@@ -72,6 +72,13 @@ export function defaultPage(
   };
 }
 
+/** "www.sito.it" -> "https://www.sito.it": people rarely type the scheme. Empty stays empty. */
+export function normalizeUrl(value: string): string {
+  const v = value.trim();
+  if (!v || v === "https://" || /^[a-z][a-z0-9+.-]*:/i.test(v)) return v;
+  return /^[^\s/]+\.[^\s/]+/.test(v) ? `https://${v.replace(/^\/\//, "")}` : v;
+}
+
 /** Removes empty optional blocks/items before saving, so half-filled rows never fail validation. */
 export function cleanPage(page: PageDoc): PageDoc {
   const blocks = page.blocks
@@ -83,13 +90,13 @@ export function cleanPage(page: PageDoc): PageDoc {
             .filter((sec) => sec.title.it.trim())
             .map((sec) => ({ ...sec, items: sec.items.filter((i) => i.name.it.trim()) })),
         };
-      if (b.type === "link_list") return { ...b, items: b.items.filter((i) => i.label.trim() && i.url.trim() && i.url !== "https://") };
-      if (b.type === "social_icons") return b.items.some((i) => i.url.trim()) ? { ...b, items: b.items.filter((i) => i.url.trim()) } : null;
-      if (b.type === "music_links") return b.links.some((l) => l.url.trim()) ? { ...b, links: b.links.filter((l) => l.url.trim()) } : null;
+      if (b.type === "link_list") return { ...b, items: b.items.filter((i) => i.label.trim() && i.url.trim() && i.url !== "https://").map((i) => ({ ...i, url: normalizeUrl(i.url) })) };
+      if (b.type === "social_icons") return b.items.some((i) => i.url.trim()) ? { ...b, items: b.items.filter((i) => i.url.trim()).map((i) => ({ ...i, url: normalizeUrl(i.url) })) } : null;
+      if (b.type === "music_links") return b.links.some((l) => l.url.trim()) ? { ...b, links: b.links.filter((l) => l.url.trim()).map((l) => ({ ...l, url: normalizeUrl(l.url) })) } : null;
       if (b.type === "contact") {
         const named = b.first_name.trim() || b.last_name.trim() || b.organization.trim();
         if (!named && page.template !== "vcard") return null;
-        return { ...b, phones: b.phones.filter((p) => p.number.trim()), emails: b.emails.filter((e) => e.address.trim()) };
+        return { ...b, website: normalizeUrl(b.website), phones: b.phones.filter((p) => p.number.trim()), emails: b.emails.filter((e) => e.address.trim()) };
       }
       if (b.type === "gallery" && !b.file_ids.length && page.template !== "gallery") return null;
       if (b.type === "text") return b.markdown.trim() ? b : null;

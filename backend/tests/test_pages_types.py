@@ -213,3 +213,21 @@ def test_page_types_count_as_dynamic_quota(client, db):
     second = create_page_qr(client, "vcard", vcard_page())
     assert second.status_code == 409 and second.json()["code"] == "quota_dynamic"
     assert company_id(client)
+
+
+def test_vcard_with_website_typed_without_scheme_is_completed_not_refused(client):
+    """Regression (0.4): "www.sito.it" in a vCard gave an unhelpful "controlla i campi" error."""
+    signup(client)
+    saved = create_page_qr(client, "vcard", vcard_page(website="www.example.com"))
+    assert saved.status_code == 201, saved.text
+    page = client.get(f"{qrs(client)}/{saved.json()['id']}/page").json()
+    contact = next(b for b in page["blocks"] if b["type"] == "contact")
+    assert contact["website"] == "https://www.example.com"
+
+
+def test_validation_errors_carry_the_path_so_the_form_can_point_at_the_field(client):
+    signup(client)
+    bad = create_page_qr(client, "vcard", vcard_page(website="not a url"))
+    assert bad.status_code == 422
+    errors = bad.json()["errors"]
+    assert any(e["field"] == "website" and e["path"].startswith("page.") for e in errors)
