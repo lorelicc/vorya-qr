@@ -6,6 +6,7 @@ import { api, errorMessage } from "@/lib/api";
 import { daysLeft, formatDate } from "@/lib/format";
 import { formatBytes } from "@/lib/upload";
 import type { AccountPlan } from "@/lib/types";
+import { LockedFeatures } from "./LockedFeatures";
 import styles from "./PlanOverview.module.css";
 
 export function PlanOverview() {
@@ -54,6 +55,7 @@ export function PlanOverview() {
           <UsageMeter label="Spazio file" usage={plan.usage.storage} format={formatBytes} />
         </div>
       </Card>
+      <LockedFeatures plan={plan} />
     </div>
   );
 }

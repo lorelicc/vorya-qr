@@ -17,58 +17,6 @@
     var(--gradient-vorya);
 }
 
-.artCard {
-  display: flex;
-  align-items: center;
-  gap: var(--space-5);
-  width: 100%;
-  max-width: 380px;
-  padding: var(--space-6);
-  border-radius: var(--radius-xl);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-xl);
-}
-
-.qr {
-  display: grid;
-  grid-template-columns: repeat(7, 10px);
-  gap: 3px;
-  flex-shrink: 0;
-}
-
-.qr i {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  background: var(--color-surface-soft);
-}
-
-.qr i.on {
-  background: var(--vorya-black);
-}
-
-.lines {
-  flex: 1;
-}
-
-.lines b,
-.lines i {
-  display: block;
-  height: 9px;
-  margin: var(--space-3) 0;
-  border-radius: var(--radius-xs);
-  background: var(--color-border);
-}
-
-.lines b {
-  width: 65%;
-  background: var(--vorya-green-dark);
-}
-
-.lines i:last-child {
-  width: 70%;
-}
-
 .claim {
   color: var(--vorya-white);
   font-size: var(--fs-2xl);

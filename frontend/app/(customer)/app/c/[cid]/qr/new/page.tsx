@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { QrEditor } from "@/components/qr/QrEditor";
+import { QrWizard } from "@/components/qr/wizard/QrWizard";
 
 export const metadata: Metadata = { title: "Nuovo QR" };
 
@@ -9,10 +9,10 @@ export default function NewQrPage() {
       <div className="page-header">
         <div>
           <h1>Nuovo codice QR</h1>
-          <p>Scegli il tipo, inserisci l’URL e personalizza l’aspetto.</p>
+          <p>Quattro passaggi: tipo, contenuto, design, salva e scarica.</p>
         </div>
       </div>
-      <QrEditor />
+      <QrWizard />
     </div>
   );
 }

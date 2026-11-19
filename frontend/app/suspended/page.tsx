@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { StatusPage } from "@/components/layout/StatusPage";
+import { Suspended, TrialExpired } from "@/components/illustrations";
 import { ButtonLink } from "@/components/ui";
 import { requireUser } from "@/lib/auth-server";
 
@@ -19,6 +20,7 @@ export default async function SuspendedPage() {
   return (
     <StatusPage
       title={expired ? "Prova terminata" : "Account sospeso"}
+      illustration={expired ? <TrialExpired /> : <Suspended />}
       actions={
         <>
           <ButtonLink href={`mailto:${me.support_email}?subject=${subject}`}>

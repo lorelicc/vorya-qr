@@ -44,3 +44,9 @@
   flex-wrap: wrap;
   justify-content: center;
 }
+
+.illustration {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-4);
+}

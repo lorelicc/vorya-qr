@@ -41,6 +41,7 @@ export type QrCode = QrStyle & {
   status: "active" | "paused" | "blocked";
   blocked_reason?: string | null;
   scan_count: number;
+  spark?: number[] | null;
   created_at: string;
   updated_at: string;
 };

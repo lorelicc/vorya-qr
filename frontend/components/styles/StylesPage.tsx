@@ -1,5 +1,6 @@
 "use client";
-import { Palette, Trash2 } from "lucide-react";
+import { NoPresets } from "@/components/illustrations";
+import { Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Card, EmptyState, IconButton, SkeletonList, useToast } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
@@ -64,7 +65,7 @@ export function StylesPage() {
         <SkeletonList rows={2} />
       ) : presets.length === 0 ? (
         <EmptyState
-          icon={<Palette size={26} />}
+          illustration={<NoPresets />}
           title="Nessuno stile salvato"
           description="Nel designer di un QR usa “Salva stile” per riutilizzare forme, colori e logo."
         />

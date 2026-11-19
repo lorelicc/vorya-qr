@@ -132,3 +132,17 @@ def test_retention_job_deletes_old_events_by_plan(client, db):
     assert db.scalar(select(func.count()).select_from(ScanEvent)) == 1
     plus = db.get(Plan, "plus")
     assert plus.features.get("stats_retention_days", 0) is None
+
+
+def test_dashboard_list_has_seven_day_sparklines(client, db):
+    signup(client)
+    dyn, static = create(client).json(), create(client, kind="static").json()
+    follow(client, dyn["slug"])
+    follow(client, dyn["slug"])
+    db.execute(
+        update(ScanEvent).where(ScanEvent.id == 1).values(scanned_at=now() - timedelta(days=3))
+    )
+    db.commit()
+    items = {q["id"]: q for q in client.get(qrs(client)).json()}
+    assert items[dyn["id"]]["spark"][-1] == 1 and sum(items[dyn["id"]]["spark"]) == 2
+    assert len(items[dyn["id"]]["spark"]) == 7 and items[static["id"]]["spark"] is None

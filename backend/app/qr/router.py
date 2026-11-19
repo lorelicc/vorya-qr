@@ -28,6 +28,7 @@ from .service import (
     qr_out,
     require_dynamic,
     scan_counts,
+    sparklines,
     update_content,
     validate_content,
 )
@@ -49,7 +50,7 @@ def filename(name: str, extension: str) -> str:
 def list_qr(
     search: str = Query(default="", max_length=120),
     kind: Literal["", "static", "dynamic"] = "",
-    status: Literal["", "active", "paused"] = "",
+    status: Literal["", "active", "paused", "blocked"] = "",
     qr_type: str = Query(default="", max_length=16),
     ctx: CompanyContext = Depends(owned_company),
     session: Session = Depends(get_session),
@@ -66,7 +67,13 @@ def list_qr(
         query = query.where(QrCode.qr_type == qr_type)
     items = list(session.scalars(query.order_by(QrCode.created_at.desc(), QrCode.id.desc())))
     counts = scan_counts(session, [qr.id for qr in items])
-    return [qr_out(qr, counts.get(qr.id, 0)) for qr in items]
+    sparks = sparklines(session, [qr.id for qr in items if qr.kind == "dynamic"])
+    out = []
+    for qr in items:
+        item = qr_out(qr, counts.get(qr.id, 0))
+        item.spark = sparks.get(qr.id)
+        out.append(item)
+    return out
 
 
 @router.post("", response_model=QrOut, status_code=201)

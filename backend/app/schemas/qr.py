@@ -94,5 +94,6 @@ class QrOut(BaseModel):
     error_correction: str
     design: dict | None
     scan_count: int
+    spark: list[int] | None = None  # last 7 days, dashboard list only
     created_at: datetime
     updated_at: datetime

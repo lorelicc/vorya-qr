@@ -1,6 +1,7 @@
 "use client";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
@@ -13,6 +14,7 @@ import { DynamicControls } from "./DynamicControls";
 import { KindBadge, StatusBadge } from "./QrBadges";
 import { QrEditor } from "./QrEditor";
 import { StaticControls } from "./StaticControls";
+import { Celebration } from "./wizard/Celebration";
 import styles from "./QrDetail.module.css";
 
 export function QrDetail({ id }: { id: number }) {
@@ -22,6 +24,12 @@ export function QrDetail({ id }: { id: number }) {
   const [files, setFiles] = useState<PageFiles | null>(null);
   const [error, setError] = useState("");
   const [version, setVersion] = useState(0);
+  // The onboarding sample lands here with ?created=1: celebrate once, then clean the URL.
+  const params = useSearchParams();
+  const [celebrate] = useState(() => params.has("created"));
+  useEffect(() => {
+    if (celebrate) window.history.replaceState(null, "", window.location.pathname);
+  }, [celebrate]);
 
   useEffect(() => {
     Promise.all([
@@ -50,6 +58,15 @@ export function QrDetail({ id }: { id: number }) {
       <Link href={app} className={styles.back}>
         <ArrowLeft size={16} /> Tutti i codici QR
       </Link>
+      {celebrate && (
+        <div className={styles.celebrate} role="status">
+          <Celebration />
+          <p>
+            <strong>QR di esempio creato.</strong> Modifica la pagina qui sotto e scaricalo quando è
+            pronto.
+          </p>
+        </div>
+      )}
       <div className="page-header">
         <div>
           <h1>{qr.name}</h1>

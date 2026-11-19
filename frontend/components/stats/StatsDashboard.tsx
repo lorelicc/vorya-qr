@@ -5,6 +5,7 @@ import { Card, buttonClass } from "@/components/ui";
 import { formatDay, formatNumber } from "@/lib/format";
 import { useCountUp } from "@/lib/motion";
 import type { StatsSummary } from "@/lib/types";
+import { NoStats } from "@/components/illustrations";
 import { Breakdown } from "./Breakdown";
 import { LineChart } from "./LineChart";
 import { RangePicker, type RangeValue } from "./RangePicker";
@@ -83,13 +84,20 @@ export function StatsDashboard({
         {showClicks && <Figure label="Click sulla pagina" value={stats.clicks} hint={period} />}
       </div>
       <Card title="Andamento" description={`${period}, ora italiana.`}>
-        <LineChart
-          days={stats.daily}
-          series={[
-            { key: "count", label: "Scansioni", tone: "main" },
-            { key: "unique", label: "Visitatori unici (stima)", tone: "soft" },
-          ]}
-        />
+        {stats.scans === 0 ? (
+          <div className={styles.emptyChart}>
+            <NoStats />
+            <p className="muted">Nessuna scansione nel periodo selezionato.</p>
+          </div>
+        ) : (
+          <LineChart
+            days={stats.daily}
+            series={[
+              { key: "count", label: "Scansioni", tone: "main" },
+              { key: "unique", label: "Visitatori unici (stima)", tone: "soft" },
+            ]}
+          />
+        )}
       </Card>
       {extra}
       <div className="grid-2">

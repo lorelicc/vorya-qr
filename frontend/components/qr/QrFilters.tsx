@@ -6,7 +6,7 @@ import styles from "./QrFilters.module.css";
 export type Filters = {
   search: string;
   kind: "" | "static" | "dynamic";
-  status: "" | "active" | "paused";
+  status: "" | "active" | "paused" | "blocked";
 };
 
 export function QrFilters({
@@ -53,6 +53,7 @@ export function QrFilters({
           <option value="">Tutti gli stati</option>
           <option value="active">Attivi</option>
           <option value="paused">In pausa</option>
+          <option value="blocked">Bloccati</option>
         </select>
       </label>
     </div>

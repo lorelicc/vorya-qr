@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from fastapi import HTTPException
 from pydantic import ValidationError
 from sqlalchemy import func, select
@@ -26,6 +28,29 @@ def scan_counts(session: Session, qr_ids: list[int]) -> dict[int, int]:
         .group_by(ScanEvent.qr_code_id)
     ).all()
     return dict(rows)
+
+
+def sparklines(session: Session, qr_ids: list[int], days: int = 7) -> dict[int, list[int]]:
+    """Daily human scans of the last `days` days (Europe/Rome), oldest first."""
+    from ..stats.periods import bounds, local_today
+    from ..stats.queries import local_day
+
+    if not qr_ids:
+        return {}
+    last = local_today()
+    first = last - timedelta(days=days - 1)
+    start, end = bounds(first, last)
+    day = local_day(ScanEvent.scanned_at)
+    rows = session.execute(
+        select(ScanEvent.qr_code_id, day, func.count())
+        .where(ScanEvent.qr_code_id.in_(qr_ids), ScanEvent.is_bot.is_(False),
+               ScanEvent.scanned_at >= start, ScanEvent.scanned_at < end)
+        .group_by(ScanEvent.qr_code_id, day)
+    ).all()  # fmt: skip
+    out = {qr_id: [0] * days for qr_id in qr_ids}
+    for qr_id, d, count in rows:
+        out[qr_id][(d - first).days] = count
+    return out
 
 
 def qr_out(qr: QrCode, scan_count: int = 0) -> QrOut:

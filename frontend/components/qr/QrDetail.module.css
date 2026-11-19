@@ -21,3 +21,17 @@
 .badges {
   margin-top: var(--space-2);
 }
+
+.celebrate {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-success-soft);
+}
+
+.celebrate svg {
+  width: 88px;
+  height: 80px;
+}

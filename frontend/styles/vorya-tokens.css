@@ -45,12 +45,19 @@
   --color-info-soft: #f5f2ff;
 
   /* Illustration accents (Sign) */
+  --art-green: var(--vorya-green-primary);
+  --art-mid: var(--vorya-green-middle);
+  --art-dark: var(--vorya-green-dark);
+  --art-ink: var(--vorya-black);
+  --art-paper: var(--vorya-white);
   --art-mint: #d8fae9;
   --art-glow: #b2f3d5;
   --art-lilac: #ddd5ff;
   --art-lilac-soft: #f5f2ff;
   --art-peach: #ffd7ba;
+  --art-peach-soft: #fff6ef;
   --art-line: #d3e7dc;
+  --art-danger: #f6c9cf;
 
   /* Typography: Arial like Vorya Sign. Minimum 10px (Sign's 8-9px dropped for legibility). */
   --font-family: Arial, Helvetica, sans-serif;

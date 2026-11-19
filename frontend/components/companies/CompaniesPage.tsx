@@ -1,5 +1,6 @@
 "use client";
-import { Building2, Lock, Plus, RotateCcw } from "lucide-react";
+import { NoCompanies } from "@/components/illustrations";
+import { Lock, Plus, RotateCcw } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Button, EmptyState, SkeletonList, useToast } from "@/components/ui";
@@ -113,7 +114,7 @@ export function CompaniesPage() {
         <SkeletonList rows={3} />
       ) : companies.length === 0 ? (
         <EmptyState
-          icon={<Building2 size={26} />}
+          illustration={<NoCompanies />}
           title="Nessuna azienda"
           description="Crea la tua prima azienda per iniziare a generare codici QR."
           action={<Button onClick={() => setCreating(true)}>Crea azienda</Button>}

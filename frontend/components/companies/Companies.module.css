@@ -200,3 +200,23 @@
     grid-template-columns: auto minmax(0, 1fr);
   }
 }
+
+.outcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+}
+
+.pendingArt {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .pendingArt {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: calc(var(--space-4) * -1);
+  }
+}

@@ -1,19 +1,18 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { Badge, Button, Card, Input, useToast } from "@/components/ui";
+import { Badge, Button, Card, useToast } from "@/components/ui";
 import { api, errorMessage, fieldErrors, type FieldErrors } from "@/lib/api";
 import { useCompany } from "@/lib/company-context";
 import type { PageDoc, PageFiles } from "@/lib/page-types";
 import type { AccountPlan, QrCode, Scannability } from "@/lib/types";
-import { TemplateForm } from "./pages/TemplateForms";
 import { ThemeFields } from "./pages/shared";
 import { PhonePreview } from "./PhonePreview";
 import { QrPreview } from "./QrPreview";
 import { DesignPanel } from "./design/DesignPanel";
-import { StaticForm } from "./types/StaticForm";
 import { TYPE_BY_KEY, isPageType } from "./types/meta";
 import { TypePicker } from "./types/TypePicker";
+import { ContentFields } from "./ContentFields";
 import { useQrDraft } from "./useQrDraft";
 import styles from "./QrEditor.module.css";
 
@@ -83,59 +82,7 @@ export function QrEditor({ initial, initialPage, initialFiles, onSaved }: Props)
             title="Contenuto"
             actions={editing ? <Badge tone="info">{TYPE_BY_KEY[type].label}</Badge> : undefined}
           >
-            <div className="stack">
-              <Input
-                label="Nome del QR"
-                value={draft.name}
-                onChange={(e) => update({ name: e.target.value })}
-                required
-                maxLength={120}
-                error={errors.name}
-                hint="Visibile solo a te, per ritrovare il QR."
-              />
-              {type === "website" && !editing && (
-                <label className={styles.toggle}>
-                  <input
-                    type="checkbox"
-                    checked={draft.dynamic}
-                    onChange={(e) => update({ dynamic: e.target.checked })}
-                  />{" "}
-                  QR dinamico (destinazione modificabile e statistiche)
-                </label>
-              )}
-              {type === "website" && q.kind === "dynamic" && (
-                <Input
-                  label="URL di destinazione"
-                  type="url"
-                  inputMode="url"
-                  value={draft.target_url}
-                  onChange={(e) => update({ target_url: e.target.value })}
-                  error={errors.target_url}
-                  hint="Puoi cambiarla in qualsiasi momento senza ristampare il QR."
-                />
-              )}
-              {q.kind === "static" && (
-                <StaticForm
-                  type={type}
-                  value={draft.static_data}
-                  onChange={(static_data) => update({ static_data })}
-                  errors={errors.static_data}
-                />
-              )}
-              {page && (
-                <TemplateForm
-                  page={page}
-                  onChange={(p) => update({ page: p })}
-                  files={q.files}
-                  addFile={q.addFile}
-                />
-              )}
-              {errors.page && (
-                <p className={styles.error} role="alert">
-                  {errors.page}
-                </p>
-              )}
-            </div>
+            <ContentFields q={q} editing={editing} errors={errors} />
           </Card>
         )}
         {page && (
