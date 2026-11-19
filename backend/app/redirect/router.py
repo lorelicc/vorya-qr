@@ -10,7 +10,7 @@ import re
 from urllib.parse import urlsplit
 
 from fastapi import APIRouter, BackgroundTasks, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy import select
 
 from ..access import redirects_enabled
@@ -61,6 +61,7 @@ def follow(slug: str, request: Request, tasks: BackgroundTasks):
                 QrCode.target_url,
                 QrCode.status,
                 QrCode.deleted_at,
+                QrCode.destination,
                 Company.deleted_at.label("company_deleted_at"),
                 Workspace.status.label("workspace_status"),
             )
@@ -84,4 +85,7 @@ def follow(slug: str, request: Request, tasks: BackgroundTasks):
             request.headers.get("user-agent", ""),
             request.headers.get("referer", ""),
         )
+    if row.destination == "page":
+        # The hosted page is rendered by the frontend on the same URL (no extra hop).
+        return Response(status_code=200, headers={**HEADERS, "X-Vorya-Destination": "page"})
     return RedirectResponse(row.target_url, status_code=302, headers=HEADERS)

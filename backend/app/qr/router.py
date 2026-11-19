@@ -2,23 +2,37 @@ import re
 import unicodedata
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from ..auth.deps import CompanyContext, owned_company
-from ..auth.service import audit
+from ..auth.service import audit, rate_limit
 from ..core.database import get_session
 from ..core.security import now
-from ..models import QrCode
+from ..models import QrCode, QrPage
 from ..quotas import reserve_slot
+from ..schemas.page import Page
 from ..schemas.qr import QrCreate, QrOut, QrPreview, QrUpdate
 from .contrast import warnings
-from .render import PNG_DEFAULT, PNG_MAX, PNG_MIN, encoded_content, render_png, render_svg
-from .service import get_owned, insert_qr, qr_out, require_dynamic, scan_counts
+from .render import PNG_DEFAULT, PNG_MAX, PNG_MIN, PREVIEW_SLUG, render_png, render_svg, short_link
+from .service import (
+    encoded_content_of,
+    get_owned,
+    insert_qr,
+    kind_of,
+    qr_out,
+    require_dynamic,
+    resolve_content,
+    scan_counts,
+    update_content,
+)
 
 router = APIRouter(prefix="/api/companies/{company_id}/qr-codes", tags=["qr"])
 NO_STORE = {"Cache-Control": "no-store, private"}
+
+
+STYLE_FIELDS = ("fg_color", "bg_color", "margin", "error_correction")
 
 
 def style(qr) -> dict:
@@ -41,6 +55,7 @@ def list_qr(
     search: str = Query(default="", max_length=120),
     kind: Literal["", "static", "dynamic"] = "",
     status: Literal["", "active", "paused"] = "",
+    qr_type: str = Query(default="", max_length=16),
     ctx: CompanyContext = Depends(owned_company),
     session: Session = Depends(get_session),
 ):
@@ -52,6 +67,8 @@ def list_qr(
         query = query.where(QrCode.kind == kind)
     if status:
         query = query.where(QrCode.status == status)
+    if qr_type:
+        query = query.where(QrCode.qr_type == qr_type)
     items = list(session.scalars(query.order_by(QrCode.created_at.desc(), QrCode.id.desc())))
     counts = scan_counts(session, [qr.id for qr in items])
     return [qr_out(qr, counts.get(qr.id, 0)) for qr in items]
@@ -63,7 +80,9 @@ def create_qr(
     ctx: CompanyContext = Depends(owned_company),
     session: Session = Depends(get_session),
 ):
-    reserve_slot(session, ctx.workspace.id, payload.kind)
+    if not rate_limit(session, "qr-create", str(ctx.workspace.id), 120, 3600):
+        raise HTTPException(429, "Troppi QR creati in poco tempo. Riprova più tardi.")
+    reserve_slot(session, ctx.workspace.id, kind_of(payload.qr_type, payload.dynamic)[0])
     qr = insert_qr(session, ctx, payload)
     audit(session, ctx.user, "qr.created", ctx.workspace.id, ctx.company.id, qr_id=qr.id)
     session.commit()
@@ -76,10 +95,18 @@ def preview(
     ctx: CompanyContext = Depends(owned_company),
     session: Session = Depends(get_session),
 ):
-    slug = None
-    if payload.qr_id is not None:
-        slug = get_owned(session, ctx, payload.qr_id).slug
-    content = encoded_content(payload.kind, payload.target_url or "https://", slug)
+    kind, _ = kind_of(payload.qr_type, payload.dynamic)
+    if kind == "dynamic":
+        slug = get_owned(session, ctx, payload.qr_id).slug if payload.qr_id else PREVIEW_SLUG
+        content = short_link(slug)
+    else:
+        from .static_types import encode_static
+
+        try:
+            _, data, _ = resolve_content(session, ctx, payload.qr_type, kind, payload)
+            content = encode_static(payload.qr_type, data)
+        except Exception:  # noqa: BLE001 - incomplete forms still get a placeholder preview
+            content = "https://qr.vorya.it"
     svg = render_svg(
         content,
         fg=payload.fg_color,
@@ -112,13 +139,49 @@ def update_qr(
     session: Session = Depends(get_session),
 ):
     qr = get_owned(session, ctx, qr_id, lock=True)
-    changed_target = qr.target_url != payload.target_url
-    for field, value in payload.model_dump().items():
-        setattr(qr, field, value)
-    if changed_target:
+    qr.name = payload.name
+    for field in STYLE_FIELDS:
+        setattr(qr, field, getattr(payload, field))
+    if update_content(session, ctx, qr, payload):
         audit(session, ctx.user, "qr.target_changed", ctx.workspace.id, ctx.company.id, qr_id=qr.id)
     session.commit()
     return qr_out(qr, scan_counts(session, [qr.id]).get(qr.id, 0))
+
+
+@router.get("/{qr_id}/page", response_model=Page)
+def get_page(
+    qr_id: int,
+    ctx: CompanyContext = Depends(owned_company),
+    session: Session = Depends(get_session),
+):
+    qr = get_owned(session, ctx, qr_id)
+    row = session.get(QrPage, qr.id)
+    if row is None:
+        raise HTTPException(404, "Questo QR non ha una pagina.")
+    return row.document
+
+
+@router.post("/{qr_id}/duplicate", response_model=QrOut, status_code=201)
+def duplicate_qr(
+    qr_id: int,
+    ctx: CompanyContext = Depends(owned_company),
+    session: Session = Depends(get_session),
+):
+    source = get_owned(session, ctx, qr_id)
+    page = session.get(QrPage, source.id)
+    payload = QrCreate(
+        name=f"{source.name} (copia)"[:120], qr_type=source.qr_type,
+        dynamic=source.kind == "dynamic",
+        target_url=source.target_url, static_data=source.static_data,
+        page=Page.model_validate(page.document) if page else None,
+        **{f: getattr(source, f) for f in STYLE_FIELDS},
+    )  # fmt: skip
+    reserve_slot(session, ctx.workspace.id, source.kind)
+    qr = insert_qr(session, ctx, payload)
+    qr.design = source.design
+    audit(session, ctx.user, "qr.duplicated", ctx.workspace.id, ctx.company.id, qr_id=qr.id)
+    session.commit()
+    return qr_out(qr)
 
 
 @router.post("/{qr_id}/{action}", response_model=QrOut)
@@ -155,7 +218,7 @@ def image_svg(
     session: Session = Depends(get_session),
 ):
     qr = get_owned(session, ctx, qr_id)
-    svg = render_svg(encoded_content(qr.kind, qr.target_url, qr.slug), **style(qr))
+    svg = render_svg(encoded_content_of(qr), **style(qr))
     return Response(
         svg,
         media_type="image/svg+xml",
@@ -174,9 +237,7 @@ def image_png(
     session: Session = Depends(get_session),
 ):
     qr = get_owned(session, ctx, qr_id)
-    png, real_size = render_png(
-        encoded_content(qr.kind, qr.target_url, qr.slug), size=size, **style(qr)
-    )
+    png, real_size = render_png(encoded_content_of(qr), size=size, **style(qr))
     return Response(
         png,
         media_type="image/png",

@@ -1,13 +1,20 @@
 from fastapi import HTTPException
+from pydantic import ValidationError
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from ..models import QrCode, ScanEvent
-from ..schemas.qr import QrCreate, QrOut
+from ..core.errors import CodedError
+from ..models import Plan, QrCode, QrPage, ScanEvent, StoredFile
+from ..plans import PAGE_TYPES, STATIC_TYPES, require_type
+from ..schemas.page import Page
+from ..schemas.qr import QrContent, QrCreate, QrOut, valid_url
 from .render import new_slug, short_link
+from .static_types import STATIC_SCHEMAS, encode_static
 
 SLUG_ATTEMPTS = 8
+# Which file kinds each kind of reference accepts.
+FILE_KINDS = {"tracks": "audio", "file": "pdf"}
 
 
 def scan_counts(session: Session, qr_ids: list[int]) -> dict[int, int]:
@@ -23,22 +30,13 @@ def scan_counts(session: Session, qr_ids: list[int]) -> dict[int, int]:
 
 def qr_out(qr: QrCode, scan_count: int = 0) -> QrOut:
     return QrOut(
-        id=qr.id,
-        name=qr.name,
-        kind=qr.kind,
-        content_type=qr.content_type,
-        target_url=qr.target_url,
-        slug=qr.slug,
-        short_url=short_link(qr.slug) if qr.slug else None,
-        status=qr.status,
-        fg_color=qr.fg_color,
-        bg_color=qr.bg_color,
-        margin=qr.margin,
-        error_correction=qr.error_correction,
-        scan_count=scan_count,
-        created_at=qr.created_at,
-        updated_at=qr.updated_at,
-    )
+        id=qr.id, name=qr.name, kind=qr.kind, qr_type=qr.qr_type, destination=qr.destination,
+        content_type=qr.content_type, target_url=qr.target_url, static_data=qr.static_data,
+        slug=qr.slug, short_url=short_link(qr.slug) if qr.slug else None, status=qr.status,
+        fg_color=qr.fg_color, bg_color=qr.bg_color, margin=qr.margin,
+        error_correction=qr.error_correction, design=qr.design, scan_count=scan_count,
+        created_at=qr.created_at, updated_at=qr.updated_at,
+    )  # fmt: skip
 
 
 def get_owned(session: Session, ctx, qr_id: int, lock=False) -> QrCode:
@@ -62,22 +60,124 @@ def require_dynamic(qr: QrCode) -> None:
         raise HTTPException(409, "Operazione disponibile solo per i QR dinamici.")
 
 
+def kind_of(qr_type: str, dynamic: bool) -> tuple[str, str]:
+    """(kind, destination) for a type."""
+    if qr_type in PAGE_TYPES:
+        return "dynamic", "page"
+    if qr_type in STATIC_TYPES:
+        return "static", "redirect"
+    return ("dynamic", "redirect") if dynamic else ("static", "redirect")
+
+
+def invalid(message: str, field: str) -> CodedError:
+    error = CodedError(422, message, "invalid_content")
+    error.field = field  # type: ignore[attr-defined]
+    return error
+
+
+def validate_static(qr_type: str, data: dict | None) -> dict:
+    try:
+        return STATIC_SCHEMAS[qr_type].model_validate(data or {}).model_dump()
+    except ValidationError as exc:
+        first = exc.errors()[0]
+        raise invalid(str(first["msg"]).removeprefix("Value error, "), "static_data") from None
+
+
+def check_page_files(session: Session, company_id: int, page: Page) -> None:
+    """Every referenced file must be a live file of the same company, of the right kind."""
+    ids = page.file_ids()
+    if not ids:
+        return
+    files = {f.id: f for f in session.scalars(select(StoredFile).where(
+        StoredFile.id.in_(ids), StoredFile.company_id == company_id,
+        StoredFile.deleted_at.is_(None)))}  # fmt: skip
+    missing = ids - set(files)
+    if missing:
+        raise invalid("Uno o più file non sono disponibili: caricali di nuovo.", "page")
+    for block in page.blocks:
+        if block.type == "audio_player" and any(
+            files[t.file_id].kind != "audio" for t in block.tracks
+        ):
+            raise invalid("Le tracce devono essere file audio.", "page")
+        if block.type == "file" and files[block.file_id].kind != "pdf":
+            raise invalid("Il blocco file accetta solo PDF.", "page")
+
+
+def resolve_content(session: Session, ctx, qr_type: str, kind: str, content: QrContent):
+    """Validates the type-specific content. Returns (target_url, static_data, page)."""
+    if qr_type == "website" and kind == "dynamic":
+        try:
+            return valid_url(content.target_url), None, None
+        except ValueError as exc:
+            raise invalid(str(exc), "target_url") from None
+    if kind == "static":
+        data = content.static_data
+        if qr_type == "website" and not data and content.target_url:
+            data = {"url": content.target_url}
+        data = validate_static(qr_type, data)
+        return (data["url"] if qr_type == "website" else ""), data, None
+    if content.page is None:
+        raise invalid("Compila il contenuto della pagina.", "page")
+    if content.page.template != qr_type:
+        raise invalid("Il modello della pagina non corrisponde al tipo di QR.", "page")
+    check_page_files(session, ctx.company.id, content.page)
+    return "", None, content.page
+
+
+def save_page(session: Session, qr: QrCode, page: Page | None) -> None:
+    if page is None:
+        return
+    row = session.get(QrPage, qr.id)
+    document = page.model_dump(mode="json")
+    if row is None:
+        session.add(QrPage(qr_code_id=qr.id, template=page.template, document=document))
+    else:
+        row.document, row.template = document, page.template
+    from ..storage.usage import link_files_to_qr
+
+    link_files_to_qr(session, qr.id, page.file_ids())
+
+
+STYLE_FIELDS = ("fg_color", "bg_color", "margin", "error_correction")
+
+
 def insert_qr(session: Session, ctx, payload: QrCreate) -> QrCode:
-    """Inserts with a fresh unique slug for dynamic QR, retrying on the rare collision."""
-    data = payload.model_dump()
+    """Creates the QR (fresh unique slug for dynamic ones, retried on the rare collision)."""
+    require_type(session.get(Plan, ctx.workspace.plan_id), payload.qr_type)
+    kind, destination = kind_of(payload.qr_type, payload.dynamic)
+    target_url, static_data, page = resolve_content(session, ctx, payload.qr_type, kind, payload)
+    style = {f: getattr(payload, f) for f in STYLE_FIELDS}
     for _ in range(SLUG_ATTEMPTS):
         qr = QrCode(
-            workspace_id=ctx.workspace.id, company_id=ctx.company.id, status="active", **data
-        )
-        if payload.kind == "dynamic":
+            workspace_id=ctx.workspace.id, company_id=ctx.company.id, status="active",
+            name=payload.name, kind=kind, qr_type=payload.qr_type, destination=destination,
+            target_url=target_url, static_data=static_data, **style,
+        )  # fmt: skip
+        if kind == "dynamic":
             qr.slug = new_slug()
         savepoint = session.begin_nested()
         session.add(qr)
         try:
             savepoint.commit()
+            save_page(session, qr, page)
             return qr
         except IntegrityError:
             savepoint.rollback()
-            if payload.kind != "dynamic":
+            if kind != "dynamic":
                 raise
     raise HTTPException(503, "Impossibile generare un link univoco. Riprova.")
+
+
+def update_content(session: Session, ctx, qr: QrCode, content: QrContent) -> bool:
+    """Applies new content; returns True when a redirect destination changed."""
+    target_url, static_data, page = resolve_content(session, ctx, qr.qr_type, qr.kind, content)
+    changed = qr.destination == "redirect" and qr.kind == "dynamic" and target_url != qr.target_url
+    qr.target_url, qr.static_data = target_url, static_data
+    save_page(session, qr, page)
+    return changed
+
+
+def encoded_content_of(qr: QrCode) -> str:
+    if qr.kind == "dynamic":
+        return short_link(qr.slug)
+    return encode_static(qr.qr_type, qr.static_data or {"url": qr.target_url})

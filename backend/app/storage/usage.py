@@ -2,7 +2,7 @@
 
 from datetime import timedelta
 
-from sqlalchemy import func, select, update
+from sqlalchemy import String, func, select, update
 from sqlalchemy.orm import Session
 
 from ..core.security import now
@@ -54,10 +54,29 @@ def purge_company_files(session: Session, company_id: int) -> None:
 
 
 def mark_files_of_deleted_qr(session: Session) -> None:
-    """Files of QR codes deleted 30+ days ago are scheduled for removal."""
+    """Files of QR codes deleted 30+ days ago are scheduled for removal, unless a live page
+    (e.g. a duplicated QR) still references them."""
+    from ..models import QrPage
+
     old_qr = select(QrCode.id).where(QrCode.deleted_at <= now() - timedelta(days=PURGE_DAYS))
-    session.execute(
-        update(StoredFile)
-        .where(StoredFile.qr_code_id.in_(old_qr), StoredFile.deleted_at.is_(None))
-        .values(deleted_at=now(), purge_after=now())
-    )
+    candidates = session.scalars(
+        select(StoredFile).where(StoredFile.qr_code_id.in_(old_qr), StoredFile.deleted_at.is_(None))
+    ).all()
+    if not candidates:
+        return
+    live_docs = session.scalars(
+        select(func.cast(QrPage.document, String))
+        .join(QrCode, QrCode.id == QrPage.qr_code_id)
+        .where(QrCode.deleted_at.is_(None))
+    ).all()
+    for file in candidates:
+        if not any(file.id in doc for doc in live_docs):
+            file.deleted_at, file.purge_after = now(), now()
+
+
+def link_files_to_qr(session: Session, qr_id: int, file_ids: set[str]) -> None:
+    """Remembers which QR uses a file, so its files can be purged 30 days after QR deletion."""
+    if file_ids:
+        session.execute(
+            update(StoredFile).where(StoredFile.id.in_(file_ids)).values(qr_code_id=qr_id)
+        )

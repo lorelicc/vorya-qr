@@ -49,7 +49,10 @@ def test_populated_v01_database_upgrades_without_regressions(monkeypatch, client
             text("SELECT workspace_id, name FROM companies ORDER BY workspace_id")
         ).all()
         qr = c.execute(
-            text("SELECT id, company_id, slug, target_url, status FROM qr_codes ORDER BY id")
+            text(
+                "SELECT id, company_id, slug, target_url, status, qr_type, destination, "
+                "static_data FROM qr_codes ORDER BY id"
+            )
         ).all()
         features = (
             c.execute(text("SELECT max_companies FROM plans ORDER BY position")).scalars().all()
@@ -57,6 +60,8 @@ def test_populated_v01_database_upgrades_without_regressions(monkeypatch, client
     assert companies == [(1, "Pizzeria Da Mario"), (2, "Studio Anna")]
     assert [row.slug for row in qr] == ["Ab3dEf7", "Zx9kLm2", None]
     assert qr[0].company_id != qr[2].company_id
+    assert [(r.qr_type, r.destination) for r in qr] == [("website", "redirect")] * 3
+    assert qr[2].static_data == {"url": "https://anna.example.com"} and qr[0].static_data is None
     assert features == [1, 3, 10]
 
     response = client.get("/r/Ab3dEf7", follow_redirects=False)

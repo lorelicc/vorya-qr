@@ -44,9 +44,10 @@ def install_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(CodedError)
     def coded(_: Request, exc: CodedError):
-        return JSONResponse(
-            status_code=exc.status, content={"detail": exc.detail, "code": exc.code}
-        )
+        content = {"detail": exc.detail, "code": exc.code}
+        if getattr(exc, "field", None):
+            content["errors"] = [{"field": exc.field, "message": exc.detail}]
+        return JSONResponse(status_code=exc.status, content=content)
 
     @app.exception_handler(AccessBlocked)
     def blocked(_: Request, exc: AccessBlocked):

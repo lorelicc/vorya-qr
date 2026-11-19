@@ -5,6 +5,8 @@ from urllib.parse import urlsplit
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from ..core.config import get_settings
+from ..plans import QrType
+from .page import Page
 
 HEX = r"^#[0-9a-fA-F]{6}$"
 
@@ -37,29 +39,37 @@ class QrStyle(BaseModel):
         return value.lower()
 
 
-class QrUpdate(QrStyle):
+def _name(value: str) -> str:
+    value = " ".join(value.split())
+    if not value:
+        raise ValueError("Inserisci un nome")
+    return value
+
+
+class QrContent(QrStyle):
+    """Content fields shared by create, update and preview. Which ones apply depends on the type:
+    website -> target_url (dynamic) or static_data.url (static); wifi/text/email/sms/phone/
+    whatsapp -> static_data; vcard/pdf/music/link_in_bio/gallery/business -> page."""
+
+    target_url: str = Field(default="", max_length=2048)
+    static_data: dict | None = None
+    page: Page | None = None
+
+
+class QrUpdate(QrContent):
     name: str = Field(min_length=1, max_length=120)
-    target_url: str = Field(min_length=1, max_length=2048)
 
-    @field_validator("name")
-    @classmethod
-    def trimmed(cls, value: str) -> str:
-        value = " ".join(value.split())
-        if not value:
-            raise ValueError("Inserisci un nome")
-        return value
-
-    _url = field_validator("target_url")(classmethod(lambda cls, v: valid_url(v)))
+    _name = field_validator("name")(classmethod(lambda cls, v: _name(v)))
 
 
 class QrCreate(QrUpdate):
-    kind: Literal["static", "dynamic"]
-    content_type: Literal["url"] = "url"
+    qr_type: QrType = "website"
+    dynamic: bool = True  # only meaningful for "website"; other types have a fixed kind
 
 
-class QrPreview(QrStyle):
-    kind: Literal["static", "dynamic"]
-    target_url: str = Field(default="", max_length=2048)
+class QrPreview(QrContent):
+    qr_type: QrType = "website"
+    dynamic: bool = True
     qr_id: int | None = None
 
 
@@ -67,8 +77,11 @@ class QrOut(BaseModel):
     id: int
     name: str
     kind: str
+    qr_type: str
+    destination: str
     content_type: str
     target_url: str
+    static_data: dict | None
     slug: str | None
     short_url: str | None
     status: str
@@ -76,6 +89,7 @@ class QrOut(BaseModel):
     bg_color: str
     margin: int
     error_correction: str
+    design: dict | None
     scan_count: int
     created_at: datetime
     updated_at: datetime

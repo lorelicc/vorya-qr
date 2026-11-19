@@ -16,6 +16,7 @@ from .companies.transfers import router as transfers_router
 from .core.config import get_settings
 from .core.database import get_engine
 from .core.errors import install_handlers
+from .pages.public import router as pages_public_router
 from .qr.router import router as qr_router
 from .redirect.router import router as redirect_router
 from .stats.router import router as stats_router
@@ -46,6 +47,7 @@ def create_app() -> FastAPI:
         files_router,
         files_public_router,
         qr_router,
+        pages_public_router,
         admin_router,
         redirect_router,
     ):

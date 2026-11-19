@@ -8,7 +8,8 @@ URL = "https://www.vorya.it/promo"
 
 
 def create(client, kind="dynamic", **extra):
-    payload = {"name": f"QR {kind}", "kind": kind, "target_url": URL, **extra}
+    payload = {"name": f"QR {kind}", "qr_type": "website", "dynamic": kind == "dynamic",
+               "target_url": URL, **extra}  # fmt: skip
     return client.post(f"{qrs(client)}", json=payload, headers=csrf(client))
 
 
@@ -84,7 +85,8 @@ def test_workspaces_are_isolated(client):
 def test_preview_returns_svg_and_warnings(client):
     signup(client)
     body = {
-        "kind": "static",
+        "qr_type": "website",
+        "dynamic": False,
         "target_url": URL,
         "fg_color": "#eeeeee",
         "bg_color": "#ffffff",

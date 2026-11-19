@@ -1,6 +1,16 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Index, Integer, String, func
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..core.database import Base
@@ -16,6 +26,10 @@ class QrCode(Base):
     name: Mapped[str] = mapped_column(String(120))
     kind: Mapped[str] = mapped_column(String(8))  # static | dynamic
     content_type: Mapped[str] = mapped_column(String(16), default="url")
+    qr_type: Mapped[str] = mapped_column(String(16), default="website")
+    destination: Mapped[str] = mapped_column(String(8), default="redirect")  # redirect | page
+    static_data: Mapped[dict | None] = mapped_column(JSON)
+    design: Mapped[dict | None] = mapped_column(JSON)
     target_url: Mapped[str] = mapped_column(String(2048))
     slug: Mapped[str | None] = mapped_column(String(16), unique=True)
     status: Mapped[str] = mapped_column(String(8), default="active")  # active | paused
@@ -43,3 +57,18 @@ class ScanEvent(Base):
     browser: Mapped[str] = mapped_column(String(40))
     referrer_host: Mapped[str | None] = mapped_column(String(255))
     is_bot: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class QrPage(Base):
+    """The hosted page of a dynamic QR (destination = page), as a validated JSON document."""
+
+    __tablename__ = "qr_pages"
+    qr_code_id: Mapped[int] = mapped_column(
+        ForeignKey("qr_codes.id", ondelete="CASCADE"), primary_key=True
+    )
+    schema_version: Mapped[int] = mapped_column(Integer, default=1)
+    template: Mapped[str] = mapped_column(String(16))
+    document: Mapped[dict] = mapped_column(JSON)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
