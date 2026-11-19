@@ -208,10 +208,99 @@ class DividerBlock(Block):
     style: Literal["line", "space"] = "line"
 
 
+ALLERGENS = (
+    "gluten", "crustaceans", "eggs", "fish", "peanuts", "soy", "milk", "nuts", "celery",
+    "mustard", "sesame", "sulphites", "lupin", "molluscs",
+)  # fmt: skip  # the 14 of Reg. (EU) 1169/2011, annex II
+BADGES = ("vegan", "vegetarian", "organic", "gluten_free", "new", "recommended")
+PRICE = r"^\d{1,5}([.,]\d{1,2})?$"
+
+
+def _price(value: str | None) -> str | None:
+    if value is None or not value.strip():
+        return None
+    value = value.strip()
+    if not re.match(PRICE, value):
+        raise ValueError("Prezzo non valido (es. 12,50)")
+    return f"{float(value.replace(',', '.')):.2f}"
+
+
+class Localized(Strict):
+    """Italian is the base language; a missing English text falls back to Italian."""
+
+    it: Annotated[str, Field(max_length=300)] = ""
+    en: Annotated[str, Field(max_length=300)] = ""
+
+
+class WineInfo(Strict):
+    producer: Short = ""
+    appellation: Literal["", "DOC", "DOCG", "IGT", "IGP", "DOP", "Vino da tavola", "Altro"] = ""
+    denomination: Short = ""
+    vintage: int | None = Field(default=None, ge=1800, le=2100)
+    grapes: list[Annotated[str, Field(max_length=60)]] = Field(default_factory=list, max_length=8)
+    area: Short = ""
+    price_glass: str | None = None
+    price_bottle: str | None = None
+
+    _glass = field_validator("price_glass")(classmethod(lambda cls, v: _price(v)))
+    _bottle = field_validator("price_bottle")(classmethod(lambda cls, v: _price(v)))
+
+
+class MenuItem(Strict):
+    id: str = Field(pattern=BLOCK_ID)
+    name: Localized
+    description: Localized = Field(default_factory=Localized)
+    price: str | None = None
+    photo_file_id: str | None = Field(default=None, pattern=FILE_ID)
+    allergens: list[Literal[ALLERGENS]] = Field(default_factory=list, max_length=14)  # type: ignore[valid-type]
+    badges: list[Literal[BADGES]] = Field(default_factory=list, max_length=6)  # type: ignore[valid-type]
+    sold_out: bool = False
+    wine: WineInfo | None = None
+
+    _price = field_validator("price")(classmethod(lambda cls, v: _price(v)))
+
+    @model_validator(mode="after")
+    def named(self):
+        if not self.name.it.strip():
+            raise ValueError("Ogni voce ha bisogno di un nome")
+        self.allergens = sorted(set(self.allergens), key=ALLERGENS.index)
+        self.badges = sorted(set(self.badges), key=BADGES.index)
+        return self
+
+
+class MenuSection(Strict):
+    id: str = Field(pattern=BLOCK_ID)
+    kind: Literal["food", "wine"] = "food"
+    title: Localized
+    items: list[MenuItem] = Field(default_factory=list, max_length=100)
+
+    @model_validator(mode="after")
+    def titled(self):
+        if not self.title.it.strip():
+            raise ValueError("Ogni sezione ha bisogno di un titolo")
+        return self
+
+
+class MenuBlock(Block):
+    type: Literal["menu"]
+    currency: Literal["EUR", "GBP", "USD", "CHF"] = "EUR"
+    intro: Localized = Field(default_factory=Localized)
+    sections: list[MenuSection] = Field(default_factory=list, max_length=30)
+
+    @model_validator(mode="after")
+    def limits(self):
+        ids = [s.id for s in self.sections] + [i.id for s in self.sections for i in s.items]
+        if len(ids) != len(set(ids)):
+            raise ValueError("Sezioni e voci devono avere id univoci")
+        if sum(len(s.items) for s in self.sections) > 300:
+            raise ValueError("Massimo 300 voci per menu")
+        return self
+
+
 AnyBlock = Annotated[
     HeaderBlock | TextBlock | ButtonBlock | LinkListBlock | ContactBlock | FileBlock
     | AudioPlayerBlock | MusicLinksBlock | GalleryBlock | SocialIconsBlock | OpeningHoursBlock
-    | AddressBlock | DividerBlock,
+    | AddressBlock | DividerBlock | MenuBlock,
     Field(discriminator="type"),
 ]  # fmt: skip
 
@@ -240,12 +329,13 @@ class OpenGraph(Strict):
 
 
 class PageSettings(Strict):
+    languages: list[Literal["it", "en"]] = Field(default_factory=lambda: ["it"], min_length=1)
     indexable: bool = False
     show_branding: bool = True
     og: OpenGraph = Field(default_factory=OpenGraph)
 
 
-Template = Literal["vcard", "pdf", "music", "link_in_bio", "gallery", "business"]
+Template = Literal["vcard", "pdf", "music", "link_in_bio", "gallery", "business", "menu"]
 
 
 class Page(Strict):
@@ -309,6 +399,7 @@ TEMPLATE_BLOCKS: dict[str, set[str]] = {
     "link_in_bio": COMMON | {"link_list"},
     "gallery": COMMON | {"gallery"},
     "business": COMMON | {"opening_hours", "address", "contact", "link_list", "gallery"},
+    "menu": COMMON | {"menu", "opening_hours", "address", "contact", "link_list"},
 }
 TEMPLATE_REQUIRED: dict[str, set[str]] = {
     "vcard": {"contact"},
@@ -317,4 +408,5 @@ TEMPLATE_REQUIRED: dict[str, set[str]] = {
     "link_in_bio": {"link_list"},
     "gallery": {"gallery"},
     "business": {"header"},
+    "menu": {"menu"},
 }

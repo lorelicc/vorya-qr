@@ -102,7 +102,7 @@ export function QrEditor({ initial, initialPage, initialFiles, onSaved }: Props)
               ) : undefined
             }
           >
-            <ContentFields q={q} editing={editing} errors={errors} />
+            <ContentFields q={q} editing={editing} errors={errors} qrId={initial?.id} />
           </Card>
         )}
         {page && (

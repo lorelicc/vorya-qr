@@ -36,7 +36,7 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
       return NextResponse.json({ detail: "Il file supera il limite consentito." }, { status: 413 });
     }
     body = request.body ?? undefined; // streamed, never buffered in memory
-  } else if (request.method === "POST" || request.method === "PUT") {
+  } else if (["POST", "PUT", "PATCH"].includes(request.method)) {
     body = await request.text();
     if (body.length > MAX_BODY) {
       return NextResponse.json(
@@ -83,5 +83,6 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
 export const GET = forward;
 export const POST = forward;
 export const PUT = forward;
+export const PATCH = forward;
 export const DELETE = forward;
 export const dynamic = "force-dynamic";

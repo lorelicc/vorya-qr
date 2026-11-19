@@ -33,6 +33,10 @@ export function defaultPage(
     music: [header("", company.name), { id: blockId("m"), type: "music_links", links: [] }],
     link_in_bio: [header(company.name, ""), { id: blockId("l"), type: "link_list", items: [{ label: "", url: "https://" }] }, { id: blockId("s"), type: "social_icons", items: [] }],
     gallery: [header(company.name, "")],
+    menu: [
+      header(company.name, ""),
+      { id: blockId("m"), type: "menu", currency: "EUR", intro: { it: "", en: "" }, sections: [] },
+    ],
     business: [
       header(company.name, ""),
       { id: blockId("t"), type: "text", markdown: "" },
@@ -59,6 +63,7 @@ export function defaultPage(
       font: "inter",
     },
     settings: {
+      languages: ["it"],
       indexable: false,
       show_branding: true,
       og: { title: "", description: "", image_file_id: null },
@@ -71,6 +76,13 @@ export function defaultPage(
 export function cleanPage(page: PageDoc): PageDoc {
   const blocks = page.blocks
     .map((b): PageBlock | null => {
+      if (b.type === "menu")
+        return {
+          ...b,
+          sections: b.sections
+            .filter((sec) => sec.title.it.trim())
+            .map((sec) => ({ ...sec, items: sec.items.filter((i) => i.name.it.trim()) })),
+        };
       if (b.type === "link_list") return { ...b, items: b.items.filter((i) => i.label.trim() && i.url.trim() && i.url !== "https://") };
       if (b.type === "social_icons") return b.items.some((i) => i.url.trim()) ? { ...b, items: b.items.filter((i) => i.url.trim()) } : null;
       if (b.type === "music_links") return b.links.some((l) => l.url.trim()) ? { ...b, links: b.links.filter((l) => l.url.trim()) } : null;

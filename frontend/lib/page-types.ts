@@ -1,5 +1,6 @@
 /** Mirrors backend/app/schemas/page.py (schema_version 1). */
-export type Template = "vcard" | "pdf" | "music" | "link_in_bio" | "gallery" | "business";
+export type Template =
+  | "vcard" | "pdf" | "music" | "link_in_bio" | "gallery" | "business" | "menu"; // prettier-ignore
 export type Font = "inter" | "montserrat" | "playfair" | "space-grotesk";
 export type ButtonStyle = "rounded" | "pill" | "square" | "outline";
 export type MusicPlatform =
@@ -53,10 +54,61 @@ export type AddressBlock = B<
 >;
 export type DividerBlock = B<"divider", { style: "line" | "space" }>;
 
+/** Menu / wine list. Italian is the base language; empty English falls back to Italian. */
+export type Lang = "it" | "en";
+export type Localized = { it: string; en: string };
+export const ALLERGENS = [
+  "gluten", "crustaceans", "eggs", "fish", "peanuts", "soy", "milk", "nuts", "celery",
+  "mustard", "sesame", "sulphites", "lupin", "molluscs",
+] as const; // prettier-ignore
+export type Allergen = (typeof ALLERGENS)[number];
+export const BADGES = [
+  "vegan",
+  "vegetarian",
+  "organic",
+  "gluten_free",
+  "new",
+  "recommended",
+] as const;
+export type Badge = (typeof BADGES)[number];
+export type WineInfo = {
+  producer: string;
+  appellation: "" | "DOC" | "DOCG" | "IGT" | "IGP" | "DOP" | "Vino da tavola" | "Altro";
+  denomination: string;
+  vintage: number | null;
+  grapes: string[];
+  area: string;
+  price_glass: string | null;
+  price_bottle: string | null;
+};
+export type MenuItem = {
+  id: string;
+  name: Localized;
+  description: Localized;
+  price: string | null;
+  photo_file_id?: string | null;
+  allergens: Allergen[];
+  badges: Badge[];
+  sold_out: boolean;
+  wine?: WineInfo | null;
+};
+export type MenuSection = {
+  id: string;
+  kind: "food" | "wine";
+  title: Localized;
+  items: MenuItem[];
+};
+export type MenuBlock = B<
+  "menu",
+  { currency: "EUR" | "GBP" | "USD" | "CHF"; intro: Localized; sections: MenuSection[] }
+>;
+export const localized = (value: Localized, lang: Lang) =>
+  lang === "en" && value.en.trim() ? value.en : value.it;
+
 export type PageBlock =
   | HeaderBlock | TextBlock | ButtonBlock | LinkListBlock | ContactBlock | FileBlock
   | AudioPlayerBlock | MusicLinksBlock | GalleryBlock | SocialIconsBlock | OpeningHoursBlock
-  | AddressBlock | DividerBlock; // prettier-ignore
+  | AddressBlock | DividerBlock | MenuBlock; // prettier-ignore
 
 export type Theme = {
   primary: string;
@@ -78,6 +130,7 @@ export type PageDoc = {
   template: Template;
   theme: Theme;
   settings: {
+    languages?: Lang[];
     indexable: boolean;
     show_branding: boolean;
     og: { title: string; description: string; image_file_id?: string | null };

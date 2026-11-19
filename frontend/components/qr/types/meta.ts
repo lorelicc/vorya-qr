@@ -1,10 +1,10 @@
 import {
-  AtSign, Contact, FileText, Globe, Images, Link2, MessageCircle, MessageSquare, Music2, Phone, Store, Type, Wifi,
+  AtSign, Contact, FileText, Globe, Images, Link2, MessageCircle, MessageSquare, Music2, Phone, Store, Type, UtensilsCrossed, Wifi,
 } from "lucide-react"; // prettier-ignore
 import type { Template } from "@/lib/page-types";
 
 export type QrTypeKey =
-  | "website" | "vcard" | "pdf" | "music" | "link_in_bio" | "gallery" | "business"
+  | "website" | "vcard" | "pdf" | "music" | "link_in_bio" | "gallery" | "business" | "menu"
   | "wifi" | "text" | "email" | "sms" | "phone" | "whatsapp"; // prettier-ignore
 
 export type TypeMeta = {
@@ -23,6 +23,7 @@ export const TYPES: TypeMeta[] = [
   { key: "music", label: "Musica", description: "Tracce da ascoltare e link alle piattaforme.", icon: Music2, group: "page" },
   { key: "gallery", label: "Galleria", description: "Una raccolta di immagini a tutto schermo.", icon: Images, group: "page" },
   { key: "business", label: "Pagina attività", description: "Descrizione, orari, indirizzo, contatti e social.", icon: Store, group: "page" },
+  { key: "menu", label: "Menu / Carta dei vini", description: "Sezioni, prezzi, allergeni, vini e una seconda lingua. Si aggiorna dal telefono.", icon: UtensilsCrossed, group: "page" },
   { key: "wifi", label: "Wi-Fi", description: "Connette alla rete senza digitare la password.", icon: Wifi, group: "static" },
   { key: "text", label: "Testo", description: "Un messaggio di testo leggibile offline.", icon: Type, group: "static" },
   { key: "email", label: "Email", description: "Apre un’email già indirizzata e compilata.", icon: AtSign, group: "static" },

@@ -18,6 +18,7 @@ QrType = Literal[
     "link_in_bio",
     "gallery",
     "business",
+    "menu",
     "wifi",
     "text",
     "email",
@@ -26,7 +27,7 @@ QrType = Literal[
     "whatsapp",
 ]
 ALL_TYPES: tuple[str, ...] = QrType.__args__  # type: ignore[attr-defined]
-PAGE_TYPES = ("vcard", "pdf", "music", "link_in_bio", "gallery", "business")
+PAGE_TYPES = ("vcard", "pdf", "music", "link_in_bio", "gallery", "business", "menu")
 STATIC_TYPES = ("wifi", "text", "email", "sms", "phone", "whatsapp")
 BASE_TYPES = ("website", *STATIC_TYPES)
 TYPE_LABELS = {
@@ -37,6 +38,7 @@ TYPE_LABELS = {
     "link_in_bio": "Link in bio",
     "gallery": "Galleria",
     "business": "Pagina attività",
+    "menu": "Menu / Carta dei vini",
     "wifi": "Wi-Fi",
     "text": "Testo",
     "email": "Email",
@@ -77,6 +79,12 @@ def locked(feature_label: str, plan_name: str = "Pro") -> CodedError:
     return CodedError(403, f"{feature_label}: disponibile nel piano {plan_name}.", "feature_locked")
 
 
+def effective_types(features: PlanFeatures) -> list[str]:
+    """Types the plan allows. The 0.3 Menu type is switched by its own feature flag."""
+    types = [t for t in features.allowed_types if t != "menu"]
+    return [*types, "menu"] if features.menu_type else types
+
+
 def require_type(plan, qr_type: str) -> None:
-    if qr_type not in features_of(plan).allowed_types:
+    if qr_type not in effective_types(features_of(plan)):
         raise locked(f"Il tipo «{TYPE_LABELS[qr_type]}»")

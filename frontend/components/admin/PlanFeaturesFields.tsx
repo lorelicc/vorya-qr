@@ -96,7 +96,7 @@ export function PlanFeaturesFields({ features = DEFAULTS }: { features?: PlanFea
       </label>
       <fieldset className={styles.types}>
         <legend>Tipi di QR inclusi</legend>
-        {TYPES.map((type) => (
+        {TYPES.filter((type) => type.key !== "menu").map((type) => (
           <label key={type.key}>
             <input
               type="checkbox"

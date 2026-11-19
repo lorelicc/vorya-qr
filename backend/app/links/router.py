@@ -305,3 +305,65 @@ def restore_version(
           qr_id=link.id, number=number)  # fmt: skip
     session.commit()
     return qr_out(link)
+
+
+# ---------------------------------------------------------------- menu quick edit
+
+
+class ItemPatch(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    sold_out: bool | None = None
+    price: str | None = None
+    price_glass: str | None = None
+    price_bottle: str | None = None
+
+
+@links_qr.patch("/{qr_id}/menu/items/{item_id}")
+def patch_menu_item(
+    qr_id: int, item_id: str, body: ItemPatch, ctx: CompanyContext = Depends(owned_company),
+    session: Session = Depends(get_session),
+):  # fmt: skip
+    """Sold-out toggle and prices from a phone, in one tap: updates the live page and the current
+    version in place (no new version, so 20 toggles never push real history out)."""
+    from ..models import QrPage
+    from ..schemas.page import Page
+
+    link = get_owned(session, ctx, qr_id, lock=True)
+    row = session.get(QrPage, link.id)
+    if link.qr_type != "menu" or row is None:
+        raise HTTPException(404, "Questo QR non è un menu.")
+    page = Page.model_validate(row.document)
+    item = next(
+        (i for b in page.blocks if b.type == "menu" for s in b.sections for i in s.items
+         if i.id == item_id),
+        None,
+    )  # fmt: skip
+    if item is None:
+        raise HTTPException(404, "Voce non trovata.")
+    data = body.model_dump(exclude_unset=True)
+    if "sold_out" in data and data["sold_out"] is not None:
+        item.sold_out = data["sold_out"]
+    if "price" in data:
+        item.price = data["price"]
+    if item.wine is not None:
+        for key in ("price_glass", "price_bottle"):
+            if key in data:
+                setattr(item.wine, key, data[key])
+    try:
+        document = Page.model_validate(page.model_dump(mode="json")).model_dump(mode="json")
+    except ValueError as exc:
+        raise field_error(422, str(exc).split("\n")[-1][:200], "invalid_content", "price") from None
+    row.document = document
+    latest = session.scalar(
+        select(LinkVersion).where(LinkVersion.qr_code_id == link.id)
+        .order_by(LinkVersion.number.desc()).limit(1)
+    )  # fmt: skip
+    if latest is not None:
+        latest.page = document
+    link.updated_at = now()
+    session.commit()
+    saved = next(
+        i for b in document["blocks"] if b["type"] == "menu"
+        for sec in b["sections"] for i in sec["items"] if i["id"] == item_id
+    )  # fmt: skip
+    return {"id": item_id, "sold_out": saved["sold_out"], "price": saved["price"]}

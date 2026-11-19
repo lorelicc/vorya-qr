@@ -5,6 +5,7 @@ import {
   Address, ButtonView, Contact, FileView, Gallery, Header, LinkList, MusicLinks, OpeningHours,
   SocialIcons, Text, type Ctx,
 } from "./blocks"; // prettier-ignore
+import { MenuView } from "@/components/menu/MenuView";
 import { ClickTracker } from "./ClickTracker";
 import styles from "./page.module.css";
 
@@ -39,6 +40,7 @@ function render(block: PageBlock, ctx: Ctx) {
     case "opening_hours": return <OpeningHours block={block} />;
     case "address": return <Address block={block} />;
     case "divider": return <hr className={styles.divider} data-style={block.style} />;
+    case "menu": return <MenuView block={block} files={ctx.files} languages={ctx.languages} />;
   }
 } // prettier-ignore
 
@@ -68,7 +70,7 @@ export function PageRenderer({ page, files, slug, preview = false }: Props) {
             className={styles.block}
             style={{ animationDelay: `${Math.min(index, 6) * 40}ms` }}
           >
-            {render(block, { files, slug, preview })}
+            {render(block, { files, slug, preview, languages: page.settings.languages ?? ["it"] })}
           </div>
         ))}
       </main>

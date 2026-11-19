@@ -12,13 +12,18 @@ import { Markdown } from "@/lib/markdown";
 import {
   DAY_LABEL, MUSIC_LABEL, SOCIAL_LABEL,
   type AddressBlock, type ButtonBlock, type ContactBlock, type FileBlock, type GalleryBlock,
-  type HeaderBlock, type LinkListBlock, type MusicLinksBlock, type OpeningHoursBlock, type PageFiles,
+  type HeaderBlock, type Lang, type LinkListBlock, type MusicLinksBlock, type OpeningHoursBlock, type PageFiles,
   type SocialIconsBlock, type TextBlock,
 } from "@/lib/page-types"; // prettier-ignore
 import { MusicIcon, SOCIAL_ICON } from "./icons";
 import styles from "./page.module.css";
 
-export type Ctx = { files: PageFiles; slug: string | null; preview: boolean };
+export type Ctx = {
+  files: PageFiles;
+  slug: string | null;
+  preview: boolean;
+  languages: Lang[];
+};
 const img = (ctx: Ctx, id: string | null | undefined, variant = "large") =>
   id ? ctx.files[id]?.urls[variant] : undefined;
 

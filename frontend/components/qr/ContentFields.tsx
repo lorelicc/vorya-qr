@@ -13,10 +13,12 @@ export function ContentFields({
   q,
   editing,
   errors,
+  qrId,
 }: {
   q: Draft;
   editing: boolean;
   errors: FieldErrors;
+  qrId?: number;
 }) {
   const { draft, update } = q;
   const type = draft.qr_type;
@@ -68,6 +70,7 @@ export function ContentFields({
           onChange={(p) => update({ page: p })}
           files={q.files}
           addFile={q.addFile}
+          qrId={qrId}
         />
       )}
       {(errors.page || (errors.destination && !(type === "website" && q.kind === "dynamic"))) && (

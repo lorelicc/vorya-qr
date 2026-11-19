@@ -1,5 +1,5 @@
 /** Explicit list of backend routes reachable through the /api proxy. Anything else is 404. */
-type Rule = { method: "GET" | "POST" | "PUT" | "DELETE"; pattern: RegExp };
+type Rule = { method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"; pattern: RegExp };
 
 const ID = String.raw`\d+`;
 const C = String.raw`companies/\d+`;
@@ -57,6 +57,7 @@ const rules: Rule[] = [
   r("POST", `${QR}/${ID}/aliases`),
   r("DELETE", `${QR}/${ID}/aliases/${ID}`),
   r("PUT", `${QR}/${ID}/rules`),
+  r("PATCH", `${QR}/${ID}/menu/items/[A-Za-z0-9_-]{1,24}`),
   r("GET", `${C}/utm-templates`),
   r("POST", `${C}/utm-templates`),
   r("DELETE", `${C}/utm-templates/${ID}`),

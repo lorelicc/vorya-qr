@@ -23,6 +23,7 @@ export type FormProps = {
   onChange: (page: PageDoc) => void;
   files: PageFiles;
   addFile: (file: UploadedFile) => void;
+  qrId?: number; // set when editing a saved QR (menu quick edits persist immediately)
 };
 
 export function toPageFile(file: UploadedFile): PageFile {

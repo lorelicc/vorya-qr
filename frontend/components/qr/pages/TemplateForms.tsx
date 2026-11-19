@@ -4,6 +4,7 @@ import { Input, Select } from "@/components/ui";
 import { useCompany } from "@/lib/company-context";
 import { MUSIC_LABEL, type ContactBlock, type MusicPlatform } from "@/lib/page-types";
 import type { UploadedFile } from "@/lib/upload";
+import { MenuEditor } from "@/components/menu/MenuEditor";
 import { TextArea } from "../types/StaticForm";
 import { BusinessFields } from "./BusinessFields";
 import { blockId, findBlock, upsertBlock } from "./defaults";
@@ -173,6 +174,7 @@ export function TemplateForm(props: FormProps) {
       {(page.template === "link_in_bio" || page.template === "vcard") && <LinkFields {...props} />}
       {page.template === "gallery" && <GalleryFields {...props} />}
       {page.template === "business" && <BusinessFields {...props} />}
+      {page.template === "menu" && <MenuEditor {...props} qrId={props.qrId} />}
       <SocialFields {...props} />
     </div>
   );
