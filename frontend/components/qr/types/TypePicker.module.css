@@ -1,0 +1,190 @@
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.group legend {
+  font-weight: var(--fw-semibold);
+  margin-bottom: var(--space-3);
+}
+
+.group legend small {
+  font-weight: var(--fw-regular);
+  color: var(--color-muted);
+  margin-left: var(--space-2);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    border-color var(--dur-fast);
+}
+
+.card:hover:not([data-locked]) {
+  transform: translateY(calc(var(--motion-shift-sm) * -1));
+  border-color: var(--vorya-green-dark);
+}
+
+.card:active:not([data-locked]) {
+  transform: scale(0.98);
+}
+
+.card input {
+  position: absolute;
+  opacity: 0;
+}
+
+.card:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.card[data-selected] {
+  border-color: var(--vorya-green-dark);
+  background: var(--color-selected);
+  box-shadow: inset 3px 0 0 var(--vorya-green-primary);
+}
+
+.card[data-locked] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.card strong {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-md);
+}
+
+.art {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--gradient-soft);
+  color: var(--vorya-green-dark);
+  transition: transform var(--dur-slow) var(--ease-spring);
+}
+
+.card:hover .art,
+.card[data-selected] .art {
+  transform: rotate(-6deg) scale(1.06);
+}
+
+.desc {
+  font-size: var(--fs-xs);
+  color: var(--color-muted);
+  line-height: var(--lh-base);
+}
+
+/* Mini illustration: a soft blob and a spark appear on hover/selection; the icon floats
+   gently while selected. Transform and opacity only. */
+.art {
+  position: relative;
+  isolation: isolate;
+}
+
+.art::before,
+.art::after {
+  content: "";
+  position: absolute;
+  border-radius: var(--radius-round);
+  z-index: -1;
+  opacity: 0;
+  transition:
+    transform var(--dur-slow) var(--ease-spring),
+    opacity var(--dur-base) var(--ease-out);
+}
+
+.art::before {
+  inset: -5px -8px -3px -2px;
+  background: var(--art-lilac);
+  transform: scale(0.6) rotate(-12deg);
+}
+
+.art::after {
+  width: 10px;
+  height: 10px;
+  top: -4px;
+  right: -6px;
+  background: var(--art-peach);
+  transform: translate(-6px, 6px) scale(0.4);
+}
+
+.card:hover:not([data-locked]) .art::before,
+.card[data-selected] .art::before {
+  opacity: 0.55;
+  transform: scale(1) rotate(-12deg);
+}
+
+.card:hover:not([data-locked]) .art::after,
+.card[data-selected] .art::after {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+}
+
+.card[data-selected] .art svg {
+  animation: bob 2.4s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes bob {
+  to {
+    transform: translateY(-2px) rotate(4deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card[data-selected] .art svg {
+    animation: none;
+  }
+}
+
+@media (max-width: 559px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .card {
+    padding: var(--space-3);
+  }
+
+  .art {
+    width: 36px;
+    height: 36px;
+  }
+
+  .desc {
+    display: none;
+  }
+
+  .card[data-selected] .desc,
+  .card[data-locked] .desc {
+    display: block;
+  }
+}

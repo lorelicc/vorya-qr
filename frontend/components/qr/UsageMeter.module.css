@@ -1,0 +1,46 @@
+.meter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+}
+
+.track {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-soft);
+  overflow: hidden;
+}
+
+.track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gradient-vorya);
+}
+
+.full .track span {
+  background: var(--color-warning);
+}
+
+.over .track span {
+  background: var(--color-danger);
+}
+
+.note {
+  font-size: var(--fs-xs);
+  color: var(--color-warning);
+  line-height: var(--lh-base);
+}
+
+.over .note {
+  color: var(--color-danger);
+}

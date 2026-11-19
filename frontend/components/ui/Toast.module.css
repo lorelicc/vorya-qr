@@ -1,0 +1,116 @@
+.region {
+  position: fixed;
+  right: var(--space-5);
+  bottom: var(--space-5);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(380px, calc(100vw - var(--space-8)));
+}
+
+.toast {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left-width: 4px;
+  box-shadow: var(--shadow-md);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+  animation: enter var(--dur-slow) var(--ease-out);
+  transition:
+    opacity var(--dur-fast) var(--ease-in-out),
+    transform var(--dur-fast) var(--ease-in-out);
+}
+
+.toast[data-leaving] {
+  opacity: 0;
+  transform: translateX(var(--motion-shift-md));
+}
+
+/* Remaining time: a bar that shrinks with transform only. */
+.timer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: currentColor;
+  opacity: 0.35;
+  transform-origin: left;
+  animation: timer linear forwards;
+}
+
+@keyframes timer {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.toast span {
+  flex: 1;
+}
+
+.toast button {
+  color: var(--color-muted);
+}
+
+.success {
+  border-left-color: var(--vorya-green-primary);
+  color: var(--color-text);
+}
+
+.success .timer {
+  background: var(--vorya-green-primary);
+}
+
+.success > svg:first-child {
+  color: var(--color-success);
+}
+
+.error {
+  border-left-color: var(--color-danger);
+}
+
+.error > svg:first-child {
+  color: var(--color-danger);
+}
+
+.info {
+  border-left-color: var(--color-info);
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--motion-shift-md) * 3));
+  }
+}
+
+@media (max-width: 639px) {
+  .region {
+    left: var(--space-4);
+    right: var(--space-4);
+    bottom: var(--space-4);
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+
+  .timer {
+    display: none;
+  }
+}

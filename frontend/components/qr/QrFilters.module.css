@@ -1,0 +1,31 @@
+.filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px 170px;
+  gap: var(--space-3);
+}
+
+.search {
+  position: relative;
+}
+
+.search svg {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-muted);
+}
+
+.search input {
+  padding-left: var(--space-8);
+}
+
+@media (max-width: 759px) {
+  .filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .search {
+    grid-column: 1 / -1;
+  }
+}
