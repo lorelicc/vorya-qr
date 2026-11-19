@@ -18,10 +18,12 @@ background:linear-gradient(135deg,var(--g1) 0%,var(--g2) 42%,var(--g3) 75%,var(-
 img{width:180px;max-width:100%;height:auto}
 h1{font-size:23px;line-height:1.3;margin:20px 0 8px}
 p{margin:0;color:var(--muted);font-size:15px}
+.report{margin-top:20px;font-size:13px}.report a{color:var(--g3)}
 </style></head>
 <body><main><div class="bar"></div>
 <img src="/assets/branding/vorya_qr.png" alt="Vorya QR">
 <h1>QR non attivo</h1>
 <p>Questo codice QR non è al momento attivo. Se pensi che sia un errore, contatta chi te
 lo ha fornito.</p>
+<p class="report"><a href="/report">Segnala un QR sospetto</a></p>
 </main></body></html>"""

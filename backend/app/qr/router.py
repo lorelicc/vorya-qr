@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from ..auth.deps import CompanyContext, owned_company
 from ..auth.service import audit, rate_limit
 from ..core.database import get_session
+from ..core.errors import CodedError
 from ..core.security import now
 from ..models import QrCode, QrPage
 from ..quotas import reserve_slot
@@ -26,9 +27,9 @@ from .service import (
     kind_of,
     qr_out,
     require_dynamic,
-    resolve_content,
     scan_counts,
     update_content,
+    validate_content,
 )
 
 router = APIRouter(prefix="/api/companies/{company_id}/qr-codes", tags=["qr"])
@@ -97,7 +98,7 @@ def preview(
         from .static_types import encode_static
 
         try:
-            _, data, _ = resolve_content(session, ctx, payload.qr_type, kind, payload)
+            _, data, _ = validate_content(session, ctx, payload.qr_type, kind, payload)
             content = encode_static(payload.qr_type, data)
         except Exception:  # noqa: BLE001 - incomplete forms still get a placeholder preview
             content = "https://qr.vorya.it"
@@ -184,6 +185,10 @@ def set_status(
 ):
     qr = get_owned(session, ctx, qr_id, lock=True)
     require_dynamic(qr)
+    if qr.status == "blocked":
+        raise CodedError(
+            403, "Questo QR è stato bloccato dal team Vorya: contatta il supporto.", "qr_blocked"
+        )
     qr.status = "paused" if action == "pause" else "active"
     audit(session, ctx.user, f"qr.{action}", ctx.workspace.id, ctx.company.id, qr_id=qr.id)
     session.commit()

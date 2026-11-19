@@ -34,7 +34,8 @@ class QrCode(Base):
     design: Mapped[dict | None] = mapped_column(JSON)
     target_url: Mapped[str] = mapped_column(String(2048))
     slug: Mapped[str | None] = mapped_column(String(16), unique=True)
-    status: Mapped[str] = mapped_column(String(8), default="active")  # active | paused
+    status: Mapped[str] = mapped_column(String(8), default="active")  # active|paused|blocked
+    blocked_reason: Mapped[str | None] = mapped_column(String(200))  # set by an admin
     fg_color: Mapped[str] = mapped_column(String(7), default="#091411")
     bg_color: Mapped[str] = mapped_column(String(7), default="#ffffff")
     margin: Mapped[int] = mapped_column(Integer, default=4)

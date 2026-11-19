@@ -6,6 +6,8 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from . import __version__
+from .abuse.router import admin as abuse_admin_router
+from .abuse.router import public as abuse_public_router
 from .account import router as account_router
 from .admin.router import router as admin_router
 from .auth.onboarding import router as onboarding_router
@@ -53,6 +55,8 @@ def create_app() -> FastAPI:
         pages_public_router,
         page_events_router,
         admin_router,
+        abuse_admin_router,
+        abuse_public_router,
         redirect_router,
     ):
         app.include_router(router)

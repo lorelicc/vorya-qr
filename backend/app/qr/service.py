@@ -104,7 +104,17 @@ def check_page_files(session: Session, company_id: int, page: Page) -> None:
 
 
 def resolve_content(session: Session, ctx, qr_type: str, kind: str, content: QrContent):
-    """Validates the type-specific content. Returns (target_url, static_data, page)."""
+    """Validates the type-specific content and checks every destination URL against the
+    blocklist and the reputation provider. Returns (target_url, static_data, page)."""
+    target_url, static_data, page = validate_content(session, ctx, qr_type, kind, content)
+    from ..abuse.checks import check_destinations
+
+    check_destinations(session, target_url, static_data,
+                       page.model_dump(mode="json") if page else None)  # fmt: skip
+    return target_url, static_data, page
+
+
+def validate_content(session: Session, ctx, qr_type: str, kind: str, content: QrContent):
     if qr_type == "website" and kind == "dynamic":
         try:
             return valid_url(content.target_url), None, None
