@@ -81,3 +81,13 @@ def reconcile_subscriptions(session: Session) -> int:
             session.rollback()
             break
     return count
+
+
+def expire_grants(session: Session) -> int:
+    """A gift that ended behaves like an ended trial (dashboard blocked, redirects kept N days)."""
+    result = session.execute(
+        update(Workspace)
+        .where(Workspace.grant_until.is_not(None), Workspace.grant_until <= now())
+        .values(trial_ends_at=Workspace.grant_until, grant_until=None)
+    )
+    return result.rowcount

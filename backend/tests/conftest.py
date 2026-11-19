@@ -44,6 +44,7 @@ ORIGIN = "http://testserver"
 PASSWORD = "una-password-sicura-123"
 MUTABLE = ", ".join(
     [
+        "plan_grants",
         "billing_prices",
         "billing_events",
         "link_tags",

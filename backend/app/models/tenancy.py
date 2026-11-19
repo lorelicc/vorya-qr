@@ -36,6 +36,8 @@ class Workspace(Base):
     billing_state: Mapped[str | None] = mapped_column(String(12))
     grace_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     redirects_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Admin gift (0.4): while in the future the plan is active without payment.
+    grant_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

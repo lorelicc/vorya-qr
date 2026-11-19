@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { GiftPlan } from "@/components/illustrations";
 import { UsageMeter } from "@/components/qr/UsageMeter";
 import { Badge, Button, ButtonLink, Card, useToast } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
@@ -19,6 +20,7 @@ const TONE = {
   past_due: "warning",
   canceled: "danger",
   unpaid: "danger",
+  gift: "success",
 } as const;
 
 export function AccountPlan() {
@@ -79,6 +81,15 @@ export function AccountPlan() {
         </div>
       </div>
       <BillingBanner info={info} />
+      {info.state === "gift" && info.grant_until && (
+        <div className={styles.banner} data-tone="info" role="status">
+          <GiftPlan />
+          <span>
+            Hai un piano in omaggio dal team di Vorya QR: tutte le funzioni di{" "}
+            <strong>{info.plan.name}</strong> sono attive fino al {formatDate(info.grant_until)}.
+          </span>
+        </div>
+      )}
       <div className={styles.stack}>
         <Card title={`Piano ${info.plan.name}`} description={info.plan.description}>
           <div className={styles.row} style={{ marginBottom: "var(--space-4)" }}>

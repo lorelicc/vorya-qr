@@ -146,7 +146,7 @@ export function ReportList({ canWrite }: { canWrite: boolean }) {
                     <>
                       <dt>Cliente</dt>
                       <dd>
-                        <Link href={`/admin/workspaces/${report.workspace.id}`}>
+                        <Link href={`/admin/clients/${report.workspace.id}`}>
                           {report.workspace.name}
                         </Link>
                         {report.company ? ` · ${report.company.name}` : ""} ·{" "}

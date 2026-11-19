@@ -100,3 +100,32 @@ test("QR statico: avviso, 'Usa la versione dinamica' e 'Duplica e modifica'", as
   await expect(page.getByText("I codici già stampati resteranno invariati")).toBeVisible();
   await expect(page.getByLabel("Nome del QR")).toHaveValue("Sito stampato (copia)");
 });
+
+test("elimina un link dall'elenco: l'indirizzo mostra «QR non attivo» e non viene riusato", async ({
+  page,
+  request,
+}) => {
+  await signUp(page, uniqueEmail("del"), "Bar Elimina");
+  await page.getByLabel("URL da accorciare").fill("https://example.com/da-eliminare");
+  await page.getByRole("button", { name: "Crea link" }).click();
+  await expect(page.getByText(/Link (copiato|creato)/)).toBeVisible();
+  await page
+    .getByRole("link", { name: /example\.com/ })
+    .first()
+    .click();
+  await page.waitForURL(/\/qr\/\d+$/);
+  const slug = (await page.locator("code").first().textContent())!.trim().split("/").pop()!;
+  await page.getByRole("link", { name: "Link e QR", exact: true }).click();
+  expect((await request.get(`/${slug}`, { maxRedirects: 0 })).status()).toBe(302);
+
+  await page.getByRole("button", { name: /Elimina example\.com/ }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText("QR non attivo");
+  await dialog.getByRole("button", { name: "Elimina", exact: true }).click();
+  await expect(page.getByText(/eliminato\./)).toBeVisible();
+  await expect(page.getByRole("checkbox")).toHaveCount(0);
+
+  const gone = await request.get(`/${slug}`, { maxRedirects: 0 });
+  expect(gone.status()).toBe(410);
+  expect(await gone.text()).toContain("QR non attivo");
+});

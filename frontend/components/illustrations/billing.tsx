@@ -73,3 +73,88 @@ export function PlanCanceled() {
     </Illustration>
   );
 }
+
+/** Admin gift: a wrapped box with a QR tag (plan given for free). */
+export function GiftPlan() {
+  return (
+    <Illustration>
+      <Blob x={118} y={100} r={60} tone="peach" />
+      <Blob x={188} y={52} r={20} tone="lilac" slow />
+      <g className={art.float}>
+        <rect
+          x={70}
+          y={78}
+          width={96}
+          height={64}
+          rx={10}
+          fill="var(--art-paper)"
+          stroke="var(--art-line)"
+          strokeWidth={1.5}
+        />
+        <rect
+          x={62}
+          y={62}
+          width={112}
+          height={22}
+          rx={8}
+          fill="var(--art-mint)"
+          stroke="var(--art-line)"
+          strokeWidth={1.5}
+        />
+        <rect x={110} y={62} width={12} height={80} fill="var(--art-mid)" opacity={0.55} />
+        <path
+          d="M116 62c-14-18-34-12-26 0M116 62c14-18 34-12 26 0"
+          fill="none"
+          stroke="var(--art-mid)"
+          strokeWidth={4}
+          strokeLinecap="round"
+        />
+      </g>
+      <Badge x={164} y={130} tone="green">
+        {CHECK}
+      </Badge>
+      <Stroke d="M40 58c8-12 20-16 32-12" />
+    </Illustration>
+  );
+}
+
+/** Admin gift of months: a calendar with a ribbon. */
+export function GiftMonths() {
+  return (
+    <Illustration>
+      <Blob x={118} y={100} r={60} tone="mint" />
+      <g className={art.float}>
+        <rect
+          x={64}
+          y={52}
+          width={108}
+          height={88}
+          rx={12}
+          fill="var(--art-paper)"
+          stroke="var(--art-line)"
+          strokeWidth={1.5}
+        />
+        <rect x={64} y={52} width={108} height={24} rx={12} fill="var(--art-mid)" />
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <circle
+            key={i}
+            cx={86 + (i % 3) * 32}
+            cy={96 + Math.floor(i / 3) * 24}
+            r={7}
+            fill={i === 4 ? "var(--art-green)" : "var(--art-line)"}
+          />
+        ))}
+      </g>
+      <g className={art.pulse}>
+        <circle cx={168} cy={56} r={16} fill="var(--color-warning)" />
+        <path
+          d="M168 48v16M160 56h16"
+          stroke="var(--art-paper)"
+          strokeWidth={3}
+          strokeLinecap="round"
+        />
+      </g>
+      <Stroke d="M40 70c8-12 20-16 32-12" tone="dark" width={2.5} />
+    </Illustration>
+  );
+}

@@ -6,6 +6,7 @@ from .billing import (
     BillingPayment,
     BillingPrice,
     BillingProfile,
+    PlanGrant,
 )
 from .company import Company, CompanyTransfer
 from .file import StoredFile
@@ -40,6 +41,7 @@ __all__ = [
     "LinkTag",
     "LinkVersion",
     "Plan",
+    "PlanGrant",
     "PlatformSetting",
     "QrCode",
     "QrPage",

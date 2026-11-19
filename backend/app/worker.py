@@ -228,6 +228,7 @@ def _billing_jobs() -> None:
     from .billing import jobs
 
     for fn in (
+        jobs.expire_grants,
         jobs.trial_redirect_windows,
         jobs.trial_reminders,
         jobs.send_billing_mail,

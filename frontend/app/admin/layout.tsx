@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/auth-server";
 export const dynamic = "force-dynamic";
 
 const NAV: NavItem[] = [
-  { href: "/admin/workspaces", label: "Spazi di lavoro", icon: "workspaces" },
+  { href: "/admin/clients", label: "Clienti", icon: "workspaces" },
   { href: "/admin/plans", label: "Piani", icon: "plans" },
   { href: "/admin/billing", label: "Pagamenti", icon: "plans" },
   { href: "/admin/reports", label: "Segnalazioni", icon: "abuse" },

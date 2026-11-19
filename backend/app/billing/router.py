@@ -14,6 +14,7 @@ from ..auth.deps import Auth, owned_workspace, require_roles
 from ..core.config import get_settings
 from ..core.database import get_session
 from ..core.errors import CodedError
+from ..core.security import now
 from ..models import (
     BillingAccount,
     BillingEvent,
@@ -80,6 +81,8 @@ def profile_out(row: BillingProfile | None) -> dict | None:
 def state_of(workspace: Workspace) -> str:
     """The five customer-facing states."""
     access = workspace_access(workspace)
+    if workspace.grant_until and workspace.grant_until > now():
+        return "gift"
     if workspace.billing_state == "active":
         return "active"
     if workspace.billing_state == "past_due":
@@ -161,6 +164,7 @@ def read_billing(
         ),
         "trial_ends_at": workspace.trial_ends_at,
         "grace_until": workspace.grace_until,
+        "grant_until": workspace.grant_until,
         "redirects_until": workspace.redirects_until,
         "grace_days": cfg["grace_days"],
         "redirect_days": cfg["redirect_days"],

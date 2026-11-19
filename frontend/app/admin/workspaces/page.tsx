@@ -1,8 +1,6 @@
-import type { Metadata } from "next";
-import { WorkspaceList } from "@/components/admin/WorkspaceList";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Spazi di lavoro" };
-
+/** Old address (0.3): customers now live under /admin/clients. */
 export default function WorkspacesPage() {
-  return <WorkspaceList />;
+  redirect("/admin/clients");
 }

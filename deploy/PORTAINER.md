@@ -1,4 +1,4 @@
-# Vorya QR 0.3: stack in Portainer
+# Vorya QR 0.4: stack in Portainer
 
 Configurazione per **Portainer CE / Docker Standalone**, con lo stesso schema di Vorya Sign: stack Git, build delle immagini sul server, CloudPanel come reverse proxy sullo stesso host. Per il sito in CloudPanel, i certificati e i backup vedere [VPS.md](VPS.md).
 
@@ -97,7 +97,7 @@ La 0.3 aggiunge solo tabelle e colonne (migrazioni `0008`–`0013`, nessuna canc
 1. **Backup** del database ([VPS.md](VPS.md#backup-e-restore-del-database)) e del volume dei file. Annotare la reference attuale (es. `refs/heads/vorya-qr-v0.2`).
 2. In Portainer, nello stack `vorya-qr` → **Editor**: reference `refs/heads/vorya-qr-v0.3` (o `main` dopo il merge). I pagamenti sono facoltativi: senza `STRIPE_*` tutto il resto funziona.
 3. **Update the stack** con **Re-pull image and redeploy**. Ordine atteso: `migrate` applica `0008`–`0013` ed esce con 0; ripartono `backend`, `worker` e `frontend`.
-4. Controllare: `curl --fail http://127.0.0.1:3200/api/health` deve rispondere `"version":"0.3.0"`, e un QR stampato con la 0.2 deve aprire la stessa destinazione di prima.
+4. Controllare: `curl --fail http://127.0.0.1:3200/api/health` deve rispondere `"version":"0.4.0"`, e un QR stampato con la 0.2 deve aprire la stessa destinazione di prima.
 5. Eseguire le sezioni 0.3 di [docs/VALIDATION.md](../docs/VALIDATION.md).
 
 ### Configurare il webhook Stripe

@@ -85,6 +85,11 @@ const rules: Rule[] = [
   r("GET", "account/billing"),
   r("PUT", "account/billing/profile"),
   r("POST", "account/billing/(checkout|portal|change-preview|change|cancel|refresh)"),
+  // Admin: customers first (0.4)
+  r("GET", "admin/clients"),
+  r("GET", `admin/clients/${ID}`),
+  r("POST", `admin/clients/${ID}/grants`),
+  r("POST", `admin/clients/${ID}/grants/${ID}/revoke`),
   // Admin
   r("GET", "admin/billing/(status|prices|payments|payments\\.csv|events)"),
   r("PUT", "admin/billing/settings"),

@@ -109,6 +109,7 @@ def apply_subscription(session: Session, sub: dict) -> str | None:
             log.error("Stripe price %s is not linked to a plan", price_id)
             return workspace.billing_state
         workspace.plan_id, workspace.trial_ends_at = price.plan_id, None
+        workspace.grant_until = None  # a paid subscription takes over from a gift
         workspace.billing_state, workspace.grace_until = "active", None
         workspace.redirects_until, account.past_due_since = None, None
     elif status == "past_due":

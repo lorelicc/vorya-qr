@@ -16,7 +16,7 @@ const STATUS: Record<string, { label: string; tone: BadgeTone }> = {
 };
 
 const workspace = (w: { id: number | null; name: string | null }) =>
-  w.id ? <Link href={`/admin/workspaces/${w.id}`}>{w.name ?? `#${w.id}`}</Link> : "—";
+  w.id ? <Link href={`/admin/clients/${w.id}`}>{w.name ?? `#${w.id}`}</Link> : "—";
 
 const columns: Column<AdminTransfer>[] = [
   {

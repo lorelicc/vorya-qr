@@ -129,7 +129,7 @@ export function AppShell({
         {promo && <div className={styles.promo}>{promo}</div>}
         <div className={styles.sidebarBottom}>
           <span>Vorya QR</span>
-          <span>v0.3.0</span>
+          <span>v0.4.0</span>
         </div>
       </aside>
       <div

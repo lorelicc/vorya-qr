@@ -26,6 +26,8 @@ def workspace_access(workspace: Workspace, at: datetime | None = None) -> str:
     if workspace.status == "suspended":
         return SUSPENDED
     state, at = workspace.billing_state, at or now()
+    if workspace.grant_until is not None:  # a gift from the team: active until it ends
+        return ACTIVE if workspace.grant_until > at else TRIAL_EXPIRED
     if state in ("canceled", "unpaid"):
         return PAYMENT_BLOCKED
     if state == "past_due":

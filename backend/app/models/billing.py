@@ -119,3 +119,21 @@ class BillingMail(Base):
     attempts: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     due_at: Mapped[datetime] = mapped_column(TS, server_default=func.now())
     sent_at: Mapped[datetime | None] = mapped_column(TS)
+
+
+class PlanGrant(Base):
+    """A plan given for free by the team: N months of a plan, with who/why."""
+
+    __tablename__ = "plan_grants"
+    __table_args__ = (Index("ix_plan_grants_workspace", "workspace_id", "created_at"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    workspace_id: Mapped[int] = mapped_column(ForeignKey("workspaces.id"))
+    plan_id: Mapped[str] = mapped_column(ForeignKey("plans.id"))
+    months: Mapped[int] = mapped_column(Integer)
+    starts_at: Mapped[datetime] = mapped_column(TS)
+    ends_at: Mapped[datetime] = mapped_column(TS)
+    note: Mapped[str] = mapped_column(String(300), default="", server_default="")
+    previous_plan_id: Mapped[str | None] = mapped_column(String(24))
+    granted_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    revoked_at: Mapped[datetime | None] = mapped_column(TS)
+    created_at: Mapped[datetime] = mapped_column(TS, server_default=func.now())

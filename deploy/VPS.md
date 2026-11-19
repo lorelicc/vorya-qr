@@ -1,4 +1,4 @@
-# Vorya QR 0.3: VPS, CloudPanel e backup
+# Vorya QR 0.4: VPS, CloudPanel e backup
 
 Percorso previsto: **stack Portainer sul Docker del VPS → sito Reverse Proxy di CloudPanel sullo stesso VPS → HTTPS con Let's Encrypt**. Lo stack si crea seguendo [PORTAINER.md](PORTAINER.md).
 
@@ -18,7 +18,7 @@ Da SSH, sul VPS:
 curl --fail http://127.0.0.1:3200/api/health
 ```
 
-Risposta attesa: `{"status":"ok","database":"connected","version":"0.3.0"}`. La porta 3200 (o quella impostata in `VORYA_QR_HTTP_PORT`) non va aperta nel firewall: è solo su loopback.
+Risposta attesa: `{"status":"ok","database":"connected","version":"0.4.0"}`. La porta 3200 (o quella impostata in `VORYA_QR_HTTP_PORT`) non va aperta nel firewall: è solo su loopback.
 
 ## 3. Sito Reverse Proxy in CloudPanel
 
