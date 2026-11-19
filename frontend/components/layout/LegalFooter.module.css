@@ -1,0 +1,19 @@
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  font-size: var(--fs-xs);
+  color: var(--color-muted);
+}
+
+.footer nav {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.footer a {
+  color: var(--color-muted);
+}

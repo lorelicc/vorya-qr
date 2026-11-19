@@ -1,0 +1,69 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  align-self: flex-start;
+}
+
+.search {
+  position: relative;
+  max-width: 420px;
+}
+
+.search svg {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-muted);
+}
+
+.search input {
+  padding-left: var(--space-8);
+}
+
+.cellMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cellMain a {
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+}
+
+.cellMain span {
+  font-size: var(--fs-xs);
+  color: var(--color-muted);
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.limits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (max-width: 1099px) {
+  .plans {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 520px;
+  }
+}

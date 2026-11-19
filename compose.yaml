@@ -1,0 +1,71 @@
+# Local development stack (Docker). Production uses deploy/compose.portainer.yaml.
+name: vorya-qr
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vorya_qr}
+      POSTGRES_DB: ${POSTGRES_DB:-vorya_qr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Impostare POSTGRES_PASSWORD nel file .env (make init)}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    restart: unless-stopped
+
+  migrate:
+    build: ./backend
+    command: ["python", "-m", "app.migrate"]
+    environment: &backend_environment
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-vorya_qr}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-vorya_qr}
+      APP_ENV: ${APP_ENV:-development}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      SHORT_LINK_BASE_URL: ${SHORT_LINK_BASE_URL:-http://localhost:3000}
+      PUBLIC_REGISTRATION_ENABLED: ${PUBLIC_REGISTRATION_ENABLED:-true}
+      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-supporto@vorya.it}
+      # Development: emails are written as JSON files inside the backend container.
+      MAIL_TRANSPORT: ${MAIL_TRANSPORT:-file}
+      MAIL_FILE_DIR: /tmp/vorya-qr-mail
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SECURITY: ${SMTP_SECURITY:-ssl}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-noreply@vorya.it}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Vorya QR}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    build: ./backend
+    environment: *backend_environment
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    environment:
+      API_INTERNAL_URL: http://backend:8000
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

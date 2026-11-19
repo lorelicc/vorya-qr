@@ -1,0 +1,99 @@
+# Vorya QR 0.1 — Portainer CE, Git stack, Docker Standalone.
+# Compose path from the Git root: deploy/compose.portainer.yaml
+# Build contexts are relative to this deploy/ folder. See deploy/PORTAINER.md.
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vorya_qr}
+      POSTGRES_DB: ${POSTGRES_DB:-vorya_qr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Inserire POSTGRES_PASSWORD nelle variabili dello stack Portainer}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: [data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 10s
+    restart: unless-stopped
+
+  migrate:
+    # One-shot: applies Alembic migrations, then exits. The backend starts only if it succeeds.
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    pull_policy: build
+    command: ["python", "-m", "app.migrate"]
+    environment: &backend_environment
+      # Use a URL-safe password: letters, digits, _ and - (see PORTAINER.md).
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-vorya_qr}:${POSTGRES_PASSWORD:?Inserire POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-vorya_qr}
+      APP_ENV: production
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?Impostare PUBLIC_BASE_URL (es. https://qr.vorya.it)}
+      SHORT_LINK_BASE_URL: ${SHORT_LINK_BASE_URL:?Impostare SHORT_LINK_BASE_URL (es. https://qr.vorya.it)}
+      PUBLIC_REGISTRATION_ENABLED: ${PUBLIC_REGISTRATION_ENABLED:-true}
+      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-supporto@vorya.it}
+      MAIL_TRANSPORT: smtp
+      SMTP_HOST: ${SMTP_HOST:-smtps.aruba.it}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SECURITY: ${SMTP_SECURITY:-ssl}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-noreply@vorya.it}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Vorya QR}
+      SMTP_TIMEOUT: ${SMTP_TIMEOUT:-10}
+    networks: [data]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    # Same build as `migrate` (Docker layer cache makes the second build immediate).
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    pull_policy: build
+    environment: *backend_environment
+    networks: [app, data]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    pull_policy: build
+    environment:
+      API_INTERNAL_URL: http://backend:8000
+    ports:
+      # Loopback only. Change VORYA_QR_HTTP_PORT if 3200 is taken (and update CloudPanel).
+      - "127.0.0.1:${VORYA_QR_HTTP_PORT:-3200}:3000"
+    networks: [app]
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+networks:
+  app:
+  data:
+    internal: true
+
+volumes:
+  postgres_data:
