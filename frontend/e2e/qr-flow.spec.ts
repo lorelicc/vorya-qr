@@ -11,7 +11,8 @@ test("registrazione → QR dinamico → cambio destinazione → scansione simula
 
   // Create a dynamic QR.
   await page.getByRole("link", { name: "Nuovo QR" }).first().click();
-  await page.getByLabel("Nome", { exact: true }).fill("Menu del giorno");
+  await page.locator("label", { hasText: "Sito web" }).first().click();
+  await page.getByLabel("Nome del QR").fill("Menu del giorno");
   await page.getByLabel("URL di destinazione").fill("https://example.com/menu-pranzo");
   await expect(page.getByAltText("Anteprima del codice QR")).toBeVisible();
   await page.getByRole("button", { name: "Crea codice QR" }).click();

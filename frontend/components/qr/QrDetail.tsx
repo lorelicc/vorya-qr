@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
+import type { PageDoc, PageFiles } from "@/lib/page-types";
 import type { QrCode } from "@/lib/types";
+import type { UploadedFile } from "@/lib/upload";
+import { toPageFile } from "./pages/shared";
 import { DownloadPanel } from "./DownloadPanel";
 import { DynamicControls } from "./DynamicControls";
 import { KindBadge, StatusBadge } from "./QrBadges";
@@ -15,17 +18,27 @@ import styles from "./QrDetail.module.css";
 export function QrDetail({ id }: { id: number }) {
   const { api: base, app } = useCompany();
   const [qr, setQr] = useState<QrCode | null>(null);
+  const [page, setPage] = useState<PageDoc | null>(null);
+  const [files, setFiles] = useState<PageFiles | null>(null);
   const [error, setError] = useState("");
   const [version, setVersion] = useState(0);
 
   useEffect(() => {
-    api<QrCode>(`${base}/qr-codes/${id}`)
-      .then(setQr)
+    Promise.all([
+      api<QrCode>(`${base}/qr-codes/${id}`),
+      api<{ files: UploadedFile[] }>(`${base}/files`),
+    ])
+      .then(async ([loaded, listing]) => {
+        setFiles(Object.fromEntries(listing.files.map((f) => [f.id, toPageFile(f)])));
+        if (loaded.destination === "page")
+          setPage(await api<PageDoc>(`${base}/qr-codes/${id}/page`));
+        setQr(loaded);
+      })
       .catch((err) => setError(errorMessage(err)));
   }, [base, id]);
 
   if (error) return <p role="alert">{error}</p>;
-  if (!qr)
+  if (!qr || !files)
     return (
       <p className="muted" role="status">
         Caricamento…
@@ -57,6 +70,8 @@ export function QrDetail({ id }: { id: number }) {
       <QrEditor
         key={qr.updated_at}
         initial={qr}
+        initialPage={page}
+        initialFiles={files}
         onSaved={(saved) => {
           setQr(saved);
           setVersion((v) => v + 1);

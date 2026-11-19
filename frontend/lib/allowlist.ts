@@ -37,6 +37,11 @@ const rules: Rule[] = [
   r("DELETE", `${QR}/${ID}`),
   r("POST", `${QR}/${ID}/(pause|resume)`),
   r("GET", `${QR}/${ID}/(stats|image\\.svg|image\\.png)`),
+  r("GET", `${QR}/${ID}/page`),
+  r("POST", `${QR}/${ID}/duplicate`),
+  // Public hosted pages
+  r("GET", "public/pages/[A-Za-z0-9]{7}/vcard/[A-Za-z0-9_-]{1,24}\\.vcf"),
+  r("POST", "public/pages/[A-Za-z0-9]{7}/events"),
   // Transfers
   r("GET", "company-transfers"),
   r("POST", "company-transfers/by-token"),

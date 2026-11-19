@@ -31,3 +31,42 @@
     order: -1;
   }
 }
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+}
+
+.error {
+  color: var(--color-danger);
+  font-size: var(--fs-sm);
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-soft);
+}
+
+.tabs button {
+  padding: var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--color-muted);
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast);
+}
+
+.tabs button[aria-selected="true"] {
+  background: var(--color-surface);
+  color: var(--vorya-green-dark);
+  box-shadow: var(--shadow-sm);
+}

@@ -3,18 +3,18 @@ import { useEffect, useState } from "react";
 import { useCompany } from "@/lib/company-context";
 import { api, errorMessage } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/hooks";
-import type { QrKind, QrStyle } from "@/lib/types";
+
 import styles from "./QrPreview.module.css";
 
-type Props = { kind: QrKind; targetUrl: string; style: QrStyle; qrId?: number };
+type Props = { payload: Record<string, unknown>; dynamic: boolean; qrId?: number };
 type Preview = { svg: string; content: string };
 
 /** Live preview rendered by the backend (same engine as the downloads), shown as an <img>. */
-export function QrPreview({ kind, targetUrl, style, qrId }: Props) {
+export function QrPreview({ payload, dynamic, qrId }: Props) {
   const { api: base } = useCompany();
   // Debounce a string key: a fresh object on every render would never settle.
   const key = useDebouncedValue(
-    JSON.stringify({ kind, target_url: targetUrl, qr_id: qrId ?? null, ...style }),
+    JSON.stringify({ ...payload, page: undefined, qr_id: qrId ?? null }),
     350,
   );
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -50,7 +50,7 @@ export function QrPreview({ kind, targetUrl, style, qrId }: Props) {
       <figcaption>
         {error ? (
           <span className={styles.error}>{error}</span>
-        ) : kind === "dynamic" ? (
+        ) : dynamic ? (
           <>
             Il QR contiene il link breve{qrId ? "" : " (generato al salvataggio)"}:{" "}
             {preview?.content}

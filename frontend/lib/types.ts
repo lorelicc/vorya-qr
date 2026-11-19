@@ -31,6 +31,10 @@ export type QrCode = QrStyle & {
   name: string;
   kind: QrKind;
   content_type: "url";
+  qr_type: string;
+  destination: "redirect" | "page";
+  static_data: Record<string, string | boolean> | null;
+  design: Record<string, unknown> | null;
   target_url: string;
   slug: string | null;
   short_url: string | null;
