@@ -57,6 +57,9 @@ class QrCode(Base):
     fallback_url: Mapped[str | None] = mapped_column(String(2048))
     password_hash: Mapped[str | None] = mapped_column(String(255))
     schedule: Mapped[list | None] = mapped_column(JSON)
+    folder_id: Mapped[int | None] = mapped_column(
+        ForeignKey("folders.id", ondelete="SET NULL"), index=True
+    )
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 

@@ -46,6 +46,7 @@ type Props = {
   home?: string;
   switcher?: ReactNode;
   promo?: ReactNode;
+  headerExtra?: ReactNode;
   children: ReactNode;
 };
 
@@ -57,7 +58,16 @@ export function activeHref(pathname: string, nav: NavItem[]): string | undefined
 }
 
 /** Vorya Apps layout (as in Vorya Sign): sidebar, global header bar, content. */
-export function AppShell({ me, nav, context, home, switcher, promo, children }: Props) {
+export function AppShell({
+  me,
+  nav,
+  context,
+  home,
+  switcher,
+  promo,
+  headerExtra,
+  children,
+}: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const active = activeHref(pathname, nav);
@@ -118,7 +128,7 @@ export function AppShell({ me, nav, context, home, switcher, promo, children }: 
         {promo && <div className={styles.promo}>{promo}</div>}
         <div className={styles.sidebarBottom}>
           <span>Vorya QR</span>
-          <span>v0.2.0</span>
+          <span>v0.3.0</span>
         </div>
       </aside>
       <div
@@ -143,7 +153,10 @@ export function AppShell({ me, nav, context, home, switcher, promo, children }: 
             </span>
             <span className={styles.context}>{context}</span>
           </div>
-          <UserMenu name={me.display_name} email={me.email} role={me.role} />
+          <div className={styles.headerEnd}>
+            {headerExtra}
+            <UserMenu name={me.display_name} email={me.email} role={me.role} />
+          </div>
         </header>
         <main className={styles.content} id="main">
           {children}

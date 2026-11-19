@@ -40,6 +40,8 @@ export type QrCode = QrStyle & {
   short_url: string | null;
   status: "active" | "paused" | "blocked";
   has_qr: boolean;
+  folder_id?: number | null;
+  tag_ids?: number[];
   scan_total: number;
   root_url: string | null;
   blocked_reason?: string | null;
@@ -239,4 +241,25 @@ export type AdminTransfer = {
   failure_reason: string | null;
   created_at: string;
   decided_at: string | null;
+};
+
+export type FolderItem = {
+  id: number;
+  name: string;
+  parent_id: number | null;
+  position: number;
+  link_count: number;
+};
+export type TagItem = { id: number; name: string; color: string; link_count: number };
+export type SearchHit = {
+  id: number;
+  company_id: number;
+  company: string;
+  name: string;
+  slug: string | null;
+  qr_type: string;
+  kind: "static" | "dynamic";
+  status: string;
+  has_qr: boolean;
+  target_url: string;
 };

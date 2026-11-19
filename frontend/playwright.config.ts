@@ -30,13 +30,13 @@ export default defineConfig({
     {
       name: "desktop",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: /(mobile|companies|links)\.spec\.ts/,
+      testIgnore: /(mobile|companies|links|organize)\.spec\.ts/,
     },
     // v0.2 scenario: reduced motion, as requested for deterministic runs.
     {
       name: "reduced-motion",
       use: { ...devices["Desktop Chrome"], contextOptions: { reducedMotion: "reduce" } },
-      testMatch: /(companies|links)\.spec\.ts/,
+      testMatch: /(companies|links|organize)\.spec\.ts/,
     },
     { name: "mobile", use: { ...devices["Pixel 7"] }, testMatch: /mobile\.spec\.ts/ },
   ],

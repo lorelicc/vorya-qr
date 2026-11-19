@@ -1,9 +1,10 @@
 import re
 import unicodedata
+from datetime import UTC, date, datetime, time, timedelta
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from ..auth.deps import CompanyContext, owned_company
@@ -11,7 +12,7 @@ from ..auth.service import audit, rate_limit
 from ..core.database import get_session
 from ..core.errors import CodedError
 from ..core.security import now
-from ..models import QrCode, QrPage
+from ..models import Folder, LinkTag, QrCode, QrPage
 from ..quotas import reserve_slot
 from ..schemas.page import Page
 from ..schemas.qr import QrCreate, QrOut, QrPreview, QrUpdate
@@ -46,6 +47,16 @@ def filename(name: str, extension: str) -> str:
     return f"vorya-qr-{stem}.{extension}"
 
 
+def _tags_of(session: Session, ids: list[int]) -> dict[int, list[int]]:
+    found: dict[int, list[int]] = {}
+    if ids:
+        for qr_id, tag_id in session.execute(
+            select(LinkTag.qr_code_id, LinkTag.tag_id).where(LinkTag.qr_code_id.in_(ids))
+        ):
+            found.setdefault(qr_id, []).append(tag_id)
+    return found
+
+
 @router.get("", response_model=list[QrOut])
 def list_qr(
     search: str = Query(default="", max_length=120),
@@ -53,6 +64,14 @@ def list_qr(
     status: Literal["", "active", "paused", "blocked"] = "",
     qr_type: str = Query(default="", max_length=16),
     view: Literal["", "links", "dynamic_qr", "static"] = "",
+    folder: str = Query(default="", max_length=10),  # "" = all, "none" = unfiled, or a folder id
+    tag_ids: list[int] = Query(default_factory=list, max_length=10),  # all of them
+    created_from: date | None = None,
+    created_to: date | None = None,
+    scans_min: int | None = Query(default=None, ge=0),
+    scans_max: int | None = Query(default=None, ge=0),
+    sort: Literal["created", "name", "scans", "updated"] = "created",
+    order: Literal["asc", "desc"] = "desc",
     ctx: CompanyContext = Depends(owned_company),
     session: Session = Depends(get_session),
 ):
@@ -65,20 +84,46 @@ def list_qr(
         query = query.where(QrCode.kind == "static")
     if search.strip():
         term = f"%{search.strip()}%"
-        query = query.where(or_(QrCode.name.ilike(term), QrCode.target_url.ilike(term)))
+        query = query.where(
+            or_(QrCode.name.ilike(term), QrCode.target_url.ilike(term), QrCode.slug.ilike(term))
+        )
+    if folder == "none":
+        query = query.where(QrCode.folder_id.is_(None))
+    elif folder.isdigit():  # a folder includes its sub-folders
+        children = select(Folder.id).where(Folder.parent_id == int(folder))
+        query = query.where(or_(QrCode.folder_id == int(folder), QrCode.folder_id.in_(children)))
+    for tag_id in tag_ids:
+        query = query.where(
+            QrCode.id.in_(select(LinkTag.qr_code_id).where(LinkTag.tag_id == tag_id))
+        )
+    if created_from:
+        query = query.where(QrCode.created_at >= datetime.combine(created_from, time.min, UTC))
+    if created_to:
+        query = query.where(
+            QrCode.created_at < datetime.combine(created_to + timedelta(days=1), time.min, UTC)
+        )
+    if scans_min is not None:
+        query = query.where(QrCode.scan_total >= scans_min)
+    if scans_max is not None:
+        query = query.where(QrCode.scan_total <= scans_max)
     if kind:
         query = query.where(QrCode.kind == kind)
     if status:
         query = query.where(QrCode.status == status)
     if qr_type:
         query = query.where(QrCode.qr_type == qr_type)
-    items = list(session.scalars(query.order_by(QrCode.created_at.desc(), QrCode.id.desc())))
+    column = {"created": QrCode.created_at, "name": func.lower(QrCode.name),
+              "scans": QrCode.scan_total, "updated": QrCode.updated_at}[sort]  # fmt: skip
+    direction = column.asc() if order == "asc" else column.desc()
+    items = list(session.scalars(query.order_by(direction, QrCode.id.desc())))
+    tags = _tags_of(session, [qr.id for qr in items])
     counts = scan_counts(session, [qr.id for qr in items])
     sparks = sparklines(session, [qr.id for qr in items if qr.kind == "dynamic"])
     out = []
     for qr in items:
         item = qr_out(qr, counts.get(qr.id, 0))
         item.spark = sparks.get(qr.id)
+        item.tag_ids = tags.get(qr.id, [])
         out.append(item)
     return out
 

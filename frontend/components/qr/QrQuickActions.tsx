@@ -1,6 +1,7 @@
 "use client";
-import { BarChart3, Copy, Download, Pause, Play, QrCode } from "lucide-react";
+import { BarChart3, Copy, Download, FolderInput, Pause, Play, QrCode } from "lucide-react";
 import Link from "next/link";
+import { useSelection } from "@/components/organize/SelectionContext";
 import { useCompany } from "@/lib/company-context";
 import type { QrCode as Qr } from "@/lib/types";
 import type { QrActions } from "./useQrActions";
@@ -10,6 +11,7 @@ export function QrQuickActions({ qr, actions }: { qr: Qr; actions: QrActions }) 
   const { app } = useCompany();
   const busy = actions.busy === qr.id;
   const dynamic = qr.kind === "dynamic";
+  const selection = useSelection();
   return (
     <div className={styles.quick}>
       {qr.has_qr ? (
@@ -30,6 +32,16 @@ export function QrQuickActions({ qr, actions }: { qr: Qr; actions: QrActions }) 
           aria-label={`Genera QR per ${qr.name}`}
         >
           <QrCode size={16} />
+        </button>
+      )}
+      {selection && (
+        <button
+          type="button"
+          onClick={() => selection.onMove(qr)}
+          title="Sposta in una cartella"
+          aria-label={`Sposta ${qr.name} in una cartella`}
+        >
+          <FolderInput size={16} />
         </button>
       )}
       <button

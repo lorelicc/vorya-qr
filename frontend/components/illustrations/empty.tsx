@@ -113,3 +113,55 @@ export function EmptySearch() {
     </Illustration>
   );
 }
+
+/** 0.3: empty folder / no folders yet. */
+export function NoFolder() {
+  return (
+    <Illustration size={140}>
+      <Blob x={110} y={98} r={52} tone="mint" />
+      <Blob x={178} y={64} r={22} tone="lilac" slow />
+      <g className={art.float}>
+        <path
+          d="M60 64h42l10 12h58a8 8 0 0 1 8 8v48a8 8 0 0 1-8 8H60a8 8 0 0 1-8-8V72a8 8 0 0 1 8-8Z"
+          fill="var(--art-paper)"
+          stroke="var(--art-line)"
+          strokeWidth={1.5}
+        />
+        <rect x={70} y={98} width={56} height={7} rx={3.5} fill="var(--art-line)" />
+        <rect x={70} y={112} width={36} height={7} rx={3.5} fill="var(--art-glow)" />
+      </g>
+      <Stroke d="M182 120c8 6 16 6 24 0" />
+    </Illustration>
+  );
+}
+
+/** 0.3: no result with the current filters. */
+export function NoResults() {
+  return (
+    <Illustration>
+      <Blob x={112} y={96} r={54} tone="lilac" />
+      <g className={art.float}>
+        <Paper x={62} y={44} w={116} h={92} />
+        {[0, 1, 2].map((i) => (
+          <rect
+            key={i}
+            x={78}
+            y={62 + i * 18}
+            width={88 - i * 14}
+            height={8}
+            rx={4}
+            fill="var(--art-line)"
+          />
+        ))}
+        <path
+          d="M148 100l22 22M170 100l-22 22"
+          stroke="var(--color-danger)"
+          strokeWidth={5}
+          strokeLinecap="round"
+          opacity={0.75}
+        />
+      </g>
+      <Stroke d="M44 62c8-10 20-14 30-10" tone="dark" width={2.5} />
+    </Illustration>
+  );
+}

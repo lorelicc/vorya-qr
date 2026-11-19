@@ -224,3 +224,9 @@
     padding: var(--space-5) var(--space-4) var(--space-8);
   }
 }
+
+.headerEnd {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}

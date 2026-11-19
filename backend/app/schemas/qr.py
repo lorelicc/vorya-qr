@@ -115,5 +115,7 @@ class QrOut(BaseModel):
     design: dict | None
     scan_count: int
     spark: list[int] | None = None  # last 7 days, dashboard list only
+    folder_id: int | None = None
+    tag_ids: list[int] = []
     created_at: datetime
     updated_at: datetime

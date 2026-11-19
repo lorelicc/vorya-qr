@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { AppShell, type NavItem } from "@/components/layout/AppShell";
 import { CompanySwitcher } from "@/components/layout/CompanySwitcher";
+import { SearchDialog } from "@/components/organize/SearchDialog";
 import { requireCustomer, serverGet } from "@/lib/auth-server";
 import { CompanyProvider } from "@/lib/company-context";
 import type { Company } from "@/lib/types";
@@ -34,6 +35,7 @@ export default async function CompanyLayout({
         context={me.workspace!.name}
         home="/companies"
         switcher={<CompanySwitcher current={company} />}
+        headerExtra={<SearchDialog />}
       >
         {children}
       </AppShell>

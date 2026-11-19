@@ -67,7 +67,7 @@ def qr_out(qr: QrCode, scan_count: int = 0) -> QrOut:
         fg_color=qr.fg_color, bg_color=qr.bg_color, margin=qr.margin,
         error_correction=qr.error_correction, design=qr.design, scan_count=scan_count,
         created_at=qr.created_at, updated_at=qr.updated_at, blocked_reason=qr.blocked_reason,
-        has_qr=qr.has_qr, scan_total=qr.scan_total,
+        has_qr=qr.has_qr, scan_total=qr.scan_total, folder_id=qr.folder_id,
     )  # fmt: skip
 
 

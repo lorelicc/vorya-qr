@@ -3,6 +3,9 @@ import { Table, type Column } from "@/components/ui";
 import { formatNumber } from "@/lib/format";
 import type { QrCode } from "@/lib/types";
 import { StatusBadge } from "./QrBadges";
+import { DragHandle } from "@/components/organize/DragHandle";
+import { useSelection } from "@/components/organize/SelectionContext";
+import { TagDots } from "@/components/organize/TagsBar";
 import { QrQuickActions } from "./QrQuickActions";
 import { QrThumb } from "./QrThumb";
 import { Sparkline } from "./Sparkline";
@@ -17,7 +20,8 @@ export const typeLabel = (qr: QrCode) =>
         qr.kind === "dynamic" ? "dinamico" : "statico · non modificabile"
       }`;
 
-const columnsFor = (base: string, actions: QrActions): Column<QrCode>[] => [
+const columnsFor = (base: string, actions: QrActions, withTools: boolean): Column<QrCode>[] => [
+  ...(withTools ? [selectColumn()] : []),
   {
     key: "name",
     header: "Nome",
@@ -28,6 +32,7 @@ const columnsFor = (base: string, actions: QrActions): Column<QrCode>[] => [
         <div className={styles.name}>
           <Link href={`${base}/qr/${qr.id}`}>{qr.name}</Link>
           <span>{typeLabel(qr)}</span>
+          <TagsCell qr={qr} />
         </div>
       </div>
     ),
@@ -55,6 +60,36 @@ const columnsFor = (base: string, actions: QrActions): Column<QrCode>[] => [
   },
 ];
 
+function SelectCell({ qr }: { qr: QrCode }) {
+  const selection = useSelection();
+  if (!selection) return null;
+  return (
+    <span className={styles.selectCell}>
+      <label className={styles.checkLabel}>
+        <input
+          type="checkbox"
+          checked={selection.selected.has(qr.id)}
+          onChange={() => selection.toggle(qr.id)}
+        />
+        <span className="visually-hidden">Seleziona {qr.name}</span>
+      </label>
+      <DragHandle id={qr.id} label={qr.name} />
+    </span>
+  );
+}
+
+function TagsCell({ qr }: { qr: QrCode }) {
+  const selection = useSelection();
+  return selection ? <TagDots tags={selection.tags} ids={qr.tag_ids} /> : null;
+}
+
+const selectColumn = (): Column<QrCode> => ({
+  key: "select",
+  header: "",
+  mobileLabel: false,
+  render: (qr) => <SelectCell qr={qr} />,
+});
+
 export function QrTable({
   rows,
   base,
@@ -67,7 +102,7 @@ export function QrTable({
   return (
     <Table
       caption="Codici QR"
-      columns={columnsFor(base, actions)}
+      columns={columnsFor(base, actions, true)}
       rows={rows}
       rowKey={(qr) => qr.id}
     />

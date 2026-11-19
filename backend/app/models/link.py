@@ -1,6 +1,16 @@
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Index, Integer, String, UniqueConstraint, func
+from sqlalchemy import (
+    JSON,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+    func,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..core.database import Base
@@ -53,3 +63,37 @@ class LinkVersion(Base):
         String(12), default="content"
     )  # created|content|type|destination|restore
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Folder(Base):
+    """A company folder; at most two levels (folder > sub-folder)."""
+
+    __tablename__ = "folders"
+    __table_args__ = (Index("ix_folders_company", "company_id", "parent_id"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"))
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("folders.id", ondelete="CASCADE"))
+    name: Mapped[str] = mapped_column(String(80))
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Tag(Base):
+    __tablename__ = "tags"
+    __table_args__ = (
+        Index("uq_tags_company_name", "company_id", func.lower(text("name")), unique=True),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"))
+    name: Mapped[str] = mapped_column(String(40))
+    color: Mapped[str] = mapped_column(String(7), default="#087f5b")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class LinkTag(Base):
+    __tablename__ = "link_tags"
+    __table_args__ = (Index("ix_link_tags_tag", "tag_id"),)
+    qr_code_id: Mapped[int] = mapped_column(
+        ForeignKey("qr_codes.id", ondelete="CASCADE"), primary_key=True
+    )
+    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True)

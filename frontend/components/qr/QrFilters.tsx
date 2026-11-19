@@ -7,7 +7,50 @@ export type Filters = {
   search: string;
   view: "" | "links" | "dynamic_qr" | "static";
   status: "" | "active" | "paused" | "blocked";
+  folder: string; // "" = all, "none" = unfiled, or a folder id
+  tagIds: number[];
+  createdFrom: string;
+  createdTo: string;
+  scansMin: string;
+  sort: "created" | "name" | "scans" | "updated";
+  order: "asc" | "desc";
 };
+
+export const DEFAULT_FILTERS: Filters = {
+  search: "",
+  view: "",
+  status: "",
+  folder: "",
+  tagIds: [],
+  createdFrom: "",
+  createdTo: "",
+  scansMin: "",
+  sort: "created",
+  order: "desc",
+};
+
+export function filtersQuery(f: Filters, search: string): string {
+  const q = new URLSearchParams({ search, view: f.view, status: f.status, folder: f.folder });
+  f.tagIds.forEach((id) => q.append("tag_ids", String(id)));
+  if (f.createdFrom) q.set("created_from", f.createdFrom);
+  if (f.createdTo) q.set("created_to", f.createdTo);
+  if (f.scansMin) q.set("scans_min", f.scansMin);
+  q.set("sort", f.sort);
+  q.set("order", f.order);
+  return q.toString();
+}
+
+export const isFiltered = (f: Filters, search: string) =>
+  Boolean(
+    search ||
+      f.view ||
+      f.status ||
+      f.folder ||
+      f.tagIds.length ||
+      f.createdFrom ||
+      f.createdTo ||
+      f.scansMin,
+  );
 
 export const VIEWS: { value: Filters["view"]; label: string }[] = [
   { value: "", label: "Tutti" },
