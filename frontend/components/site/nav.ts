@@ -71,19 +71,22 @@ export function navGroups(): NavGroup[] {
       ],
     },
   ];
-  const types: NavColumn[] = [
-    {
-      items: [
-        {
-          label: "Link breve",
-          href: "/link-brevi",
-          icon: "link",
-          hint: "Accorcia e misura i click",
-        },
-      ],
-    },
-    ...TYPE_GROUPS.map((g) => ({ title: g.title, items: g.slugs.map(typeItem) })),
-  ];
+  const types: NavColumn[] = TYPE_GROUPS.map((g) => ({
+    title: g.title,
+    items: [
+      ...(g.title === "Contenuti"
+        ? [
+            {
+              label: "Link breve",
+              href: "/link-brevi",
+              icon: "link",
+              hint: "Accorcia e misura i click",
+            },
+          ]
+        : []),
+      ...g.slugs.map(typeItem),
+    ],
+  }));
   const solutions: NavColumn[] = [
     {
       items: SOLUTIONS.map((s) => ({

@@ -93,7 +93,7 @@ export default async function TypePage({ params }: { params: Promise<{ tipo: str
           compact={false}
         />
       </Section>
-      <Section tone="peach" title="Quando usarlo">
+      <Section card tone="peach" art={t.art} title="Quando usarlo">
         <Bullets items={t.useCases} />
       </Section>
       {related.length > 0 && (

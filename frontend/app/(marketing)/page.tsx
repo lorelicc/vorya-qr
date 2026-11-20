@@ -1,5 +1,4 @@
 import { Check } from "lucide-react";
-import Link from "next/link";
 import { Card, Cards, CtaBand, FaqList, Section } from "@/components/site/blocks";
 import { Counter } from "@/components/site/Counter";
 import { HowItWorks } from "@/components/site/HowItWorks";
@@ -171,9 +170,6 @@ export default function HomePage() {
 
       <FaqList items={FAQ.home} tone="mint" />
       <CtaBand title={HOME.finalCta.title} text={HOME.finalCta.text} />
-      <p className={styles.small}>
-        <Link href="/genera">Genera un QR gratis</Link> · <Link href="/guide">Guide</Link>
-      </p>
     </>
   );
 }

@@ -46,11 +46,11 @@ export default async function FeaturePage({ params }: { params: Promise<{ slug: 
         scene={featureScene(f.slug)}
         tone="dark"
       />
-      <Section title="In pratica">
+      <Section card tone="indigo" art={FEATURE_ART[f.slug]} title="In pratica">
         <Bullets items={f.bullets} />
-        <div style={{ marginTop: "var(--space-8)" }}>
-          <Mock />
-        </div>
+      </Section>
+      <Section>
+        <Mock />
       </Section>
       <Section tone="lilac" title="Funziona con tutti i tipi di QR">
         <Cards>

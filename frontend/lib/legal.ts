@@ -4,6 +4,11 @@
  */
 export type LegalDocument = {
   title: string;
+  /** Short label for the side menu. */
+  short: string;
+  eyebrow: string;
+  intro: string;
+  scene: "termini" | "privacy" | "cookie";
   updated: string;
   sections: { heading: string; body: string[] }[];
 };
@@ -13,7 +18,12 @@ const TODO = "DA COMPLETARE: testo da redigere e far verificare prima della pubb
 export const LEGAL: Record<string, LegalDocument> = {
   termini: {
     title: "Termini di servizio",
-    updated: "Bozza 0.2",
+    short: "Termini",
+    eyebrow: "LE REGOLE, SCRITTE CHIARE.",
+    intro:
+      "Cosa puoi fare con Vorya QR, cosa succede quando il piano cambia e come ci comportiamo in caso di abusi.",
+    scene: "termini",
+    updated: "Bozza 0.6",
     sections: [
       {
         heading: "Oggetto del servizio",
@@ -22,8 +32,8 @@ export const LEGAL: Record<string, LegalDocument> = {
       {
         heading: "Prova gratuita e piani",
         body: [
-          "La prova dura 14 giorni con i limiti del piano Pro. Al termine il piano viene attivato su richiesta.",
-          "Allo scadere della prova i QR dinamici continuano a reindirizzare; l’area di gestione resta bloccata finché non viene attivato un piano.",
+          "La prova dura il numero di giorni indicato al momento della registrazione, con le funzioni del piano provato. Al termine, o se l’abbonamento termina o non viene pagato, l’account passa al piano Free.",
+          "Con il piano Free restano attivi i QR dinamici che rientrano nei suoi limiti (i più vecchi); gli altri vengono sospesi e mostrano «QR non attivo» finché non si torna a un piano o si eliminano altri codici. Nulla viene cancellato. I QR statici contengono i dati nel codice e non dipendono dall’abbonamento.",
           TODO,
         ],
       },
@@ -56,7 +66,12 @@ export const LEGAL: Record<string, LegalDocument> = {
   },
   privacy: {
     title: "Informativa privacy",
-    updated: "Bozza 0.2",
+    short: "Privacy",
+    eyebrow: "I TUOI DATI, CON CHIAREZZA.",
+    intro:
+      "Quali dati trattiamo, perché, e cosa non salviamo mai: per esempio gli indirizzi IP di chi scansiona.",
+    scene: "privacy",
+    updated: "Bozza 0.6",
     sections: [
       { heading: "Titolare del trattamento", body: [TODO] },
       {
@@ -81,7 +96,11 @@ export const LEGAL: Record<string, LegalDocument> = {
   },
   cookie: {
     title: "Cookie",
-    updated: "Bozza 0.2",
+    short: "Cookie",
+    eyebrow: "POCHI COOKIE, SOLO TECNICI.",
+    intro: "Usiamo solo i cookie necessari per accedere e proteggerti. Nessuna profilazione.",
+    scene: "cookie",
+    updated: "Bozza 0.6",
     sections: [
       {
         heading: "Cookie tecnici",

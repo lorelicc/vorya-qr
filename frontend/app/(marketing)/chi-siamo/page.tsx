@@ -21,7 +21,7 @@ export default function AboutPage() {
         scene={<HeroScene />}
         tone="dark"
       />
-      <Section title="Cosa ci sta a cuore">
+      <Section card tone="sun" art="italy" title="Cosa ci sta a cuore">
         <Bullets
           items={[
             "Stampi una volta, cambi quando vuoi",

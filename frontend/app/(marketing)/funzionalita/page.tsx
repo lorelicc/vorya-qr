@@ -1,10 +1,14 @@
-import { Bullets, Card, Cards, Crumbs, CtaBand, Hero, Section } from "@/components/site/blocks";
+import Link from "next/link";
+import { Crumbs, CtaBand, Hero, Section } from "@/components/site/blocks";
 import { HeroScene } from "@/components/site/scenes";
 import { Reveal } from "@/components/site/Reveal";
 import { SiteArt } from "@/components/site/art/SiteArt";
 import { FEATURE_ART } from "@/lib/site/feature-art";
 import { pageMetadata } from "@/lib/site/config";
 import { FEATURES, featurePath } from "@/lib/site/content";
+import styles from "@/components/site/bento.module.css";
+
+const TONES = ["white", "sun", "lilac", "white", "peach", "white", "indigo", "white"] as const;
 
 export const metadata = pageMetadata({
   title: "Funzionalità: link brevi, QR dinamici, pagine, statistiche e altro",
@@ -27,27 +31,32 @@ export default function FeaturesIndex() {
       />
       <Section>
         <h2 className="visually-hidden">Tutte le funzionalità</h2>
-        <Cards>
+        <div className={styles.bento}>
           {FEATURES.map((f, i) => (
-            <Card
-              key={f.slug}
-              title={f.label}
-              text={f.text}
-              art={FEATURE_ART[f.slug]}
-              href={featurePath(f)}
-              delay={i * 40}
-            />
+            <Reveal key={f.slug} delay={i * 50} className={styles.bentoItem}>
+              <article id={f.slug} className={styles.bentoCard} data-tone={TONES[i % TONES.length]}>
+                <div className={styles.bentoText}>
+                  <h3>{f.page ? <Link href={featurePath(f)}>{f.label}</Link> : f.label}</h3>
+                  <p>{f.text}</p>
+                  <ul>
+                    {f.bullets.slice(0, 3).map((b) => (
+                      <li key={b}>{b}</li>
+                    ))}
+                  </ul>
+                  {f.page && (
+                    <Link href={featurePath(f)} className={styles.bentoLink}>
+                      Scopri di più →
+                    </Link>
+                  )}
+                </div>
+                <div className={styles.bentoArt} aria-hidden="true">
+                  <SiteArt name={FEATURE_ART[f.slug]} size={170} />
+                </div>
+              </article>
+            </Reveal>
           ))}
-        </Cards>
+        </div>
       </Section>
-      {FEATURES.filter((f) => !f.page).map((f) => (
-        <Section key={f.slug} id={f.slug} tone="mint" title={f.title} lead={f.text}>
-          <Reveal>
-            <SiteArt name={FEATURE_ART[f.slug]} size={180} />
-            <Bullets items={f.bullets} />
-          </Reveal>
-        </Section>
-      ))}
       <CtaBand
         title="Provalo con i tuoi dati"
         text="14 giorni con tutte le funzioni, senza carta di credito."

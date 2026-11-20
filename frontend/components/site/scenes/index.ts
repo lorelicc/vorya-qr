@@ -9,3 +9,4 @@ export {
   PricingScene,
 } from "./extra";
 export { PhoneScene } from "./phone";
+export { LegalScene } from "./legal";

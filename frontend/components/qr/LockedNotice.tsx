@@ -23,8 +23,8 @@ export function LockedNotice({ qr }: { qr: Pick<QrCode, "locked_reason"> }) {
         {REASONS[qr.locked_reason ?? ""] ?? ""}{" "}
         {suspended ? (
           <>
-            Chi lo scansiona vede <strong>«QR non attivo»</strong>. Si riattiva subito se passi a
-            un piano superiore o elimini altri codici; non viene cancellato nulla.
+            Chi lo scansiona vede <strong>«QR non attivo»</strong>. Si riattiva subito se passi a un
+            piano superiore o elimini altri codici; non viene cancellato nulla.
           </>
         ) : (
           <>

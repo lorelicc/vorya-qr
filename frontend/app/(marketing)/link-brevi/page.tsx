@@ -44,7 +44,7 @@ export default function ShortLinksPage() {
       <Section>
         <ShortLinkTab />
       </Section>
-      <Section tone="mint" title="Cosa puoi fare">
+      <Section card tone="sun" art="links" title="Cosa puoi fare">
         <Bullets
           items={[
             "Cambiare la destinazione quando vuoi",

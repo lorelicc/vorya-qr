@@ -1,0 +1,131 @@
+.bento {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.bentoItem {
+  grid-column: span 12;
+  display: flex;
+}
+@media (min-width: 900px) {
+  .bentoItem {
+    grid-column: span 6;
+  }
+  .bentoItem:nth-child(4n + 1),
+  .bentoItem:nth-child(4n + 4) {
+    grid-column: span 7;
+  }
+  .bentoItem:nth-child(4n + 2),
+  .bentoItem:nth-child(4n + 3) {
+    grid-column: span 5;
+  }
+}
+.bentoCard {
+  position: relative;
+  display: grid;
+  width: 100%;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-6);
+  overflow: hidden;
+  border-radius: 32px;
+  border: 1px solid rgba(9, 20, 17, 0.08);
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(9, 20, 17, 0.05);
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+.bentoCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 50px rgba(9, 20, 17, 0.12);
+}
+.bentoCard[data-tone="sun"] {
+  background: #ffd84d;
+  color: #2b2000;
+  border-color: transparent;
+}
+.bentoCard[data-tone="lilac"] {
+  background: #e8e1ff;
+  border-color: transparent;
+}
+.bentoCard[data-tone="peach"] {
+  background: #ffbd99;
+  color: #2a0e04;
+  border-color: transparent;
+}
+.bentoCard[data-tone="indigo"] {
+  background: #2d2470;
+  color: #fff;
+  border-color: transparent;
+}
+.bentoText h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-2xl);
+  letter-spacing: -0.01em;
+}
+.bentoText h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+.bentoText p {
+  margin: 0 0 var(--space-3);
+  line-height: 1.5;
+  opacity: 0.85;
+}
+.bentoText ul {
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  font-size: var(--fs-sm);
+}
+.bentoText li {
+  display: flex;
+  gap: 8px;
+}
+.bentoText li::before {
+  content: "✓";
+  font-weight: var(--fw-bold);
+  color: var(--vorya-green-dark);
+}
+.bentoCard[data-tone="indigo"] li::before {
+  color: #00e99a;
+}
+.bentoLink {
+  font-weight: var(--fw-bold);
+  color: inherit;
+}
+.bentoArt {
+  display: grid;
+  place-items: center;
+}
+.bentoArt svg {
+  max-width: 100%;
+  height: auto;
+  animation: bentoFloat 6s ease-in-out infinite alternate;
+}
+@keyframes bentoFloat {
+  from {
+    transform: translateY(-6px) rotate(-1deg);
+  }
+  to {
+    transform: translateY(6px) rotate(1deg);
+  }
+}
+@media (min-width: 600px) {
+  .bentoCard {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bentoCard,
+  .bentoArt svg {
+    transition: none;
+    animation: none;
+  }
+  .bentoCard:hover {
+    transform: none;
+  }
+}

@@ -51,9 +51,7 @@ export function GET(request: NextRequest) {
         >
           {title}
         </div>
-        <div style={{ fontSize: 30, color: "#087f5b" }}>
-          Stampi una volta, cambi quando vuoi
-        </div>
+        <div style={{ fontSize: 30, color: "#087f5b" }}>Stampi una volta, cambi quando vuoi</div>
       </div>
     ),
     {

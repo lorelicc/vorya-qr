@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ButtonLink } from "@/components/ui";
 import { absoluteUrl } from "@/lib/site/config";
 import type { FaqItem } from "@/lib/site/content";
 import { JsonLd } from "./JsonLd";
+
+export { CtaBand } from "./cta";
 import { Reveal } from "./Reveal";
 import { SiteArt } from "./art/SiteArt";
 import styles from "./blocks.module.css";
@@ -110,14 +111,41 @@ export function Section({
   title,
   lead,
   tone,
+  card,
+  art,
+  aside,
   children,
 }: {
   id?: string;
   title?: string;
   lead?: string;
   tone?: SectionTone;
+  /** A rounded coloured panel inside the page width, with an illustration on the right. */
+  card?: boolean;
+  art?: string;
+  aside?: ReactNode;
   children: ReactNode;
 }) {
+  if (card) {
+    return (
+      <section id={id} className={styles.cardSection}>
+        <div className={styles.container}>
+          <Reveal className={styles.panel} data-tone={tone ?? "soft"}>
+            <div className={styles.panelBody}>
+              {title && <h2>{title}</h2>}
+              {lead && <p className={styles.lead}>{lead}</p>}
+              {children}
+            </div>
+            {(aside || art) && (
+              <div className={styles.panelArt} aria-hidden={art ? "true" : undefined}>
+                {aside ?? <SiteArt name={art!} size={260} />}
+              </div>
+            )}
+          </Reveal>
+        </div>
+      </section>
+    );
+  }
   return (
     <section id={id} className={styles.section} data-tone={tone}>
       <div className={styles.container}>
@@ -240,35 +268,6 @@ export function FaqGroup({
             </details>
           ))}
         </div>
-      </div>
-    </section>
-  );
-}
-
-export function CtaBand({
-  title,
-  text,
-  event = "prova-gratis-cta",
-}: {
-  title: string;
-  text: string;
-  event?: string;
-}) {
-  return (
-    <section className={styles.cta}>
-      <div className={styles.container}>
-        <Reveal>
-          <h2>{title}</h2>
-          <p>{text}</p>
-          <div className={styles.actions}>
-            <ButtonLink href="/register" data-umami-event={event}>
-              Prova gratis
-            </ButtonLink>
-            <ButtonLink href="/prezzi" variant="secondary" className={styles.ctaSecondary}>
-              Vedi i prezzi
-            </ButtonLink>
-          </div>
-        </Reveal>
       </div>
     </section>
   );

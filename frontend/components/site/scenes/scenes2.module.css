@@ -1469,3 +1469,379 @@
     transform: none;
   }
 }
+
+/* ================= LEGAL ================= */
+.lStage {
+  position: absolute;
+  inset: 0;
+  animation: lgFade 12s linear infinite;
+}
+@keyframes lgFade {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+.lDoc {
+  position: absolute;
+  left: 12em;
+  top: 3.5em;
+  width: 24em;
+  padding: 1.8em;
+  display: grid;
+  gap: 1em;
+  border-radius: 1.4em;
+  background: #fff;
+  box-shadow: 0 1em 2.6em rgba(9, 20, 17, 0.16);
+}
+.lDoc > b {
+  font-size: 1.5em;
+}
+.lRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.7em 0.9em 0.7em 3em;
+  border-radius: 0.7em;
+  background: #f3f0ff;
+  font-size: 1.2em;
+  font-weight: 600;
+  color: #2d2470;
+}
+.lRow em {
+  position: absolute;
+  left: 0.7em;
+  display: grid;
+  place-items: center;
+  width: 1.7em;
+  height: 1.7em;
+  border-radius: 50%;
+  background: #00e99a;
+  color: #064b38;
+}
+.lLine {
+  display: none;
+}
+.lSeal {
+  position: absolute;
+  right: 7em;
+  bottom: 3.5em;
+  display: grid;
+  place-items: center;
+  width: 5em;
+  height: 5em;
+  border-radius: 50%;
+  background: #064b38;
+  color: #fff;
+  font-size: 1.5em;
+  font-weight: 800;
+  transform: rotate(-12deg);
+  box-shadow: 0 0.6em 1.6em rgba(6, 75, 56, 0.4);
+  animation: lgSeal 12s linear infinite;
+}
+.lShield {
+  position: absolute;
+  left: 18em;
+  top: 6em;
+  display: grid;
+  place-items: center;
+  width: 12em;
+  height: 14em;
+  border-radius: 6em 6em 7em 7em / 4em 4em 8em 8em;
+  background: #064b38;
+  color: #00e99a;
+  box-shadow: 0 1em 2.6em rgba(6, 75, 56, 0.4);
+  animation: lgPulse 3s ease-in-out infinite alternate;
+}
+.lChip {
+  position: absolute;
+  left: 3em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.7em 1.2em;
+  border-radius: 99em;
+  background: #fff;
+  box-shadow: 0 0.4em 1.2em rgba(9, 20, 17, 0.12);
+  font-size: 1.3em;
+  font-weight: 700;
+  color: #064b38;
+}
+.lChip[data-i="0"] {
+  top: 6em;
+  animation: lgIn0 12s linear infinite;
+}
+.lChip[data-i="1"] {
+  top: 12em;
+  animation: lgIn1 12s linear infinite;
+}
+.lChip[data-i="2"] {
+  top: 18em;
+  animation: lgIn2 12s linear infinite;
+}
+.lNo {
+  position: absolute;
+  left: 24em;
+  top: 26em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.7em 1.2em;
+  border-radius: 99em;
+  background: #ffe1e4;
+  color: #b42334;
+  font-size: 1.3em;
+  font-weight: 700;
+  animation: lgIn3 12s linear infinite;
+}
+.lNo u {
+  text-decoration: none;
+  background: #b42334;
+  color: #fff;
+  padding: 0.1em 0.6em;
+  border-radius: 99em;
+}
+.lCookie {
+  position: absolute;
+  left: 5em;
+  top: 8em;
+  width: 15em;
+  height: 15em;
+  border-radius: 50%;
+  background: #c98a4b;
+  box-shadow:
+    inset -1em -1em 0 rgba(0, 0, 0, 0.12),
+    0 1em 2.6em rgba(9, 20, 17, 0.25);
+  animation: lgPulse 4s ease-in-out infinite alternate;
+}
+.lCookie i {
+  position: absolute;
+  width: 1.8em;
+  height: 1.8em;
+  border-radius: 50%;
+  background: #6b3f17;
+}
+.lCookie i[data-i="0"] {
+  left: 3em;
+  top: 3em;
+}
+.lCookie i[data-i="1"] {
+  left: 8em;
+  top: 4.5em;
+}
+.lCookie i[data-i="2"] {
+  left: 4.5em;
+  top: 8.5em;
+}
+.lCookie i[data-i="3"] {
+  left: 9.5em;
+  top: 9em;
+}
+.lCookie i[data-i="4"] {
+  left: 6.5em;
+  top: 11.5em;
+}
+.lSwitches {
+  position: absolute;
+  left: 22em;
+  top: 8em;
+  width: 22em;
+  display: grid;
+  gap: 1.4em;
+}
+.lSwitch {
+  position: relative;
+  display: grid;
+  gap: 0.3em;
+  padding: 1.1em 4.8em 1.1em 1.3em;
+  border-radius: 1.1em;
+  background: #fff;
+  box-shadow: 0 0.5em 1.6em rgba(9, 20, 17, 0.12);
+  font-size: 1.2em;
+  font-weight: 700;
+}
+.lSwitch b {
+  font-size: 0.85em;
+  color: #567067;
+}
+.lSwitch[data-on="true"] b {
+  color: #087f5b;
+}
+.lSwitch i {
+  position: absolute;
+  right: 1.2em;
+  top: 50%;
+  width: 3em;
+  height: 1.7em;
+  margin-top: -0.85em;
+  border-radius: 99em;
+  background: #d4dad7;
+}
+.lSwitch i::after {
+  content: "";
+  position: absolute;
+  left: 0.2em;
+  top: 0.2em;
+  width: 1.3em;
+  height: 1.3em;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+.lSwitch[data-on="true"] i {
+  background: #00ba78;
+}
+.lSwitch[data-on="true"] i::after {
+  transform: translateX(1.3em);
+}
+@keyframes lgSeal {
+  0%,
+  60% {
+    opacity: 0;
+    transform: scale(2) rotate(-12deg);
+  }
+  70%,
+  100% {
+    opacity: 1;
+    transform: rotate(-12deg);
+  }
+}
+@keyframes lgPulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.04);
+  }
+}
+@keyframes lgIn0 {
+  0%,
+  14% {
+    opacity: 0;
+    transform: translateX(-1.5em);
+  }
+  22%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lgIn1 {
+  0%,
+  26% {
+    opacity: 0;
+    transform: translateX(-1.5em);
+  }
+  34%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lgIn2 {
+  0%,
+  38% {
+    opacity: 0;
+    transform: translateX(-1.5em);
+  }
+  46%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lgIn3 {
+  0%,
+  58% {
+    opacity: 0;
+    transform: translateY(1em);
+  }
+  68%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lgRow0 {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translateX(-1em);
+  }
+  14%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lRow[data-i="0"] {
+  animation: lgRow0 12s linear infinite;
+}
+@keyframes lgRow1 {
+  0%,
+  19% {
+    opacity: 0;
+    transform: translateX(-1em);
+  }
+  25%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lRow[data-i="1"] {
+  animation: lgRow1 12s linear infinite;
+}
+@keyframes lgRow2 {
+  0%,
+  30% {
+    opacity: 0;
+    transform: translateX(-1em);
+  }
+  36%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lRow[data-i="2"] {
+  animation: lgRow2 12s linear infinite;
+}
+@keyframes lgRow3 {
+  0%,
+  41% {
+    opacity: 0;
+    transform: translateX(-1em);
+  }
+  47%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lRow[data-i="3"] {
+  animation: lgRow3 12s linear infinite;
+}
+@keyframes lgRow4 {
+  0%,
+  52% {
+    opacity: 0;
+    transform: translateX(-1em);
+  }
+  58%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lRow[data-i="4"] {
+  animation: lgRow4 12s linear infinite;
+}

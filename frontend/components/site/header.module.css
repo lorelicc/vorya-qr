@@ -218,57 +218,80 @@
 }
 .mega {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
+  top: calc(100% + 10px);
+  left: 50%;
+  width: min(1120px, calc(100vw - 32px));
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  border-radius: 32px;
   background: #fff;
-  border-bottom: 1px solid var(--color-border);
-  box-shadow: 0 28px 60px rgba(9, 20, 17, 0.16);
+  border: 1px solid rgba(9, 20, 17, 0.06);
+  box-shadow:
+    0 40px 90px rgba(9, 20, 17, 0.22),
+    0 2px 6px rgba(9, 20, 17, 0.06);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(8px);
+  transform: translateX(-50%) translateY(-14px) scale(0.96);
+  transform-origin: top center;
   transition:
-    opacity var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out),
-    visibility 0s linear var(--dur-fast);
+    opacity 180ms var(--ease-out),
+    transform 380ms cubic-bezier(0.2, 1.15, 0.3, 1),
+    visibility 0s linear 380ms;
+}
+/* keeps the menu open while the pointer crosses the gap under the header */
+.mega::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -16px;
+  height: 16px;
 }
 .mega[data-open] {
   opacity: 1;
   visibility: visible;
-  transform: none;
+  transform: translateX(-50%);
   transition-delay: 0s;
 }
 .megaInner {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr);
-  gap: var(--space-6);
-  padding-top: var(--space-6);
-  padding-bottom: var(--space-6);
+  gap: var(--space-5);
+  padding: var(--space-4);
 }
 .intro {
-  --tone: #064b38;
-  --tone-ink: #fff;
-  --tone-accent: #00e99a;
+  --a: #7ff5c6;
+  --b: #00e99a;
+  --c: #064b38;
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-6);
+  gap: var(--space-2);
+  min-height: 340px;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  overflow: hidden;
   border-radius: 24px;
-  background: var(--tone);
-  color: var(--tone-ink);
+  background: #064b38;
+  color: #fff;
 }
 .mega[data-tone="lilac"] .intro {
-  --tone: #2d2470;
-  --tone-accent: #c9bfff;
+  --a: #d6ccff;
+  --b: #a898ff;
+  --c: #2d2470;
+  background: #2d2470;
 }
 .mega[data-tone="sun"] .intro {
-  --tone: #ffd84d;
-  --tone-ink: #2f2400;
-  --tone-accent: #2f2400;
+  --a: #fff3b0;
+  --b: #f5a300;
+  --c: #5a4300;
+  background: #ffd84d;
+  color: #2b2000;
 }
 .mega[data-tone="coral"] .intro {
-  --tone: #e4572e;
-  --tone-accent: #ffe1d6;
+  --a: #ffe1d6;
+  --b: #ff9d73;
+  --c: #a33a18;
+  background: #e4572e;
 }
 .intro strong {
   font-size: 22px;
@@ -278,13 +301,35 @@
 .intro p {
   margin: 0;
   font-size: var(--fs-base);
-  line-height: 1.45;
-  opacity: 0.9;
+  line-height: 1.4;
+  opacity: 0.92;
+}
+.art {
+  margin: auto;
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+}
+.f1 {
+  animation: megaFloat 5s ease-in-out infinite alternate;
+}
+.f2 {
+  animation: megaFloat 4.2s ease-in-out infinite alternate-reverse;
+}
+.f3 {
+  animation: megaFloat 3.6s ease-in-out infinite alternate;
+}
+@keyframes megaFloat {
+  from {
+    transform: translateY(-4px);
+  }
+  to {
+    transform: translateY(4px);
+  }
 }
 .intro a {
-  margin-top: auto;
   font-weight: var(--fw-bold);
-  color: var(--tone-accent);
+  color: inherit;
   text-decoration: none;
 }
 .intro a:hover {
@@ -294,18 +339,24 @@
   display: grid;
   gap: var(--space-4) var(--space-5);
   align-content: start;
+  padding: var(--space-3) var(--space-3) var(--space-3) 0;
 }
-.columns[data-cols="1"] {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.columns[data-cols="3"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .columns[data-cols="4"] {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 .column {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   align-content: start;
 }
+.column[data-grid] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px var(--space-4);
+}
+
 .column h2 {
   margin: 0 0 4px;
   padding-left: 10px;
@@ -461,5 +512,28 @@
   .tile,
   .item > button svg {
     transition: none;
+  }
+}
+
+.mega[data-open] .tile {
+  animation: tileIn 420ms cubic-bezier(0.2, 1, 0.3, 1) both;
+  animation-delay: calc(60ms + var(--i, 0) * 28ms);
+}
+@keyframes tileIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mega[data-open] .tile,
+  .f1,
+  .f2,
+  .f3 {
+    animation: none;
   }
 }

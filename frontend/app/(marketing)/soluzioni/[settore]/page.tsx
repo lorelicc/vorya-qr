@@ -50,10 +50,10 @@ export default async function SolutionPage({ params }: { params: Promise<{ setto
           </ButtonLink>
         }
       />
-      <Section title="Il problema">
+      <Section card tone="peach" art={s.art} title="Il problema">
         <p style={{ fontSize: "var(--fs-lg)", maxWidth: "62ch", lineHeight: 1.6 }}>{s.problem}</p>
       </Section>
-      <Section tone="sun" title="Come ti aiuta Vorya QR">
+      <Section card tone="sun" art="pages" title="Come ti aiuta Vorya QR">
         <Bullets items={s.bullets} />
       </Section>
       <Section title="I QR consigliati">

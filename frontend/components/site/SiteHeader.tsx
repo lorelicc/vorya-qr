@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Brand } from "@/components/layout/Brand";
 import { AuthCta } from "./AuthCta";
+import { MegaArt } from "./MegaArt";
 import { NavIcon } from "./NavIcon";
 import { VoryaFamily } from "./VoryaFamily";
 import type { NavGroup } from "./nav";
@@ -70,19 +71,25 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
                   <div className={styles.intro}>
                     <strong>{group.intro.title}</strong>
                     <p>{group.intro.text}</p>
+                    <MegaArt kind={group.key === "tipi" ? "tipi" : group.key} />
                     <Link href={group.intro.cta.href} tabIndex={open === group.key ? 0 : -1}>
                       {group.intro.cta.label} →
                     </Link>
                   </div>
                   <div className={styles.columns} data-cols={group.columns.length}>
                     {group.columns.map((column, i) => (
-                      <div key={column.title ?? i} className={styles.column}>
+                      <div
+                        key={column.title ?? i}
+                        className={styles.column}
+                        data-grid={group.columns.length === 1 || undefined}
+                      >
                         {column.title && <h2>{column.title}</h2>}
-                        {column.items.map((item) => (
+                        {column.items.map((item, n) => (
                           <Link
                             key={item.href}
                             href={item.href}
                             className={styles.tile}
+                            style={{ ["--i" as string]: n }}
                             tabIndex={open === group.key ? 0 : -1}
                           >
                             <span className={styles.bubble}>

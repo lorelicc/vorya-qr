@@ -28,19 +28,19 @@
   border: 1px solid rgba(9, 20, 17, 0.06);
 }
 .frame[data-tone="mint"] {
-  --scene-bg: linear-gradient(135deg, #eafdf4, #c3f5dc);
+  --scene-bg: #eef2f0;
 }
 .frame[data-tone="forest"] {
-  --scene-bg: linear-gradient(135deg, #0b6b4f, #064b38 70%);
+  --scene-bg: #0b5a43;
 }
 .frame[data-tone="sun"] {
-  --scene-bg: linear-gradient(135deg, #fff7dc, #ffe49a);
+  --scene-bg: #ffeaa6;
 }
 .frame[data-tone="lilac"] {
-  --scene-bg: linear-gradient(135deg, #f5f2ff, #d9d0ff);
+  --scene-bg: #e6dfff;
 }
 .frame[data-tone="peach"] {
-  --scene-bg: linear-gradient(135deg, #fff4ec, #ffd2b0);
+  --scene-bg: #ffd9c2;
 }
 .stage {
   position: relative;
