@@ -59,7 +59,6 @@ export function Scene({
       data-tone={tone}
       data-run={ready ? (started ? String(run) : "idle") : undefined}
       aria-label={label}
-      role="group"
     >
       <div className={styles.stage} aria-hidden="true">
         {children}

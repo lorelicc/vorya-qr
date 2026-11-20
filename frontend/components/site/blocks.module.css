@@ -410,3 +410,6 @@ a.card:hover {
 .crumbsBar .crumbs {
   color: inherit;
 }
+.crumbsBar .crumbs a {
+  color: inherit;
+}
