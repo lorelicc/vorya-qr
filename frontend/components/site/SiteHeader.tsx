@@ -1,11 +1,12 @@
 "use client";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AuthCta } from "./AuthCta";
 import { LogoSwap } from "./LogoSwap";
 import { MegaArt } from "./MegaArt";
+import { MobileMenu } from "./MobileMenu";
 import { NavIcon } from "./NavIcon";
 import { VoryaFamily } from "./VoryaFamily";
 import type { NavGroup } from "./nav";
@@ -177,36 +178,14 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
           aria-expanded={mobile}
           onClick={() => setMobile((v) => !v)}
         >
-          {mobile ? <X size={22} /> : <Menu size={22} />}
+          <span className={styles.bars} data-open={mobile || undefined} aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
         </button>
       </div>
-      {mobile && (
-        <div className={styles.mobilePanel}>
-          {groups.map((group) => (
-            <details key={group.key} data-tone={group.tone}>
-              <summary>{group.label}</summary>
-              <div>
-                {group.columns
-                  .flatMap((c) => c.items)
-                  .map((item) => (
-                    <Link key={item.href} href={item.href}>
-                      <span className={styles.bubble}>
-                        <NavIcon name={item.icon} size={16} />
-                      </span>
-                      {item.label}
-                    </Link>
-                  ))}
-              </div>
-            </details>
-          ))}
-          <Link href="/prezzi" className={styles.mobilePlain}>
-            Prezzi
-          </Link>
-          <div className={styles.mobileCta}>
-            <AuthCta />
-          </div>
-        </div>
-      )}
+      <MobileMenu groups={groups} open={mobile} anchor={root} />
     </header>
   );
 }

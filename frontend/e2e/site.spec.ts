@@ -56,15 +56,18 @@ test.describe("navigazione del sito da mobile", () => {
     expect(overflow).toBeLessThanOrEqual(0);
 
     await page.getByRole("button", { name: "Apri il menu" }).click();
-    await page.locator("summary", { hasText: "Tipi di QR" }).click();
+    await page.getByRole("button", { name: /Tipi di QR/ }).click();
     await page.getByRole("link", { name: "Wi-Fi", exact: true }).first().click();
     await expect(page).toHaveURL(/\/qr-code\/wifi$/);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("QR code per il Wi-Fi");
     await expect(page.getByRole("tab", { name: "Wi-Fi", selected: true })).toBeVisible();
 
     await page.getByRole("button", { name: "Apri il menu" }).click();
-    await page.locator("summary", { hasText: "Soluzioni" }).click();
-    await page.getByRole("link", { name: "Ristoranti e bar" }).first().click();
+    await page.getByRole("button", { name: /Soluzioni/ }).click();
+    await page
+      .getByRole("link", { name: /Ristoranti e bar/ })
+      .first()
+      .click();
     await expect(page).toHaveURL(/\/soluzioni\/ristoranti$/);
 
     // The footer links every landing page.
