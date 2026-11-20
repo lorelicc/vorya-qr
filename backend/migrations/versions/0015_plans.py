@@ -20,7 +20,7 @@ revision = "0015_plans"
 down_revision = "0014_grants"
 branch_labels = depends_on = None
 
-BASE_TYPES = ["website", "wifi", "text", "email", "sms", "phone", "whatsapp"]
+BASE_TYPES = ["website", "wifi", "text", "email", "sms", "phone", "whatsapp", "vcard_static"]
 ALL_PAGES = ["vcard", "pdf", "music", "link_in_bio", "gallery", "business"]
 
 

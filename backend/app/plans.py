@@ -26,10 +26,11 @@ QrType = Literal[
     "sms",
     "phone",
     "whatsapp",
+    "vcard_static",
 ]
 ALL_TYPES: tuple[str, ...] = QrType.__args__  # type: ignore[attr-defined]
 PAGE_TYPES = ("vcard", "pdf", "music", "link_in_bio", "gallery", "business", "menu")
-STATIC_TYPES = ("wifi", "text", "email", "sms", "phone", "whatsapp")
+STATIC_TYPES = ("wifi", "text", "email", "sms", "phone", "whatsapp", "vcard_static")
 BASE_TYPES = ("website", *STATIC_TYPES)
 TYPE_LABELS = {
     "website": "Sito web",
@@ -46,6 +47,7 @@ TYPE_LABELS = {
     "sms": "SMS",
     "phone": "Telefono",
     "whatsapp": "WhatsApp",
+    "vcard_static": "vCard statica",
 }
 
 

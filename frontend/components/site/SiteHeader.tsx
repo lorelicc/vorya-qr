@@ -10,15 +10,14 @@ import styles from "./site.module.css";
 
 /** Header with an animated mega-menu (hover or click) and an accordion menu on mobile. */
 export function SiteHeader({ groups }: { groups: NavGroup[] }) {
-  const pathname = usePathname();
+  // Keyed by path: every navigation remounts it, so the menus are closed again.
+  return <HeaderInner key={usePathname()} groups={groups} />;
+}
+
+function HeaderInner({ groups }: { groups: NavGroup[] }) {
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
   const root = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    setOpen(null);
-    setMobile(false);
-  }, [pathname]);
 
   useEffect(() => {
     const away = (e: PointerEvent) => {

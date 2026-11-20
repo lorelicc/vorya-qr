@@ -3,7 +3,7 @@
 from typing import Literal
 from urllib.parse import quote
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from ..schemas.page import http_url
 
@@ -51,6 +51,31 @@ class WhatsappData(Strict):
     message: str = Field(default="", max_length=500)
 
 
+class VcardStaticData(Strict):
+    """A business card written inside the QR (0.5). Short on purpose: long cards make dense QRs."""
+
+    first_name: str = Field(default="", max_length=60)
+    last_name: str = Field(default="", max_length=60)
+    organization: str = Field(default="", max_length=80)
+    job_title: str = Field(default="", max_length=60)
+    phone: str = Field(default="", pattern=r"^(\+?[0-9 ().-]{3,30})?$")
+    email: str = Field(default="", max_length=120, pattern=r"^([^@\s<>]+@[^@\s<>]+\.[^@\s<>]+)?$")
+    website: str = Field(default="", max_length=200)
+    street: str = Field(default="", max_length=100)
+    city: str = Field(default="", max_length=60)
+
+    @field_validator("website")
+    @classmethod
+    def website_url(cls, value: str) -> str:
+        return http_url(value) if value.strip() else ""
+
+    @model_validator(mode="after")
+    def has_name(self):
+        if not (self.first_name or self.last_name or self.organization):
+            raise ValueError("Inserisci almeno nome, cognome o azienda")
+        return self
+
+
 STATIC_SCHEMAS: dict[str, type[Strict]] = {
     "website": WebsiteData,
     "wifi": WifiData,
@@ -59,6 +84,7 @@ STATIC_SCHEMAS: dict[str, type[Strict]] = {
     "sms": SmsData,
     "phone": PhoneData,
     "whatsapp": WhatsappData,
+    "vcard_static": VcardStaticData,
 }
 
 
@@ -72,6 +98,20 @@ def digits(number: str) -> str:
     return "".join(c for c in number if c.isdigit() or c == "+")
 
 
+def _vcard_text(d: VcardStaticData) -> str:
+    from ..pages.vcard import vcard
+    from ..schemas.page import Address, ContactBlock, Email, Phone
+
+    block = ContactBlock(
+        id="s", type="contact", first_name=d.first_name, last_name=d.last_name,
+        organization=d.organization, job_title=d.job_title,
+        phones=[Phone(number=d.phone)] if d.phone else [],
+        emails=[Email(address=d.email)] if d.email else [],
+        website=d.website, address=Address(street=d.street, city=d.city),
+    )  # fmt: skip
+    return vcard(block)
+
+
 def encode_static(qr_type: str, data: dict) -> str:
     """Payload written inside the QR, following the formats phone cameras understand."""
     d = STATIC_SCHEMAS[qr_type].model_validate(data)
@@ -81,6 +121,8 @@ def encode_static(qr_type: str, data: dict) -> str:
         password = f"P:{_wifi_escape(d.password)};" if d.encryption != "nopass" else ""
         hidden = "H:true;" if d.hidden else ""
         return f"WIFI:T:{d.encryption};S:{_wifi_escape(d.ssid)};{password}{hidden};"
+    if qr_type == "vcard_static":
+        return _vcard_text(d)
     if qr_type == "text":
         return d.text
     if qr_type == "email":

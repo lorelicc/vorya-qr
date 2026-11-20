@@ -21,6 +21,8 @@ from .companies.transfers import router as transfers_router
 from .core.config import get_settings
 from .core.database import get_engine
 from .core.errors import install_handlers
+from .generator import router as generator_router
+from .generator import site_router
 from .imports.router import router as imports_router
 from .links.organization import router as organization_router
 from .links.organization import search_router
@@ -76,6 +78,8 @@ def create_app() -> FastAPI:
         abuse_admin_router,
         abuse_public_router,
         billing_router,
+        generator_router,
+        site_router,
         billing_admin_router,
         redirect_router,
     ):
