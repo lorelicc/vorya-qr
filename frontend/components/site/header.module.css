@@ -659,3 +659,10 @@
 .nav:has(.mega[data-open]) .mega:not([data-open]) .tile {
   animation: none;
 }
+
+/* Jumping between menus: the new panel is shown as is, without replaying the entrance. */
+.header[data-switching] .mega[data-open],
+.header[data-switching] .mega[data-open] .tile {
+  transition: none;
+  animation: none;
+}

@@ -2,7 +2,7 @@
 import { ChevronDown, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AuthCta } from "./AuthCta";
 import { LogoSwap } from "./LogoSwap";
 import { MegaArt } from "./MegaArt";
@@ -32,18 +32,35 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
   );
   // The home opens on a dark hero: the header is dark there and turns white as the page scrolls.
   const dark = path === "/" && !scrolled;
-  const [open, setOpen] = useState<string | null>(null);
+  const [open, setOpenState] = useState<string | null>(null);
+  // True while jumping straight from one menu to another: no entrance animation is replayed.
+  const [switching, setSwitching] = useState(false);
+  const openRef = useRef<string | null>(null);
   const [mobile, setMobile] = useState(false);
   const root = useRef<HTMLElement>(null);
   const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const opening = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Hover intent: crossing the small gap between the header and the menu must not close it.
-  const hold = (key: string) => {
+  const setOpen = useCallback((key: string | null) => {
+    setSwitching(key !== null && openRef.current !== null && openRef.current !== key);
+    openRef.current = key;
+    setOpenState(key);
+  }, []);
+  const clearTimers = useCallback(() => {
     if (closing.current) clearTimeout(closing.current);
-    setOpen(key);
+    if (opening.current) clearTimeout(opening.current);
+  }, []);
+
+  // Hover intent: brushing over the items must not make menus flash. The first menu opens after
+  // 120 ms; once one is open, moving to another is instant; leaving closes after 350 ms, so
+  // crossing the small gap between the header and the menu does not close it.
+  const hold = (key: string) => {
+    clearTimers();
+    if (openRef.current !== null) setOpen(key);
+    else opening.current = setTimeout(() => setOpen(key), 120);
   };
   const release = () => {
-    if (closing.current) clearTimeout(closing.current);
+    clearTimers();
     closing.current = setTimeout(() => setOpen(null), 350);
   };
 
@@ -57,9 +74,9 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
     return () => {
       document.removeEventListener("pointerdown", away);
       document.removeEventListener("keydown", esc);
-      if (closing.current) clearTimeout(closing.current);
+      clearTimers();
     };
-  }, []);
+  }, [setOpen, clearTimers]);
 
   return (
     <header
@@ -68,6 +85,7 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
       data-mobile={mobile || undefined}
       data-theme={dark ? "dark" : undefined}
       data-scrolled={scrolled || undefined}
+      data-switching={switching || undefined}
     >
       <a href="#main" className={styles.skip}>
         Vai al contenuto
@@ -89,7 +107,10 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
                 type="button"
                 aria-expanded={open === group.key}
                 aria-controls={`menu-${group.key}`}
-                onClick={() => setOpen(open === group.key ? null : group.key)}
+                onClick={() => {
+                  clearTimers();
+                  setOpen(open === group.key ? null : group.key);
+                }}
               >
                 {group.label} <ChevronDown size={14} aria-hidden="true" />
               </button>
