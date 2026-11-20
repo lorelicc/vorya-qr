@@ -621,3 +621,11 @@ a.card:hover {
 .crumbsBar .crumbs a {
   color: inherit;
 }
+.faq details {
+  overflow: hidden;
+}
+.faq summary:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: -3px;
+  border-radius: var(--radius-lg);
+}

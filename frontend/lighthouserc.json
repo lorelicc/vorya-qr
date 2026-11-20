@@ -9,7 +9,8 @@
         "http://127.0.0.1:3100/link-brevi",
         "http://127.0.0.1:3100/soluzioni/ristoranti",
         "http://127.0.0.1:3100/faq",
-        "http://127.0.0.1:3100/qr-code/vcard"
+        "http://127.0.0.1:3100/qr-code/vcard",
+        "http://127.0.0.1:3100/legal/privacy"
       ],
       "numberOfRuns": 1,
       "settings": {
