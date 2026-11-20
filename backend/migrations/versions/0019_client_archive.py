@@ -42,8 +42,12 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.execute("UPDATE workspaces SET status = 'suspended' WHERE status IN ('archived','purged')")
     op.drop_constraint("ck_workspaces_status", "workspaces", type_="check")
-    op.create_check_constraint("ck_workspaces_status", "workspaces", "status IN ('active','suspended')")
-    op.execute("UPDATE registrations SET terms_accepted_at = created_at WHERE terms_accepted_at IS NULL")
+    op.create_check_constraint(
+        "ck_workspaces_status", "workspaces", "status IN ('active','suspended')"
+    )
+    op.execute(
+        "UPDATE registrations SET terms_accepted_at = created_at WHERE terms_accepted_at IS NULL"
+    )
     op.alter_column("registrations", "terms_accepted_at", existing_type=TS, nullable=False)
     op.drop_column("registrations", "invite")
     op.drop_index("ix_workspaces_deleted", table_name="workspaces")
