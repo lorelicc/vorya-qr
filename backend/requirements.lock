@@ -64,7 +64,7 @@ markupsafe==3.0.4
     # via mako
 maxminddb==2.8.2
     # via -r requirements.txt
-pillow==12.1.1
+pillow==13.0.0
     # via
     #   -r requirements.txt
     #   cairosvg
