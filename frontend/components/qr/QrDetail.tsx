@@ -16,6 +16,7 @@ import { RulesCard } from "@/components/links/RulesCard";
 import { GenerateQrCard } from "@/components/links/GenerateQrCard";
 import { DynamicControls } from "./DynamicControls";
 import { KindBadge, StatusBadge } from "./QrBadges";
+import { LockedNotice } from "./LockedNotice";
 import { QrEditor } from "./QrEditor";
 import { StaticControls } from "./StaticControls";
 import { Celebration } from "./wizard/Celebration";
@@ -113,7 +114,8 @@ export function QrDetail({ id }: { id: number }) {
           onRestored={() => setVersion((v) => v + 1)}
         />
       )}
-      {qr.kind === "dynamic" && (
+      {qr.locked && <LockedNotice qr={qr} />}
+      {qr.kind === "dynamic" && !qr.locked && (
         <QrEditor
           key={qr.updated_at}
           initial={qr}

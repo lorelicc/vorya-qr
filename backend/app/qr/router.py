@@ -12,6 +12,7 @@ from ..auth.service import audit, rate_limit
 from ..core.database import get_session
 from ..core.errors import CodedError
 from ..core.security import now
+from ..limits import locked_qr_ids
 from ..models import Folder, LinkTag, QrCode, QrPage
 from ..quotas import reserve_slot
 from ..schemas.page import Page
@@ -136,9 +137,11 @@ def list_qr(
     tags = _tags_of(session, [qr.id for qr in items])
     counts = scan_counts(session, [qr.id for qr in items])
     sparks = sparklines(session, [qr.id for qr in items if qr.kind == "dynamic"])
+    locked = locked_qr_ids(session, ctx.workspace)
     out = []
     for qr in items:
         item = qr_out(qr, counts.get(qr.id, 0))
+        item.locked, item.locked_reason = qr.id in locked, locked.get(qr.id)
         item.spark = sparks.get(qr.id)
         item.tag_ids = tags.get(qr.id, [])
         out.append(item)
@@ -171,7 +174,9 @@ def create_qr(
 ):
     if not rate_limit(session, "qr-create", str(ctx.workspace.id), 120, 3600):
         raise HTTPException(429, "Troppi QR creati in poco tempo. Riprova più tardi.")
-    reserve_slot(session, ctx.workspace.id, kind_of(payload.qr_type, payload.dynamic)[0])
+    reserve_slot(
+        session, ctx.workspace.id, kind_of(payload.qr_type, payload.dynamic)[0], ctx.company.id
+    )
     qr = insert_qr(session, ctx, payload)
     audit(session, ctx.user, "qr.created", ctx.workspace.id, ctx.company.id, qr_id=qr.id)
     session.commit()
@@ -214,7 +219,10 @@ def get_qr(
     session: Session = Depends(get_session),
 ):
     qr = get_owned(session, ctx, qr_id)
-    return qr_out(qr, scan_counts(session, [qr.id]).get(qr.id, 0))
+    item = qr_out(qr, scan_counts(session, [qr.id]).get(qr.id, 0))
+    item.locked_reason = locked_qr_ids(session, ctx.workspace).get(qr.id)
+    item.locked = item.locked_reason is not None
+    return item
 
 
 @router.put("/{qr_id}", response_model=QrOut)
@@ -224,7 +232,7 @@ def update_qr(
     ctx: CompanyContext = Depends(owned_company),
     session: Session = Depends(get_session),
 ):
-    qr = get_owned(session, ctx, qr_id, lock=True)
+    qr = get_owned(session, ctx, qr_id, lock=True, edit=True)
     qr.name = payload.name
     for field in STYLE_FIELDS:
         setattr(qr, field, getattr(payload, field))
@@ -266,7 +274,7 @@ def duplicate_qr(
         page=Page.model_validate(page.document) if page else None,
         **{f: getattr(source, f) for f in STYLE_FIELDS},
     )  # fmt: skip
-    reserve_slot(session, ctx.workspace.id, source.kind)
+    reserve_slot(session, ctx.workspace.id, source.kind, ctx.company.id)
     qr = insert_qr(session, ctx, payload)
     qr.design = source.design
     audit(session, ctx.user, "qr.duplicated", ctx.workspace.id, ctx.company.id, qr_id=qr.id)

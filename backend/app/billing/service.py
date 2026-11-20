@@ -103,7 +103,6 @@ def apply_subscription(session: Session, sub: dict) -> str | None:
     if price:
         account.price_id, account.plan_id, account.cycle = price_id, price.plan_id, price.cycle
     at = now()
-    redirect_days = timedelta(days=int(settings["redirect_days"]))
     if status in LIVE:
         if price is None:
             log.error("Stripe price %s is not linked to a plan", price_id)
@@ -111,18 +110,15 @@ def apply_subscription(session: Session, sub: dict) -> str | None:
         workspace.plan_id, workspace.trial_ends_at = price.plan_id, None
         workspace.grant_until = None  # a paid subscription takes over from a gift
         workspace.billing_state, workspace.grace_until = "active", None
-        workspace.redirects_until, account.past_due_since = None, None
+        account.past_due_since = None
     elif status == "past_due":
         account.past_due_since = account.past_due_since or at
         grace = account.past_due_since + timedelta(days=int(settings["grace_days"]))
         workspace.billing_state, workspace.grace_until = "past_due", grace
-        workspace.redirects_until = grace + redirect_days
     else:  # canceled, unpaid, paused
         state = "canceled" if status == "canceled" else "unpaid"
-        if workspace.billing_state != state:
-            workspace.redirects_until = at + redirect_days
-            if state == "canceled":
-                enqueue_mail(session, workspace.id, f"canceled:{sub_id}", "canceled")
+        if workspace.billing_state != state and state == "canceled":
+            enqueue_mail(session, workspace.id, f"canceled:{sub_id}", "canceled")
         workspace.billing_state, workspace.grace_until = state, None
     session.flush()
     return workspace.billing_state

@@ -7,8 +7,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..core.errors import CodedError
-from ..models import Plan, QrCode, QrPage, ScanEvent, StoredFile
-from ..plans import PAGE_TYPES, STATIC_TYPES, require_type
+from ..models import QrCode, QrPage, ScanEvent, StoredFile
+from ..plans import PAGE_TYPES, STATIC_TYPES, plan_of, require_type
 from ..schemas.page import Page
 from ..schemas.qr import QrContent, QrCreate, QrOut, valid_url
 from .render import new_slug, root_link, short_link
@@ -71,7 +71,7 @@ def qr_out(qr: QrCode, scan_count: int = 0) -> QrOut:
     )  # fmt: skip
 
 
-def get_owned(session: Session, ctx, qr_id: int, lock=False) -> QrCode:
+def get_owned(session: Session, ctx, qr_id: int, lock=False, edit=False) -> QrCode:
     """qr -> company -> workspace chain check (ctx comes from owned_company)."""
     query = select(QrCode).where(
         QrCode.id == qr_id,
@@ -84,6 +84,10 @@ def get_owned(session: Session, ctx, qr_id: int, lock=False) -> QrCode:
     qr = session.scalar(query)
     if qr is None:
         raise HTTPException(404, "Codice QR non trovato.")
+    if edit:  # 0.5: above the plan limits an element is read-only (never switched off)
+        from ..limits import ensure_editable
+
+        ensure_editable(session, ctx.workspace, qr)
     return qr
 
 
@@ -195,7 +199,7 @@ def gate_design(session: Session, ctx, qr: QrCode, payload: QrContent) -> None:
 
 def insert_qr(session: Session, ctx, payload: QrCreate) -> QrCode:
     """Creates the QR (fresh unique slug for dynamic ones, retried on the rare collision)."""
-    require_type(session.get(Plan, ctx.workspace.plan_id), payload.qr_type)
+    require_type(plan_of(session, ctx.workspace), payload.qr_type)
     kind, destination = kind_of(payload.qr_type, payload.dynamic)
     if kind == "static" and not payload.has_qr:
         raise invalid("Un QR statico esiste solo come QR.", "has_qr")

@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 from .auth.deps import ClientContext, client_context
 from .core.config import get_settings
 from .core.database import get_session
-from .models import Plan
-from .plans import TYPE_LABELS, effective_types, features_of
+from .plans import TYPE_LABELS, effective_types, features_of, plan_of
 from .quotas import usage
 
 router = APIRouter(prefix="/api/account", tags=["account"])
@@ -15,7 +14,7 @@ router = APIRouter(prefix="/api/account", tags=["account"])
 def account_plan(
     ctx: ClientContext = Depends(client_context), session: Session = Depends(get_session)
 ):
-    plan = session.get(Plan, ctx.workspace.plan_id)
+    plan = plan_of(session, ctx.workspace)
     return {
         "plan": {"id": plan.id, "name": plan.name, "description": plan.description},
         "features": {

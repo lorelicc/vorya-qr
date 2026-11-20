@@ -9,9 +9,14 @@ export function KindBadge({ kind }: { kind: QrCode["kind"] }) {
   );
 }
 
-export function StatusBadge({ qr }: { qr: Pick<QrCode, "kind" | "status"> }) {
+export function StatusBadge({
+  qr,
+}: {
+  qr: Pick<QrCode, "kind" | "status"> & { locked?: boolean };
+}) {
   if (qr.kind === "static") return <Badge tone="success">Sempre attivo</Badge>;
   if (qr.status === "blocked") return <Badge tone="danger">Bloccato</Badge>;
+  if (qr.locked) return <Badge tone="warning">In sola lettura</Badge>;
   return qr.status === "active" ? (
     <Badge tone="success">Attivo</Badge>
   ) : (

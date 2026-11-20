@@ -21,6 +21,7 @@ const TONE = {
   canceled: "danger",
   unpaid: "danger",
   gift: "success",
+  free: "neutral",
 } as const;
 
 export function AccountPlan() {

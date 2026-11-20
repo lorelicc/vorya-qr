@@ -40,7 +40,6 @@ class PriceIn(BaseModel):
 class SettingsIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     grace_days: int = Field(ge=0, le=60)
-    redirect_days: int = Field(ge=0, le=365)
 
 
 def price_out(p: BillingPrice) -> dict:

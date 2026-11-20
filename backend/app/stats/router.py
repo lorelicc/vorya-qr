@@ -17,8 +17,8 @@ from sqlalchemy.orm import Session
 from ..auth.deps import CompanyContext, owned_company
 from ..core.csvsafe import safe_row
 from ..core.database import get_session
-from ..models import Plan, QrCode, ScanEvent
-from ..plans import features_of
+from ..models import QrCode, ScanEvent
+from ..plans import features_of, plan_of
 from ..qr.service import get_owned, require_dynamic
 from . import geo
 from .periods import resolve
@@ -30,7 +30,7 @@ RangeName = Literal["7d", "30d", "90d", "custom"]
 
 
 def _period(session: Session, ctx: CompanyContext, range_, start, end):
-    retention = features_of(session.get(Plan, ctx.workspace.plan_id)).stats_retention_days
+    retention = features_of(plan_of(session, ctx.workspace)).stats_retention_days
     return (*resolve(range_, start, end, retention), retention)
 
 

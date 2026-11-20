@@ -8,8 +8,8 @@ from sqlalchemy import String, func, select
 from sqlalchemy.orm import Session
 
 from ..core.errors import CodedError
-from ..models import LinkVersion, Plan, QrCode, QrPage, StoredFile, User
-from ..plans import features_of, locked, require_type
+from ..models import LinkVersion, QrCode, QrPage, StoredFile, User
+from ..plans import features_of, locked, plan_of, require_type
 from ..schemas.page import Page
 
 KEEP = 20
@@ -38,7 +38,7 @@ def record_version(session: Session, qr: QrCode, author, change: str = "content"
 
 
 def require_history(session: Session, workspace) -> None:
-    if not features_of(session.get(Plan, workspace.plan_id)).version_history:
+    if not features_of(plan_of(session, workspace)).version_history:
         raise locked("La cronologia delle versioni")
 
 
@@ -76,7 +76,7 @@ def check_type_change(session: Session, workspace, qr: QrCode, new_type: str) ->
     kind, destination = kind_of(new_type, True)
     if kind != "dynamic":
         raise CodedError(422, "Questo tipo esiste solo come QR statico.", "static_type_unavailable")
-    require_type(session.get(Plan, workspace.plan_id), new_type)
+    require_type(plan_of(session, workspace), new_type)
     return kind, destination
 
 

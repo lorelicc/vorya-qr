@@ -1,7 +1,14 @@
 import type { UsageItem as Usage } from "@/lib/types";
 
 export type Cycle = "monthly" | "yearly";
-export type BillingState = "trialing" | "active" | "past_due" | "canceled" | "unpaid" | "gift";
+export type BillingState =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "unpaid"
+  | "gift"
+  | "free";
 
 export type PlanPrices = Partial<Record<Cycle, { amount_cents: number; currency: string }>>;
 
@@ -64,9 +71,7 @@ export type BillingInfo = {
   trial_ends_at: string | null;
   grace_until: string | null;
   grant_until: string | null;
-  redirects_until: string | null;
   grace_days: number;
-  redirect_days: number;
   usage: Record<"dynamic" | "static" | "companies" | "storage", Usage>;
   profile: BillingProfile | null;
   online_payments: boolean;
@@ -80,6 +85,7 @@ export const STATE_LABEL: Record<BillingState, string> = {
   canceled: "Annullato",
   unpaid: "Non attivo",
   gift: "Omaggio",
+  free: "Free",
 };
 
 export const CYCLE_LABEL: Record<Cycle, string> = { monthly: "mese", yearly: "anno" };

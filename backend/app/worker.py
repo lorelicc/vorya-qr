@@ -106,7 +106,7 @@ def rotate_salts(session: Session) -> int:
 
 @job
 def stats_retention(session: Session) -> int:
-    """Deletes scans and clicks older than the retention of each workspace's plan."""
+    """Deletes scans and clicks older than max(plan retention, 12 months)."""
     from datetime import timedelta
 
     from .models import PageEvent, Plan, Workspace
@@ -117,7 +117,9 @@ def stats_retention(session: Session) -> int:
         days = features_of(plan).stats_retention_days
         if days is None:
             continue
-        cutoff = now() - timedelta(days=days + 1)  # one day of slack for time zones
+        # 0.5: older than the plan window = hidden, not deleted; data is kept for at least 12
+        # months so that an upgrade finds it again.
+        cutoff = now() - timedelta(days=max(days, 365) + 1)  # one day of slack for time zones
         qr_ids = (
             select(QrCode.id)
             .join(Workspace, Workspace.id == QrCode.workspace_id)
@@ -229,7 +231,6 @@ def _billing_jobs() -> None:
 
     for fn in (
         jobs.expire_grants,
-        jobs.trial_redirect_windows,
         jobs.trial_reminders,
         jobs.send_billing_mail,
         jobs.reconcile_subscriptions,

@@ -8,8 +8,8 @@ from sqlalchemy.orm import Session
 from ..auth.deps import CompanyContext, owned_company
 from ..core.database import get_session
 from ..core.errors import QuotaExceeded
-from ..models import Company, Plan, StylePreset
-from ..plans import features_of
+from ..models import Company, StylePreset
+from ..plans import features_of, plan_of
 from ..quotas import lock_workspace
 from ..schemas.design import QrDesign
 from .design_service import apply_design, logo_png
@@ -58,7 +58,7 @@ def list_styles(
 def create_style(payload: PresetIn, ctx: CompanyContext = Depends(owned_company),
                  session: Session = Depends(get_session)):  # fmt: skip
     workspace = lock_workspace(session, ctx.workspace.id)
-    limit = features_of(session.get(Plan, workspace.plan_id)).max_style_presets
+    limit = features_of(plan_of(session, workspace)).max_style_presets
     used = session.scalar(
         select(func.count())
         .select_from(StylePreset)
@@ -100,7 +100,7 @@ def apply_style(qr_id: int, payload: ApplyStyle, ctx: CompanyContext = Depends(o
     from .design_service import render, require_scannable
     from .service import encoded_content_of
 
-    qr = get_owned(session, ctx, qr_id, lock=True)
+    qr = get_owned(session, ctx, qr_id, lock=True, edit=True)
     preset = owned_preset(session, ctx, payload.style_id)
     design = QrDesign.model_validate(preset.design)
     content = encoded_content_of(qr)

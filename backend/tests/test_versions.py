@@ -79,7 +79,7 @@ def test_type_must_be_included_in_the_plan(client, db):
     signup(client)
     link = client.post(links(client), json={"target_url": "https://example.com"},
                        headers=csrf(client)).json()  # fmt: skip
-    db.execute(update(Workspace).values(plan_id="start", trial_ends_at=None))
+    db.execute(update(Workspace).values(plan_id="free", trial_ends_at=None))
     db.commit()
     r = update_qr(client, link["id"], qr_type="pdf", page=None)
     assert r.status_code == 403 and r.json()["code"] == "feature_locked"
@@ -88,7 +88,7 @@ def test_type_must_be_included_in_the_plan(client, db):
 def test_history_is_a_plan_feature(client, db):
     signup(client)
     qr = create(client).json()
-    db.execute(update(Workspace).values(plan_id="start", trial_ends_at=None))
+    db.execute(update(Workspace).values(plan_id="free", trial_ends_at=None))
     db.commit()
     assert client.get(f"{qrs(client)}/{qr['id']}/versions").json()["code"] == "feature_locked"
 

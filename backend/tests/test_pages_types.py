@@ -139,7 +139,7 @@ def test_pdf_page_and_update_via_put(client):
 
 def test_plan_gates_types_and_branding(client, db):
     signup(client)
-    db.execute(update(Workspace).values(plan_id="start", trial_ends_at=None))
+    db.execute(update(Workspace).values(plan_id="free", trial_ends_at=None))
     db.commit()
     pdf = upload(client, pdf_bytes(1), "pdf").json()["id"]
     locked = create_page_qr(client, "pdf", {"template": "pdf", "blocks": [

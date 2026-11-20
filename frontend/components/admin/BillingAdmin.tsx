@@ -21,7 +21,7 @@ type Status = {
   mode: "test" | "live";
   live_allowed: boolean;
   webhook_configured: boolean;
-  settings: { grace_days: number; redirect_days: number };
+  settings: { grace_days: number };
 };
 type Price = {
   id: number;
@@ -53,7 +53,7 @@ export function BillingAdmin({ canWrite }: { canWrite: boolean }) {
   const [plans, setPlans] = useState<PlanRow[]>([]);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ plan_id: "pro", cycle: "monthly", stripe_price_id: "" });
-  const [days, setDays] = useState({ grace_days: "7", redirect_days: "30" });
+  const [days, setDays] = useState({ grace_days: "7" });
 
   const [tick, setTick] = useState(0);
   const load = useCallback(() => setTick((n) => n + 1), []);
@@ -71,7 +71,6 @@ export function BillingAdmin({ canWrite }: { canWrite: boolean }) {
         setPlans(pl);
         setDays({
           grace_days: String(s.settings.grace_days),
-          redirect_days: String(s.settings.redirect_days),
         });
       })
       .catch((err) => setError(errorMessage(err)));
@@ -94,7 +93,6 @@ export function BillingAdmin({ canWrite }: { canWrite: boolean }) {
     try {
       await api("admin/billing/settings", "PUT", {
         grace_days: Number(days.grace_days),
-        redirect_days: Number(days.redirect_days),
       });
       toast.show("Impostazioni salvate.");
     } catch (err) {
@@ -248,14 +246,7 @@ export function BillingAdmin({ canWrite }: { canWrite: boolean }) {
                 value={days.grace_days}
                 onChange={(e) => setDays({ ...days, grace_days: e.target.value })}
               />
-              <Input
-                label="Giorni di redirect dopo scadenza o annullamento"
-                type="number"
-                min={0}
-                max={365}
-                value={days.redirect_days}
-                onChange={(e) => setDays({ ...days, redirect_days: e.target.value })}
-              />
+
               <Button type="submit" variant="secondary">
                 Salva
               </Button>

@@ -18,8 +18,8 @@ from sqlalchemy.orm import Session
 
 from ..core.errors import CodedError
 from ..core.security import HASH_SLOTS, now, ph
-from ..models import LinkAlias, Plan, PlatformSetting, QrCode, ReservedWord
-from ..plans import features_of, locked
+from ..models import LinkAlias, PlatformSetting, QrCode, ReservedWord
+from ..plans import features_of, locked, plan_of
 from ..schemas.qr import valid_url
 from .reserved import BLOCKED_WORDS, ROUTE_WORDS
 
@@ -64,7 +64,7 @@ def alias_problem(session: Session, alias: str, workspace_id: int) -> str | None
 
 
 def add_alias(session: Session, workspace, link: QrCode, raw: str) -> LinkAlias:
-    features = features_of(session.get(Plan, workspace.plan_id))
+    features = features_of(plan_of(session, workspace))
     if not features.custom_back_half:
         raise locked("Il back-half personalizzato")
     if link.kind != "dynamic":
@@ -130,7 +130,7 @@ class LinkRules(BaseModel):
 
 
 def apply_rules(session: Session, workspace, link: QrCode, rules: LinkRules) -> None:
-    if not features_of(session.get(Plan, workspace.plan_id)).link_rules:
+    if not features_of(plan_of(session, workspace)).link_rules:
         raise locked("Scadenza, password e programmazione")
     if link.kind != "dynamic":
         raise field_error(

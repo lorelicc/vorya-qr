@@ -13,8 +13,8 @@ from ..core.config import get_settings
 from ..core.database import get_session
 from ..core.errors import CodedError
 from ..core.security import now
-from ..models import LinkAlias, LinkVersion, Plan, StoredFile, UtmTemplate
-from ..plans import features_of, locked
+from ..models import LinkAlias, LinkVersion, StoredFile, UtmTemplate
+from ..plans import features_of, locked, plan_of
 from ..qr.render import root_link
 from ..qr.service import get_owned, insert_qr, qr_out
 from ..quotas import reserve_slot
@@ -47,7 +47,9 @@ def quick_create(
         raise HTTPException(429, "Troppi link creati in poco tempo. Riprova più tardi.")
     url = payload.target_url.strip()
     name = " ".join(payload.name.split()) or (urlsplit(url).hostname or "Link")[:120]
-    reserve_slot(session, ctx.workspace.id, "dynamic")  # links and dynamic QR share the quota
+    reserve_slot(
+        session, ctx.workspace.id, "dynamic", ctx.company.id
+    )  # links and dynamic QR share the quota
     body = QrCreate(name=name, qr_type="website", dynamic=True, has_qr=False, target_url=url)
     link = insert_qr(session, ctx, body)
     audit(session, ctx.user, "link.created", ctx.workspace.id, ctx.company.id, qr_id=link.id)
@@ -100,7 +102,7 @@ def create_alias(
     qr_id: int, body: AliasIn, ctx: CompanyContext = Depends(owned_company),
     session: Session = Depends(get_session),
 ):  # fmt: skip
-    link = get_owned(session, ctx, qr_id, lock=True)
+    link = get_owned(session, ctx, qr_id, lock=True, edit=True)
     row = add_alias(session, ctx.workspace, link, body.alias)
     audit(session, ctx.user, "link.alias_added", ctx.workspace.id, ctx.company.id,
           qr_id=link.id, alias=row.alias)  # fmt: skip
@@ -138,7 +140,7 @@ def put_rules(
     qr_id: int, body: LinkRules, ctx: CompanyContext = Depends(owned_company),
     session: Session = Depends(get_session),
 ):  # fmt: skip
-    link = get_owned(session, ctx, qr_id, lock=True)
+    link = get_owned(session, ctx, qr_id, lock=True, edit=True)
     from ..abuse.checks import check_destinations
 
     check_destinations(session, link.fallback_url, [e.url for e in body.schedule],
@@ -182,7 +184,7 @@ def list_utm(ctx: CompanyContext = Depends(owned_company), session: Session = De
 @utm.post("", status_code=201)
 def create_utm(body: UtmIn, ctx: CompanyContext = Depends(owned_company),
                session: Session = Depends(get_session)):  # fmt: skip
-    if not features_of(session.get(Plan, ctx.workspace.plan_id)).utm_templates:
+    if not features_of(plan_of(session, ctx.workspace)).utm_templates:
         raise locked("I modelli UTM")
     count = session.scalar(select(func.count()).where(UtmTemplate.company_id == ctx.company.id))
     if count >= 100:
@@ -284,7 +286,7 @@ def restore_version(
     session: Session = Depends(get_session),
 ):  # fmt: skip
     require_history(session, ctx.workspace)
-    link = get_owned(session, ctx, qr_id, lock=True)
+    link = get_owned(session, ctx, qr_id, lock=True, edit=True)
     version = session.scalar(
         select(LinkVersion).where(LinkVersion.qr_code_id == link.id, LinkVersion.number == number)
     )
@@ -328,7 +330,7 @@ def patch_menu_item(
     from ..models import QrPage
     from ..schemas.page import Page
 
-    link = get_owned(session, ctx, qr_id, lock=True)
+    link = get_owned(session, ctx, qr_id, lock=True, edit=True)
     row = session.get(QrPage, link.id)
     if link.qr_type != "menu" or row is None:
         raise HTTPException(404, "Questo QR non è un menu.")

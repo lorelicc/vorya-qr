@@ -10,7 +10,6 @@ from ..core.security import now
 from ..models import BillingAccount, Workspace
 from . import gateway, service
 from .mail import send_pending
-from .settings import billing_settings
 
 
 def trial_reminders(session: Session) -> int:
@@ -33,22 +32,6 @@ def trial_reminders(session: Session) -> int:
         if w.trial_ends_at <= at + timedelta(days=1):
             service.enqueue_mail(session, w.id, f"trial0:{w.id}:{day}", "trial_0d")
     return count
-
-
-def trial_redirect_windows(session: Session) -> int:
-    """Expired trials keep their redirects for N days after the trial end, then go neutral."""
-    days = timedelta(days=int(billing_settings(session)["redirect_days"]))
-    at = now()
-    result = session.execute(
-        update(Workspace)
-        .where(
-            Workspace.trial_ends_at.is_not(None),
-            Workspace.trial_ends_at <= at,
-            Workspace.redirects_until.is_(None),
-        )
-        .values(redirects_until=Workspace.trial_ends_at + days)
-    )
-    return result.rowcount
 
 
 def send_billing_mail(session: Session) -> int:

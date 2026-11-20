@@ -91,7 +91,7 @@ def test_menu_is_created_served_publicly_with_both_languages(client):
 
 def test_menu_type_is_a_plan_feature(client, db):
     signup(client)
-    db.execute(update(Workspace).values(plan_id="start", trial_ends_at=None))
+    db.execute(update(Workspace).values(plan_id="free", trial_ends_at=None))
     db.commit()
     locked = create_page_qr(client, "menu", MENU)
     assert locked.status_code == 403 and locked.json()["code"] == "feature_locked"

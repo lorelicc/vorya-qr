@@ -14,12 +14,13 @@ export function BillingBanner({ info }: { info: BillingInfo }) {
         </span>
       </div>
     );
-  if ((info.state === "canceled" || info.state === "unpaid") && info.redirects_until)
+  if (info.state === "free" || info.state === "canceled" || info.state === "unpaid")
     return (
-      <div className={styles.banner} data-tone="danger" role="status">
+      <div className={styles.banner} data-tone="info" role="status">
         <span>
-          L’abbonamento non è attivo. I tuoi QR e link continuano a funzionare fino al{" "}
-          {formatDate(info.redirects_until)}. Scegli un piano per riattivare tutto subito.
+          Sei sul piano <strong>Free</strong>: tutti i tuoi QR e link restano attivi, senza
+          pubblicità. Oltre i limiti del Free i codici sono in sola lettura finché non scegli un
+          piano.
         </span>
       </div>
     );

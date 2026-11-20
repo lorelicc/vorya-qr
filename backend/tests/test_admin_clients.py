@@ -82,7 +82,7 @@ def test_gift_unblocks_an_expired_account_then_ends_like_a_trial(client, admin, 
     signup(client)
     db.execute(update(Workspace).values(trial_ends_at=now() - timedelta(days=1)))
     db.commit()
-    assert client.get(qrs(client)).status_code == 423
+    assert client.get("/api/account/plan").json()["plan"]["id"] == "free"  # ended trial = Free
     done = grant(admin, plan_id="plus", months=2, note="Cliente storico")
     assert done.status_code == 201
     data = done.json()
@@ -92,15 +92,15 @@ def test_gift_unblocks_an_expired_account_then_ends_like_a_trial(client, admin, 
     assert client.get("/api/account/billing").json()["plan"]["id"] == "plus"
     assert admin.get("/api/admin/clients?state=gift").json()[0]["id"] == 1
 
-    # The gift runs out: same rules as an ended trial.
+    # The gift runs out: the account lands on Free, nothing is blocked.
     db.execute(update(Workspace).values(grant_until=now() - timedelta(minutes=1)))
     db.commit()
-    assert client.get(qrs(client)).status_code == 423
+    assert client.get("/api/account/plan").json()["plan"]["id"] == "free"
     assert jobs.expire_grants(db) == 1
     db.commit()
     w = db.scalars(select(Workspace)).one()
     assert w.grant_until is None and w.trial_ends_at is not None
-    assert client.get(qrs(client)).status_code == 423
+    assert client.get(qrs(client)).status_code == 200
 
 
 def test_gifts_stack_and_the_customer_gets_one_email(client, admin, db):
@@ -137,7 +137,7 @@ def test_revoking_a_gift_ends_it_now(client, admin, db):
     assert revoked.status_code == 200
     data = revoked.json()
     assert data["grant_until"] is None and data["grants"][0]["revoked_at"]
-    assert client.get(qrs(client)).status_code == 423
+    assert client.get("/api/account/plan").json()["plan"]["id"] == "free"
     again = admin.post(f"/api/admin/clients/1/grants/{gid}/revoke", headers=csrf(admin))
     assert again.status_code == 409
 

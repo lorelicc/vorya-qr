@@ -47,16 +47,22 @@ def test_plan_downgrade_keeps_qr_and_reports_over_limit(client, db):
     for _ in range(4):
         create(client)
     workspace = db.scalar(select(Workspace))
-    workspace.plan_id, workspace.trial_ends_at = "start", None  # Start: 3 dynamic
+    workspace.plan_id, workspace.trial_ends_at = "free", None  # Free: 2 dynamic per company
     db.commit()
-    assert len(client.get(f"{qrs(client)}").json()) == 4
+    items = client.get(f"{qrs(client)}").json()
+    assert len(items) == 4  # nothing is deleted or switched off
     plan = client.get("/api/account/plan").json()
     assert plan["usage"]["dynamic"] == {
         "used": 4,
-        "limit": 3,
+        "limit": 2,
         "over_limit": True,
         "can_create": False,
+        "per_company": True,
     }
+    # The oldest fit, the newest are read-only (and still served).
+    by_id = sorted(items, key=lambda q: q["id"])
+    assert [q["locked"] for q in by_id] == [False, False, True, True]
+    assert by_id[2]["locked_reason"] == "quota"
     response = create(client)
     assert response.status_code == 409 and "più QR dinamici" in response.json()["detail"]
 
@@ -66,18 +72,16 @@ def expire_trial(db):
     db.commit()
 
 
-def test_trial_expired_blocks_user_api_but_not_login(client, db):
+def test_trial_expired_moves_to_free_and_blocks_nothing(client, db):
     signup(client)
+    qr = create(client).json()
     expire_trial(db)
-    response = client.get(f"{qrs(client)}")
-    assert response.status_code == 423
-    assert response.json() == {
-        "detail": "Il periodo di prova è terminato: scegli un piano per continuare.",
-        "code": "trial_expired",
-    }
+    assert client.get(f"{qrs(client)}").status_code == 200  # the dashboard is never blocked
     me = client.get("/api/auth/me").json()
-    assert me["workspace"]["access"] == "trial_expired"
-    assert me["support_email"] == "supporto@example.com"
+    assert me["workspace"]["access"] == "free"
+    plan = client.get("/api/account/plan").json()
+    assert plan["plan"]["id"] == "free" and plan["access"] == "free"
+    assert client.get(f"/r/{qr['slug']}", follow_redirects=False).status_code == 302
 
 
 def test_suspended_blocks_user_api(client, db):

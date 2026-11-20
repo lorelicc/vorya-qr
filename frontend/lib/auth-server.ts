@@ -33,8 +33,7 @@ export async function requireCustomer(): Promise<Me> {
   if (!me) redirect("/login");
   if (me.role !== "company_admin") redirect("/admin");
   const access = me.workspace?.access;
-  if (access === "trial_expired" || access === "suspended" || access === "payment_blocked")
-    redirect("/suspended");
+  if (access === "suspended") redirect("/suspended");
   return me;
 }
 
