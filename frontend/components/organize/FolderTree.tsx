@@ -1,5 +1,6 @@
 "use client";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { useDndFx } from "./dndFx";
 import { Folder, FolderInput, FolderPlus, Inbox, Layers, MoreHorizontal } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { NoFolder } from "@/components/illustrations";
@@ -34,6 +35,7 @@ function Row({
   children?: React.ReactNode;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
+  const fx = useDndFx();
   const drag = useDraggable({ id: draggableId ?? `unused-${id}`, disabled: !draggableId });
   return (
     <li
@@ -44,6 +46,8 @@ function Row({
       className={styles.folderRow}
       data-active={active || undefined}
       data-over={isOver || undefined}
+      data-armed={(fx.dragging && !isOver) || undefined}
+      data-received={fx.received === id || undefined}
       data-dragging={drag.isDragging || undefined}
       style={{ paddingLeft: 8 + depth * 18 }}
     >

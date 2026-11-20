@@ -207,3 +207,39 @@
   background: var(--color-danger-soft);
   color: var(--color-danger);
 }
+
+/* Drag and drop: the card can be grabbed anywhere; its place stays as a dashed slot. */
+.card[data-draggable] {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.card[data-dragging] {
+  opacity: 0.4;
+  transform: scale(0.96);
+  outline: 2px dashed var(--vorya-green-dark);
+  outline-offset: -2px;
+  box-shadow: none;
+  transition:
+    opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.card[data-leaving] {
+  animation: cardLeave 260ms cubic-bezier(0.5, 0, 0.8, 0.4) both;
+  pointer-events: none;
+}
+
+@keyframes cardLeave {
+  to {
+    opacity: 0;
+    transform: scale(0.7) translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card[data-dragging] {
+    transition: none;
+  }
+}

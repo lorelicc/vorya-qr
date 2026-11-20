@@ -72,3 +72,39 @@ test("cartelle, tag, selezione multipla, ZIP e ricerca globale", async ({ page }
   await page.getByRole("dialog").getByRole("searchbox").fill("promo");
   await expect(page.getByRole("dialog").getByRole("link").first()).toBeVisible();
 });
+
+test("trascinare un QR (da qualsiasi punto) su una cartella: anteprima, cartelle evidenziate, spostamento", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await signUp(page, uniqueEmail("dnd"), "Cantina Drag");
+  for (const [index, url] of ["https://example.com/uno", "https://example.com/due"].entries()) {
+    await page.getByLabel("URL da accorciare").fill(url);
+    await page.getByRole("button", { name: "Crea link" }).click();
+    await expect(page.getByRole("checkbox")).toHaveCount(index + 1);
+  }
+  await page.getByRole("button", { name: "Nuova cartella" }).click();
+  await page.getByRole("dialog").getByLabel("Nome").fill("Archivio");
+  await page.getByRole("button", { name: "Salva" }).click();
+  const folder = page.getByRole("button", { name: /Archivio/ }).first();
+  await expect(folder).toBeVisible();
+
+  // Grab the row by its NAME (not the grip) and drag it onto the folder.
+  const item = page.locator("[data-draggable]").first();
+  await item.evaluate((el) => el.scrollIntoView({ block: "center" }));
+  const from = (await item.boundingBox())!;
+  await page.mouse.move(from.x + 90, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(from.x + 140, from.y + from.height / 2 + 20, { steps: 6 });
+  await expect(item).toHaveAttribute("data-dragging", "true");
+  await expect(page.getByText("Rilascia su una cartella")).toBeVisible();
+  await page.waitForTimeout(250); // the page may auto-scroll near an edge: measure the folder now
+  const to = (await folder.boundingBox())!;
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 14 });
+  await expect(page.locator('li[data-over="true"]').first()).toBeVisible();
+  await page.mouse.up();
+  await expect(page.getByText("Elemento spostato.")).toBeVisible();
+  await expect(folder).toContainText("1"); // the folder counted what it received
+  await folder.click();
+  await expect(page.getByRole("checkbox")).toHaveCount(1);
+});

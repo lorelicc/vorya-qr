@@ -30,6 +30,7 @@ import {
   type Filters,
 } from "./QrFilters";
 import { QrTable } from "./QrTable";
+import { QrThumb } from "./QrThumb";
 import { UsageMeter } from "./UsageMeter";
 import { useQrActions } from "./useQrActions";
 import styles from "./Dashboard.module.css";
@@ -167,6 +168,8 @@ export function Dashboard() {
             items={items ?? []}
             selected={selected}
             folderName={(id) => org.folders.find((f) => f.id === id)?.name ?? "Cartella"}
+            thumb={(qr) => <QrThumb qr={qr} src={actions.image(qr, "svg")} size={64} />}
+            currentFolder={filters.folder}
             onDropLinks={moveLinks}
             onDropFolder={moveFolder}
           >

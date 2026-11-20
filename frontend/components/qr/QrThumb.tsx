@@ -18,6 +18,7 @@ export function QrThumb({ qr, src, size = 56 }: { qr: QrCode; src: string; size?
       width={size}
       height={size}
       loading="lazy"
+      draggable={false}
       alt=""
     />
   );

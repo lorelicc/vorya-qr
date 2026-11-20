@@ -3,7 +3,9 @@ import { Table, type Column } from "@/components/ui";
 import { formatNumber } from "@/lib/format";
 import type { QrCode } from "@/lib/types";
 import { StatusBadge } from "./QrBadges";
-import { DragHandle } from "@/components/organize/DragHandle";
+import { useDraggable } from "@dnd-kit/core";
+import { GripContext, pickPointer, DragGrip, useGrip } from "@/components/organize/DragHandle";
+import { useDndFx } from "@/components/organize/dndFx";
 import { useSelection } from "@/components/organize/SelectionContext";
 import { TagDots } from "@/components/organize/TagsBar";
 import { QrQuickActions } from "./QrQuickActions";
@@ -30,7 +32,9 @@ const columnsFor = (base: string, actions: QrActions, withTools: boolean): Colum
       <div className={styles.nameCell}>
         <QrThumb qr={qr} src={actions.image(qr, "svg")} size={40} />
         <div className={styles.name}>
-          <Link href={`${base}/qr/${qr.id}`}>{qr.name}</Link>
+          <Link href={`${base}/qr/${qr.id}`} draggable={false}>
+            {qr.name}
+          </Link>
           <span>{typeLabel(qr)}</span>
           <TagsCell qr={qr} />
         </div>
@@ -62,6 +66,7 @@ const columnsFor = (base: string, actions: QrActions, withTools: boolean): Colum
 
 function SelectCell({ qr }: { qr: QrCode }) {
   const selection = useSelection();
+  const grip = useGrip();
   if (!selection) return null;
   return (
     <span className={styles.selectCell}>
@@ -73,7 +78,7 @@ function SelectCell({ qr }: { qr: QrCode }) {
         />
         <span className="visually-hidden">Seleziona {qr.name}</span>
       </label>
-      <DragHandle id={qr.id} label={qr.name} />
+      {grip}
     </span>
   );
 }
@@ -90,6 +95,36 @@ const selectColumn = (): Column<QrCode> => ({
   render: (qr) => <SelectCell qr={qr} />,
 });
 
+/** A table row that can be dragged anywhere (pointer), with the grip as keyboard handle. */
+function DraggableRow({ row, children }: { row: QrCode; children: React.ReactNode }) {
+  const selection = useSelection();
+  const { setNodeRef, setActivatorNodeRef, attributes, listeners, isDragging } = useDraggable({
+    id: `qr-${row.id}`,
+  });
+  const grip = (
+    <DragGrip
+      activatorRef={setActivatorNodeRef}
+      attributes={attributes}
+      listeners={listeners}
+      label={row.name}
+    />
+  );
+  const { leaving } = useDndFx();
+  return (
+    <GripContext.Provider value={grip}>
+      <tr
+        ref={setNodeRef}
+        data-dragging={isDragging || undefined}
+        data-leaving={leaving.has(row.id) || undefined}
+        data-draggable={selection ? "" : undefined}
+        {...(selection ? pickPointer(listeners) : {})}
+      >
+        {children}
+      </tr>
+    </GripContext.Provider>
+  );
+}
+
 export function QrTable({
   rows,
   base,
@@ -105,6 +140,7 @@ export function QrTable({
       columns={columnsFor(base, actions, true)}
       rows={rows}
       rowKey={(qr) => qr.id}
+      rowComponent={DraggableRow}
     />
   );
 }
