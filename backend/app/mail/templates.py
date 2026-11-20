@@ -40,6 +40,25 @@ def send_verification(email: str, name: str, token: str) -> None:
     )
 
 
+def send_invitation(email: str, name: str, workspace: str, token: str, days: int) -> None:
+    url = f"{get_settings().public_base_url}/verify-email#{token}"
+    send_email(
+        email,
+        "Il tuo account Vorya QR è pronto · scegli la password",
+        f"Ciao {name},\nabbiamo creato per te l'account «{workspace}» su Vorya QR. Per attivarlo "
+        f"scegli la tua password: {url}\nIl link scade tra {days} giorni.",
+        _layout(
+            "Il tuo account è pronto",
+            f"Ciao {html.escape(name)}, abbiamo creato per te l'account "
+            f"«{html.escape(workspace)}» su Vorya QR. Scegli la password per attivarlo: "
+            f"il link scade tra {days} giorni.",
+            url,
+            "Scegli la password",
+        ),
+        kind="invite",
+    )
+
+
 def send_password_reset(email: str, name: str, token: str) -> None:
     url = f"{get_settings().public_base_url}/reset-password#{token}"
     send_email(

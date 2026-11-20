@@ -7,6 +7,7 @@ from . import __version__
 from .abuse.router import admin as abuse_admin_router
 from .abuse.router import public as abuse_public_router
 from .account import router as account_router
+from .admin.client_manage import router as client_manage_router
 from .admin.clients import router as clients_router
 from .admin.metrics_router import router as metrics_router
 from .admin.router import router as admin_router
@@ -88,6 +89,7 @@ def create_app() -> FastAPI:
         page_events_router,
         admin_router,
         clients_router,
+        client_manage_router,
         metrics_router,
         abuse_admin_router,
         abuse_public_router,

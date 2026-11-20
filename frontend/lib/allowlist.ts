@@ -104,6 +104,13 @@ const rules: Rule[] = [
   // Admin: customers first (0.4)
   r("GET", "admin/clients"),
   r("GET", `admin/clients/${ID}`),
+  r("POST", "admin/clients"),
+  r("PATCH", `admin/clients/${ID}`),
+  r("DELETE", `admin/clients/${ID}`),
+  r("POST", `admin/clients/${ID}/(resend-invite|reset-password|revoke-sessions|restore)`),
+  r("POST", `admin/clients/${ID}/companies/${ID}/(delete|restore)`),
+  r("GET", `admin/clients/${ID}/(qr-codes|audit)`),
+  r("POST", `admin/clients/${ID}/qr-codes/${ID}/(block|unblock|delete)`),
   r("POST", `admin/clients/${ID}/grants`),
   r("POST", `admin/clients/${ID}/grants/${ID}/revoke`),
   // Admin

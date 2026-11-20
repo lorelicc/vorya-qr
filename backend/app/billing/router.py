@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from ..access import workspace_access
+from ..access import OFF_STATUSES, workspace_access
 from ..auth.deps import Auth, owned_workspace, require_roles
 from ..core.config import get_settings
 from ..core.database import get_session
@@ -221,7 +221,7 @@ def checkout(
     session: Session = Depends(get_session),
 ):
     auth, workspace = ctx
-    if workspace.status == "suspended":
+    if workspace.status in OFF_STATUSES:
         raise HTTPException(423, "Account sospeso. Contattaci per maggiori informazioni.")
     if workspace.billing_state in ("active", "past_due"):
         raise HTTPException(409, "Hai già un abbonamento: usa «Cambia piano».")

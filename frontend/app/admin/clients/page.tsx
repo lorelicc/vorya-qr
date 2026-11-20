@@ -5,6 +5,6 @@ import { requireAdmin } from "@/lib/auth-server";
 export const metadata: Metadata = { title: "Clienti" };
 
 export default async function Page() {
-  await requireAdmin();
-  return <ClientList />;
+  const me = await requireAdmin();
+  return <ClientList canWrite={me.role === "super_admin"} />;
 }

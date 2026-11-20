@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Index, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..core.database import Base
@@ -25,6 +25,7 @@ class Plan(Base):
 
 class Workspace(Base):
     __tablename__ = "workspaces"
+    __table_args__ = (Index("ix_workspaces_deleted", "deleted_at"),)
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(160))
     owner_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
@@ -39,6 +40,10 @@ class Workspace(Base):
     # Admin gift (0.4): while in the future the plan is active without payment.
     grant_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     attribution: Mapped[dict | None] = mapped_column(JSON)  # 0.5 where the signup came from
+    # 0.6: a client deleted from the admin is archived 30 days (restorable), then purged.
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    purge_after: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    deleted_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

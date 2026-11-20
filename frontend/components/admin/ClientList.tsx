@@ -1,8 +1,18 @@
 "use client";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Badge, EmptyState, Select, Table, fieldStyles, type Column } from "@/components/ui";
+import {
+  Badge,
+  Button,
+  EmptyState,
+  Select,
+  Table,
+  fieldStyles,
+  type Column,
+} from "@/components/ui";
+import { NewClientDialog } from "./NewClientDialog";
 import { NoResults } from "@/components/illustrations";
 import { api, errorMessage } from "@/lib/api";
 import { CLIENT_STATE, type ClientRow } from "@/lib/admin-clients";
@@ -35,6 +45,10 @@ const columns: Column<ClientRow>[] = [
           {CLIENT_STATE[c.billing_state].label}
         </Badge>
         {c.status === "suspended" && <Badge tone="danger">Sospeso</Badge>}
+        {c.invited && !c.deleted_at && <Badge tone="warning">Invitato</Badge>}
+        {c.deleted_at && (
+          <span>cancellazione dati il {formatDate(c.purge_after ?? c.deleted_at)}</span>
+        )}
         {c.grant_until && c.billing_state === "gift" && (
           <span>fino al {formatDate(c.grant_until)}</span>
         )}
@@ -61,7 +75,10 @@ const columns: Column<ClientRow>[] = [
 
 const STATES = ["trialing", "expired", "active", "past_due", "canceled", "gift", "suspended"];
 
-export function ClientList() {
+export function ClientList({ canWrite }: { canWrite: boolean }) {
+  const router = useRouter();
+  const [adding, setAdding] = useState(false);
+  const [archived, setArchived] = useState(false);
   const [search, setSearch] = useState("");
   const term = useDebouncedValue(search);
   const [plan, setPlan] = useState("");
@@ -74,11 +91,11 @@ export function ClientList() {
     api<Plan[]>("admin/plans").then(setPlans, () => undefined);
   }, []);
   useEffect(() => {
-    const query = new URLSearchParams({ search: term, plan, state });
+    const query = new URLSearchParams({ search: term, plan, state, archived: String(archived) });
     api<ClientRow[]>(`admin/clients?${query}`)
       .then(setRows)
       .catch((err) => setError(errorMessage(err)));
-  }, [term, plan, state]);
+  }, [term, plan, state, archived]);
 
   return (
     <div className="page">
@@ -87,6 +104,11 @@ export function ClientList() {
           <h1>Clienti</h1>
           <p>Chi usa Vorya QR: piano, stato, dati di fatturazione e aziende collegate.</p>
         </div>
+        {canWrite && (
+          <Button icon={<Plus size={16} />} onClick={() => setAdding(true)}>
+            Nuovo cliente
+          </Button>
+        )}
       </div>
       <div className={styles.filters}>
         <label className={styles.search}>
@@ -116,6 +138,14 @@ export function ClientList() {
             </option>
           ))}
         </Select>
+        <Select
+          label="Elenco"
+          value={archived ? "archived" : "active"}
+          onChange={(e) => setArchived(e.target.value === "archived")}
+        >
+          <option value="active">Clienti attivi</option>
+          <option value="archived">Eliminati (archivio 30 giorni)</option>
+        </Select>
       </div>
       {error && <p role="alert">{error}</p>}
       {rows && rows.length === 0 ? (
@@ -127,6 +157,15 @@ export function ClientList() {
       ) : (
         <Table columns={columns} rows={rows ?? []} rowKey={(c) => c.id} caption="Clienti" />
       )}
+      <NewClientDialog
+        open={adding}
+        plans={plans}
+        onClose={() => setAdding(false)}
+        onCreated={(created) => {
+          setAdding(false);
+          router.push(`/admin/clients/${created.id}`);
+        }}
+      />
     </div>
   );
 }

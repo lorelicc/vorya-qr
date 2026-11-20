@@ -58,3 +58,55 @@ test("admin: clienti → dettaglio con aziende → regala 3 mesi → il cliente 
   await expect(page.getByText("Hai un piano in omaggio")).toBeVisible();
   await adminCtx.close();
 });
+
+test("admin: nuovo cliente con invito → modifica → elimina (archivio) → ripristina", async ({
+  browser,
+}) => {
+  test.setTimeout(90_000);
+  seedAdmin();
+  const ctx = await browser.newContext({ reducedMotion: "reduce" });
+  const admin = await ctx.newPage();
+  await admin.goto("/login");
+  await admin.getByLabel("Email").fill(ADMIN);
+  await admin.getByLabel("Password").fill(PASSWORD);
+  await admin.getByRole("button", { name: "Accedi" }).click();
+  await admin.waitForURL(/\/admin\/clients/);
+
+  // Add a client: it exists at once as "Invitato" and the invitation mail is on its way.
+  const email = uniqueEmail("invitato");
+  await admin.getByRole("button", { name: "Nuovo cliente" }).click();
+  const dialog = admin.getByRole("dialog");
+  await dialog.getByLabel("Nome e cognome").fill("Luca Bianchi");
+  await dialog.getByLabel("Email").fill(email);
+  await dialog.getByLabel("Nome dell’attività").fill("Osteria Invito");
+  await dialog.getByRole("button", { name: "Crea e invita" }).click();
+  await admin.waitForURL(/\/admin\/clients\/\d+$/);
+  await expect(admin.getByRole("heading", { name: "Osteria Invito" })).toBeVisible();
+  await expect(admin.getByText("Invitato", { exact: true }).first()).toBeVisible();
+  await expect(admin.getByRole("button", { name: "Reinvia l’invito" })).toBeVisible();
+  await expect(admin.getByText("Cliente creato e invitato")).toBeVisible(); // audit trail
+
+  // Edit the name.
+  await admin.getByRole("button", { name: "Modifica dati" }).click();
+  await admin.getByRole("dialog").getByLabel("Nome dell’attività").fill("Osteria Invito Due");
+  await admin.getByRole("dialog").getByRole("button", { name: "Salva" }).click();
+  await expect(admin.getByRole("heading", { name: "Osteria Invito Due" })).toBeVisible();
+
+  // Delete = archive: needs the name typed, then it leaves the list and shows in the archive.
+  await admin.getByRole("button", { name: "Elimina cliente" }).click();
+  const confirm = admin.getByRole("dialog");
+  await expect(confirm.getByRole("button", { name: "Elimina", exact: true })).toBeDisabled();
+  await confirm.getByLabel(/Per confermare scrivi/).fill("Osteria Invito Due");
+  await confirm.getByRole("button", { name: "Elimina", exact: true }).click();
+  await admin.waitForURL(/\/admin\/clients$/);
+  await admin.getByPlaceholder(/Cerca per nome/).fill(email);
+  await expect(admin.getByText("Nessun cliente trovato")).toBeVisible();
+  await admin.getByLabel("Elenco").selectOption("archived");
+  await admin.getByRole("link", { name: "Osteria Invito Due" }).click();
+  await expect(admin.getByText("Cliente archiviato", { exact: true }).first()).toBeVisible();
+
+  // Restore.
+  await admin.getByRole("button", { name: "Ripristina cliente" }).click();
+  await expect(admin.getByRole("button", { name: "Modifica dati" })).toBeVisible();
+  await ctx.close();
+});

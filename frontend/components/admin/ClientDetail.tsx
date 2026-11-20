@@ -1,6 +1,7 @@
 "use client";
 import { ArrowLeft, Gift } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UsageMeter } from "@/components/qr/UsageMeter";
 import { Badge, Button, Card, Modal, Select, useToast } from "@/components/ui";
@@ -9,6 +10,9 @@ import { CLIENT_STATE, type ClientDetailData } from "@/lib/admin-clients";
 import { formatMoney } from "@/lib/billing";
 import { formatDate } from "@/lib/format";
 import type { Plan } from "@/lib/types";
+import { ClientActions } from "./ClientActions";
+import { ClientAuditCard } from "./ClientAuditCard";
+import { ClientQrCard } from "./ClientQrCard";
 import { CompaniesCard } from "./CompaniesCard";
 import { GrantDialog } from "./GrantDialog";
 import { GrantHistory } from "./GrantHistory";
@@ -23,6 +27,7 @@ const Fact = ({ label, children }: { label: string; children: React.ReactNode })
 
 export function ClientDetail({ id, canWrite }: { id: number; canWrite: boolean }) {
   const toast = useToast();
+  const router = useRouter();
   const [data, setData] = useState<ClientDetailData | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [planId, setPlanId] = useState("");
@@ -86,8 +91,21 @@ export function ClientDetail({ id, canWrite }: { id: number; canWrite: boolean }
         <div>
           <Badge tone={state.tone}>{state.label}</Badge>{" "}
           {suspended && <Badge tone="danger">Sospeso</Badge>}
+          {data.invited && !data.deleted_at && <Badge tone="warning">Invitato</Badge>}
+          {data.deleted_at && <Badge tone="danger">Archiviato</Badge>}
         </div>
       </div>
+
+      {canWrite && (
+        <ClientActions
+          client={data}
+          onChanged={(next) => {
+            setData(next);
+            setTick((n) => n + 1);
+          }}
+          onArchived={() => router.push("/admin/clients")}
+        />
+      )}
 
       <div className="grid-2">
         <Card
@@ -199,7 +217,17 @@ export function ClientDetail({ id, canWrite }: { id: number; canWrite: boolean }
         </div>
       </Card>
 
-      <CompaniesCard companies={data.companies} />
+      <CompaniesCard
+        clientId={id}
+        companies={data.companies}
+        canWrite={canWrite}
+        archived={data.deleted_at !== null}
+        onChanged={() => setTick((n) => n + 1)}
+      />
+
+      <ClientQrCard clientId={id} canWrite={canWrite && data.deleted_at === null} />
+
+      <ClientAuditCard clientId={id} refresh={tick} />
 
       {data.payments.length > 0 && (
         <Card title="Ultimi pagamenti">

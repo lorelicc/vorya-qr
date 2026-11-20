@@ -11,6 +11,7 @@ from fastapi import APIRouter, Query, Request
 from fastapi.responses import Response, StreamingResponse
 from sqlalchemy import select
 
+from ..access import OFF_STATUSES
 from ..core.database import session_factory
 from ..models import Company, StoredFile, Workspace
 from .backends import get_storage
@@ -58,7 +59,7 @@ def serve(file_id: str, variant: str, request: Request, download: bool = Query(d
             .join(Workspace, Workspace.id == Company.workspace_id)
             .where(
                 StoredFile.id == file_id, StoredFile.deleted_at.is_(None),
-                Company.deleted_at.is_(None), Workspace.status != "suspended",
+                Company.deleted_at.is_(None), Workspace.status.not_in(OFF_STATUSES),
             )
         ).one_or_none()  # fmt: skip
     info = row.variants.get(variant) if row else None

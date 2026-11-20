@@ -67,6 +67,7 @@ def list_clients(
     search: str = Query(default="", max_length=120),
     plan: str = Query(default="", max_length=24),
     state: str = Query(default="", max_length=16),
+    archived: bool = False,
     _: Auth = Depends(admin_reader),
     session: Session = Depends(get_session),
 ):
@@ -89,6 +90,10 @@ def list_clients(
         )
     if plan:
         query = query.where(Workspace.plan_id == plan)
+    # Deleted clients are archived: hidden unless asked for.
+    query = query.where(
+        Workspace.deleted_at.is_not(None) if archived else Workspace.deleted_at.is_(None)
+    )
     rows = session.execute(query.order_by(Workspace.created_at.desc()).limit(500)).all()
     ids = [w.id for w, _, _ in rows]
     companies = dict(
@@ -128,6 +133,9 @@ def list_clients(
                 "companies": companies.get(w.id, 0),
                 "codes": codes.get(w.id, 0),
                 "created_at": w.created_at,
+                "invited": owner.email_verified_at is None,
+                "deleted_at": w.deleted_at,
+                "purge_after": w.purge_after,
             }
         )
     return out
@@ -189,6 +197,9 @@ def client_detail(session: Session, workspace_id: int) -> dict:
         "grant_until": w.grant_until,
         "suspended_at": w.suspended_at,
         "created_at": w.created_at,
+        "invited": owner.email_verified_at is None,
+        "deleted_at": w.deleted_at,
+        "purge_after": w.purge_after,
         "usage": usage(session, w),
         "profile": {f: getattr(profile, f) for f in PROFILE_FIELDS} if profile else None,
         "subscription": {

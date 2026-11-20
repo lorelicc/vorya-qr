@@ -77,8 +77,9 @@ class Registration(Base):
         ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
     )
     workspace_name: Mapped[str] = mapped_column(String(160))
-    terms_accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    terms_accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     attribution: Mapped[dict | None] = mapped_column(JSON)  # 0.5 signup source
     handoff: Mapped[dict | None] = mapped_column(JSON)  # 0.5 static QR to turn dynamic
+    invite: Mapped[dict | None] = mapped_column(JSON)  # 0.6 chosen by the admin who invited
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

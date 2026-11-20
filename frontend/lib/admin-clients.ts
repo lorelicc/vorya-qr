@@ -28,6 +28,9 @@ export type ClientRow = {
   companies: number;
   codes: number;
   created_at: string;
+  invited: boolean;
+  deleted_at: string | null;
+  purge_after: string | null;
 };
 
 export type Grant = {
@@ -52,6 +55,9 @@ export type ClientDetailData = {
   trial_ends_at: string | null;
   grant_until: string | null;
   created_at: string;
+  invited: boolean;
+  deleted_at: string | null;
+  purge_after: string | null;
   usage: Record<string, UsageItem>;
   profile: {
     legal_name: string; vat: string; tax_code: string; address: string; zip: string;
@@ -92,4 +98,48 @@ export const CLIENT_STATE: Record<ClientState, { label: string; tone: BadgeTone 
   canceled: { label: "Annullato", tone: "danger" },
   unpaid: { label: "Non pagato", tone: "danger" },
   gift: { label: "Omaggio", tone: "success" },
+};
+
+export type AdminQr = {
+  id: number;
+  name: string;
+  slug: string;
+  kind: "static" | "dynamic";
+  qr_type: string;
+  status: "active" | "paused" | "blocked" | "deleted";
+  blocked_reason: string | null;
+  company_id: number;
+  company: string;
+  scan_total: number;
+  created_at: string;
+};
+
+export type AuditEntry = {
+  id: number;
+  action: string;
+  actor: string | null;
+  details: Record<string, unknown>;
+  created_at: string;
+};
+
+export const AUDIT_LABEL: Record<string, string> = {
+  "admin.client_created": "Cliente creato e invitato",
+  "admin.client_edited": "Dati modificati",
+  "admin.client_archived": "Cliente archiviato",
+  "admin.client_restored": "Cliente ripristinato",
+  "client.purged": "Dati personali cancellati",
+  "admin.invite_resent": "Invito reinviato",
+  "admin.password_reset_sent": "Email di reset password inviata",
+  "admin.sessions_revoked": "Sessioni chiuse",
+  "admin.company_deleted": "Azienda eliminata",
+  "admin.company_restored": "Azienda ripristinata",
+  "admin.qr_block": "QR bloccato",
+  "admin.qr_unblock": "QR sbloccato",
+  "admin.qr_delete": "QR eliminato",
+  "admin.plan_changed": "Piano cambiato",
+  "admin.grant_created": "Omaggio assegnato",
+  "admin.grant_revoked": "Omaggio revocato",
+  "admin.workspace_suspend": "Account sospeso",
+  "admin.workspace_reactivate": "Account riattivato",
+  "billing.plan_changed": "Piano cambiato",
 };

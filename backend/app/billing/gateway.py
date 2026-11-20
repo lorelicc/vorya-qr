@@ -73,6 +73,10 @@ def update_subscription(subscription_id: str, **params) -> dict:
     return _call(client().subscriptions.update, subscription_id, params=params)
 
 
+def cancel_subscription(subscription_id: str) -> dict:
+    return _call(client().subscriptions.cancel, subscription_id)
+
+
 def preview_invoice(**params) -> dict:
     return _call(client().invoices.create_preview, params=params)
 

@@ -68,6 +68,42 @@ def purge_companies(session: Session) -> int:
 
 
 @job
+def purge_workspaces(session: Session) -> int:
+    """30 days after an admin archived a client its personal data is anonymised. Payments stay
+    (fiscal records); QR rows already stay as tombstones (purge_companies), so addresses are never
+    reassigned."""
+    from .models import BillingProfile, Registration, ReportRecipient, User, Workspace
+
+    rows = list(
+        session.scalars(
+            select(Workspace)
+            .where(Workspace.status == "archived", Workspace.purge_after <= now())
+            .with_for_update(skip_locked=True)
+            .limit(50)
+        )
+    )
+    for workspace in rows:
+        owner = session.get(User, workspace.owner_user_id)
+        company_ids = select(Company.id).where(Company.workspace_id == workspace.id)
+        session.execute(delete(ReportRecipient).where(ReportRecipient.company_id.in_(company_ids)))
+        session.execute(delete(BillingProfile).where(BillingProfile.workspace_id == workspace.id))
+        for table in (AuthSession, PasswordReset, Registration):
+            session.execute(delete(table).where(table.user_id == owner.id))
+        owner.email = f"deleted-{owner.id}@vorya.invalid"
+        owner.display_name, owner.password_hash, owner.mail_prefs = "Cliente eliminato", None, None
+        owner.is_active, owner.deleted_at, owner.last_company_id = False, now(), None
+        workspace.name, workspace.status, workspace.attribution = (
+            "Cliente eliminato",
+            "purged",
+            None,
+        )
+        from .auth.service import audit
+
+        audit(session, None, "client.purged", workspace.id)
+    return len(rows)
+
+
+@job
 def purge_files(session: Session) -> int:
     """Deletes the bytes of files removed 30+ days ago (and of QR codes deleted 30+ days ago)."""
     from .models import StoredFile

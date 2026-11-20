@@ -16,7 +16,15 @@ from ..core.config import get_settings
 from ..core.database import get_session
 from ..core.security import digest, hash_password, now
 from ..mail.templates import send_verification
-from ..models import PasswordReset, Plan, PlatformSetting, Registration, User, Workspace
+from ..models import (
+    Company,
+    PasswordReset,
+    Plan,
+    PlatformSetting,
+    Registration,
+    User,
+    Workspace,
+)
 from ..schemas.auth import Me, RegisterInput, VerifyInput
 from .router import build_me
 from .service import (
@@ -106,25 +114,40 @@ def verify_email(
     registration = session.get(Registration, row.user_id, with_for_update=True)
     if user is None or registration is None or user.email_verified_at or user.deleted_at:
         raise invalid
-    trial_days, trial_plan = trial_settings(session)
-    if session.get(Plan, trial_plan) is None:
-        raise HTTPException(503, "Piano di prova non disponibile.")
+    workspace = session.scalar(
+        select(Workspace).where(Workspace.owner_user_id == user.id).with_for_update()
+    )
+    if workspace is not None and workspace.deleted_at:
+        raise invalid
     # The password is chosen here, by whoever holds the emailed link.
     user.password_hash = hash_password(payload.password)
     user.is_active = True
     user.email_verified_at = now()
     registration.verified_at = now()
-    workspace = Workspace(
-        name=registration.workspace_name,
-        owner_user_id=user.id,
-        plan_id=trial_plan,
-        status="active",
-        trial_ends_at=now() + timedelta(days=trial_days),
-    )
-    session.add(workspace)
-    session.flush()
-    workspace.attribution = registration.attribution
-    company = create_default_company(session, workspace.id, workspace.name)
+    if workspace is None:
+        trial_days, trial_plan = trial_settings(session)
+        if session.get(Plan, trial_plan) is None:
+            raise HTTPException(503, "Piano di prova non disponibile.")
+        workspace = Workspace(
+            name=registration.workspace_name,
+            owner_user_id=user.id,
+            plan_id=trial_plan,
+            status="active",
+            trial_ends_at=now() + timedelta(days=trial_days),
+        )
+        session.add(workspace)
+        session.flush()
+        workspace.attribution = registration.attribution
+        company = create_default_company(session, workspace.id, workspace.name)
+    else:
+        # Invited by an admin: the account exists since then; the trial starts now, if any.
+        days = int((registration.invite or {}).get("trial_days") or 0)
+        workspace.trial_ends_at = now() + timedelta(days=days) if days > 0 else None
+        company = session.scalar(
+            select(Company)
+            .where(Company.workspace_id == workspace.id, Company.deleted_at.is_(None))
+            .order_by(Company.id)
+        ) or create_default_company(session, workspace.id, workspace.name)
     user.last_company_id = company.id
     if registration.handoff:
         from .handoff import create_from_handoff

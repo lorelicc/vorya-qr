@@ -21,6 +21,7 @@ ignore = ["B008"]
 "app/reports/*.py" = ["E501"]  # HTML email templates
 "app/metrics.py" = ["E501"]  # metric tables
 "tests/*.py" = ["E501"]  # long fixtures and assertions read better on one line
+"tests/test_admin_manage.py" = ["E501", "F811"]  # fixtures imported from test_admin_clients
 "migrations/versions/*.py" = ["E501"]  # one column per line reads better
 
 [tool.pytest.ini_options]

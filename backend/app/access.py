@@ -18,12 +18,14 @@ from .models import Workspace
 from .plans import FREE_PLAN, effective_plan_id
 
 ACTIVE, TRIAL, FREE, SUSPENDED, PAST_DUE = "active", "trial", "free", "suspended", "past_due"
+# Statuses that switch everything off: abuse suspension and deleted (archived/purged) clients.
+OFF_STATUSES = ("suspended", "archived", "purged")
 BLOCKED_STATES = (SUSPENDED,)
 
 
 def workspace_access(workspace: Workspace, at: datetime | None = None) -> str:
     at = at or now()
-    if workspace.status == "suspended":
+    if workspace.status in OFF_STATUSES:
         return SUSPENDED
     if workspace.billing_state == "past_due" and effective_plan_id(workspace, at) != FREE_PLAN:
         return PAST_DUE
@@ -47,4 +49,4 @@ def ensure_usable(workspace: Workspace) -> str:
 
 def redirects_enabled(workspace_status: str) -> bool:
     """Workspace-level switch: only a manual suspension. Plan limits act per code (limits.py)."""
-    return workspace_status != "suspended"
+    return workspace_status not in OFF_STATUSES
