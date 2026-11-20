@@ -1,6 +1,6 @@
 {
   "name": "vorya-qr-frontend",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -28,6 +28,7 @@
     "@mdx-js/loader": "3.1.1",
     "@mdx-js/react": "3.1.1",
     "@next/mdx": "16.4.5",
+    "@sentry/browser": "10.0.0",
     "lucide-react": "0.577.0",
     "motion": "12.23.24",
     "next": "16.4.5",

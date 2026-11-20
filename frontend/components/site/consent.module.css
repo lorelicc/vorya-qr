@@ -1,0 +1,28 @@
+.banner {
+  position: fixed;
+  left: var(--space-4);
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 60;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xl);
+  font-size: var(--fs-sm);
+}
+.banner p {
+  margin: 0;
+  flex: 1 1 320px;
+}
+.banner div {
+  display: flex;
+  gap: var(--space-2);
+}

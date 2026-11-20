@@ -1,4 +1,6 @@
 import { AttributionCapture } from "@/components/site/AttributionCapture";
+import { ConsentBanner } from "@/components/site/ConsentBanner";
+import { SiteScripts } from "@/components/site/SiteScripts";
 import { JsonLd } from "@/components/site/JsonLd";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -33,6 +35,8 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
         ]}
       />
       <AttributionCapture />
+      <SiteScripts />
+      <ConsentBanner />
       <SiteHeader groups={navGroups()} />
       <main id="main">{children}</main>
       <SiteFooter />

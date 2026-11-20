@@ -4,6 +4,7 @@ import { useState, useSyncExternalStore, type FormEvent } from "react";
 import { Button, Input } from "@/components/ui";
 import { api, errorMessage, fieldErrors, type FieldErrors } from "@/lib/api";
 import { clearHandoff, readAttribution, readHandoff } from "@/lib/site/attribution";
+import { adsConversion } from "@/components/site/ConsentBanner";
 import { trackEvent } from "@/lib/site/public-api";
 import { Notice } from "./Notice";
 import styles from "./forms.module.css";
@@ -38,6 +39,7 @@ export function RegisterForm() {
         handoff: readHandoff() ?? undefined,
       });
       trackEvent("registrazione-inviata");
+      adsConversion();
       clearHandoff();
       setSent(result.message);
     } catch (err) {
