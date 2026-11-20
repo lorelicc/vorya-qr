@@ -5,7 +5,7 @@ import type { Template } from "@/lib/page-types";
 
 export type QrTypeKey =
   | "website" | "vcard" | "pdf" | "music" | "link_in_bio" | "gallery" | "business" | "menu"
-  | "wifi" | "text" | "email" | "sms" | "phone" | "whatsapp"; // prettier-ignore
+  | "wifi" | "text" | "email" | "sms" | "phone" | "whatsapp" | "vcard_static"; // prettier-ignore
 
 export type TypeMeta = {
   key: QrTypeKey;
@@ -24,6 +24,7 @@ export const TYPES: TypeMeta[] = [
   { key: "gallery", label: "Galleria", description: "Una raccolta di immagini a tutto schermo.", icon: Images, group: "page" },
   { key: "business", label: "Pagina attività", description: "Descrizione, orari, indirizzo, contatti e social.", icon: Store, group: "page" },
   { key: "menu", label: "Menu / Carta dei vini", description: "Sezioni, prezzi, allergeni, vini e una seconda lingua. Si aggiorna dal telefono.", icon: UtensilsCrossed, group: "page" },
+  { key: "vcard_static", label: "vCard statica", description: "Il biglietto da visita scritto nel QR: gratis e per sempre, ma non modificabile.", icon: Contact, group: "static" },
   { key: "wifi", label: "Wi-Fi", description: "Connette alla rete senza digitare la password.", icon: Wifi, group: "static" },
   { key: "text", label: "Testo", description: "Un messaggio di testo leggibile offline.", icon: Type, group: "static" },
   { key: "email", label: "Email", description: "Apre un’email già indirizzata e compilata.", icon: AtSign, group: "static" },

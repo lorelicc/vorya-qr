@@ -1,3 +1,4 @@
+import { AttributionCapture } from "@/components/site/AttributionCapture";
 import { JsonLd } from "@/components/site/JsonLd";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -31,6 +32,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           },
         ]}
       />
+      <AttributionCapture />
       <SiteHeader groups={navGroups()} />
       <main id="main">{children}</main>
       <SiteFooter />

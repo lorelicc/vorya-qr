@@ -12,6 +12,17 @@ export const STATIC_DEFAULTS: Partial<Record<QrTypeKey, Data>> = {
   sms: { number: "", message: "" },
   phone: { number: "" },
   whatsapp: { number: "", message: "" },
+  vcard_static: {
+    first_name: "",
+    last_name: "",
+    organization: "",
+    job_title: "",
+    phone: "",
+    email: "",
+    website: "",
+    street: "",
+    city: "",
+  },
 };
 
 /** Guided forms for static QR codes (data encoded inside the QR). */
@@ -85,6 +96,60 @@ export function StaticForm({ type, value, onChange, errors }: Props) {
       )}
       {(type === "sms" || type === "whatsapp") && (
         <TextArea label="Messaggio" value={v("message")} onChange={set("message")} max={500} />
+      )}
+      {type === "vcard_static" && (
+        <>
+          <div className="grid-2">
+            <Input
+              label="Nome"
+              value={v("first_name")}
+              onChange={set("first_name")}
+              maxLength={60}
+              autoComplete="off"
+            />
+            <Input
+              label="Cognome"
+              value={v("last_name")}
+              onChange={set("last_name")}
+              maxLength={60}
+              autoComplete="off"
+            />
+            <Input
+              label="Azienda"
+              value={v("organization")}
+              onChange={set("organization")}
+              maxLength={80}
+            />
+            <Input
+              label="Ruolo"
+              value={v("job_title")}
+              onChange={set("job_title")}
+              maxLength={60}
+            />
+            <Input
+              label="Telefono"
+              type="tel"
+              inputMode="tel"
+              value={v("phone")}
+              onChange={set("phone")}
+            />
+            <Input label="Email" type="email" value={v("email")} onChange={set("email")} />
+          </div>
+          <Input
+            label="Sito web"
+            inputMode="url"
+            value={v("website")}
+            onChange={set("website")}
+            placeholder="www.esempio.it"
+          />
+          <div className="grid-2">
+            <Input label="Indirizzo" value={v("street")} onChange={set("street")} maxLength={100} />
+            <Input label="Città" value={v("city")} onChange={set("city")} maxLength={60} />
+          </div>
+          <p className={fieldStyles.hint}>
+            Più dati inserisci, più il QR diventa fitto e difficile da leggere.
+          </p>
+        </>
       )}
       {errors && <p className={fieldStyles.error}>{errors}</p>}
     </div>

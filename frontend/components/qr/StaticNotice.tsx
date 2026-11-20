@@ -8,7 +8,18 @@ import styles from "./StaticNotice.module.css";
  * Red notice for static QR codes. The live region stays mounted so screen readers announce it
  * when it appears; the text carries the meaning (never only the colour).
  */
-export function StaticNotice({ show, onUseDynamic }: { show: boolean; onUseDynamic?: () => void }) {
+export type StaticCta = { text: string; label: string; onClick: () => void; event?: string };
+
+export function StaticNotice({
+  show,
+  onUseDynamic,
+  cta,
+}: {
+  show: boolean;
+  onUseDynamic?: () => void;
+  /** Free generator: the notice itself becomes the invitation to create the dynamic version. */
+  cta?: StaticCta;
+}) {
   return (
     <div role="status" aria-live="polite" className={styles.region}>
       {show && (
@@ -26,6 +37,16 @@ export function StaticNotice({ show, onUseDynamic }: { show: boolean; onUseDynam
               stampato o condiviso <strong>NON potrà più essere modificato</strong> e non potrai
               vederne le statistiche.
             </p>
+            {cta && (
+              <>
+                <p>
+                  <strong>{cta.text}</strong>
+                </p>
+                <Button onClick={cta.onClick} data-umami-event={cta.event}>
+                  {cta.label}
+                </Button>
+              </>
+            )}
             {onUseDynamic && (
               <Button variant="secondary" onClick={onUseDynamic}>
                 Usa la versione dinamica

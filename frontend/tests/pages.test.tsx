@@ -97,7 +97,7 @@ describe("PageRenderer", () => {
 describe("type forms", () => {
   it("shows locked types with the plan message", () => {
     render(<TypePicker value={null} allowed={["website", "vcard"]} onChange={vi.fn()} />);
-    expect(screen.getByRole("radio", { name: /vCard/ })).toBeEnabled();
+    expect(screen.getByRole("radio", { name: /vCard(?! statica)/ })).toBeEnabled();
     expect(screen.getByRole("radio", { name: /PDF/ })).toBeDisabled();
     expect(screen.getAllByText("Disponibile nel piano Pro.").length).toBeGreaterThan(0);
   });

@@ -79,6 +79,9 @@ const rules: Rule[] = [
   r("GET", "company-transfers"),
   r("POST", "company-transfers/by-token"),
   r("POST", `company-transfers/${ID}/(accept|decline|cancel)`),
+  // Free public generator and site counters (no session)
+  r("POST", "public/generator/(preview|download|track)"),
+  r("GET", "public/site/counters"),
   // Billing (the webhook is signature-verified by the backend; Stripe cannot send cookies)
   r("POST", "public/stripe-webhook"),
   r("GET", "public/plans"),
