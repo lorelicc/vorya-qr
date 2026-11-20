@@ -30,7 +30,9 @@ test("pagina prezzi coerente con la tabella dei piani (nessun prezzo nel codice)
   }
   // The comparison table has one column per plan and the guarantee is visible.
   await expect(page.getByRole("columnheader")).toHaveCount(data.plans.length + 1);
-  await expect(page.getByRole("heading", { name: /Cosa succede se smetti di pagare/ })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /Cosa succede se smetti di pagare/ }),
+  ).toBeVisible();
   // Yearly toggle: the numbers change to the yearly prices of the table.
   const yearly = data.plans.find((p: { prices: { yearly?: unknown } }) => p.prices.yearly);
   if (yearly) {
@@ -47,9 +49,7 @@ test.describe("navigazione del sito da mobile", () => {
 
   test("menu, landing dei tipi, soluzioni e footer", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "non smettono mai di funzionare",
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Stampa il QR una volta");
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth,
     );
@@ -80,12 +80,45 @@ test.describe("navigazione del sito da mobile", () => {
   });
 });
 
+test("striscia promo, piano in evidenza, interruttore annuale, menu famiglia e FAQ", async ({
+  page,
+  request,
+}) => {
+  const offer = await (await request.get("/api/public/site/offer")).json();
+  await page.goto("/prezzi");
+  const strip = page.getByRole("complementary", { name: "Offerta" });
+  await expect(strip).toContainText(String(offer.trial.days));
+  await expect(strip).toContainText(offer.trial.plan_name);
+  const featured = page.getByRole("region", {
+    name: new RegExp(`Piano ${offer.featured_plan}`, "i"),
+  });
+  await expect(featured).toContainText(offer.featured_label);
+  const plans = await (await request.get("/api/public/plans")).json();
+  if (plans.plans.some((p: { prices: { yearly?: unknown } }) => p.prices.yearly)) {
+    await expect(page.getByText(offer.yearly_label)).toBeVisible();
+    await page.getByRole("radio", { name: /Annuale/ }).click();
+    await expect(page.getByRole("radio", { name: /Annuale/ })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+  }
+
+  await page.getByRole("button", { name: "Le app della famiglia Vorya" }).click();
+  await expect(page.getByRole("link", { name: /Vorya Sign/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Tutte le app Vorya/ })).toBeVisible();
+
+  await page.goto("/faq");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Risposte chiare");
+  await page.getByText("Salvate gli indirizzi IP di chi scansiona?").click();
+  await expect(page.getByText("Nelle statistiche vedi scansioni")).toBeVisible();
+});
+
 test("robots, sitemap e metadati SEO", async ({ request, page }) => {
   const robots = await (await request.get("/robots.txt")).text();
   expect(robots).toContain("Sitemap:");
   expect(robots).toContain("Disallow: /app/");
   const sitemap = await (await request.get("/sitemap.xml")).text();
-  for (const path of ["/prezzi", "/genera", "/qr-code/menu", "/soluzioni/cantine"])
+  for (const path of ["/prezzi", "/faq", "/genera", "/qr-code/menu", "/soluzioni/cantine"])
     expect(sitemap).toContain(path);
   expect(sitemap).not.toContain("/guide/qr-statico-o-dinamico"); // drafts stay out
   await page.goto("/prezzi");

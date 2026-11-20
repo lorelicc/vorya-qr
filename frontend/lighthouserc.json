@@ -7,7 +7,9 @@
         "http://127.0.0.1:3100/funzionalita",
         "http://127.0.0.1:3100/qr-code/menu",
         "http://127.0.0.1:3100/link-brevi",
-        "http://127.0.0.1:3100/soluzioni/ristoranti"
+        "http://127.0.0.1:3100/soluzioni/ristoranti",
+        "http://127.0.0.1:3100/faq",
+        "http://127.0.0.1:3100/qr-code/vcard"
       ],
       "numberOfRuns": 1,
       "settings": {
@@ -17,11 +19,29 @@
     },
     "assert": {
       "assertions": {
-        "categories:performance": ["error", { "minScore": 0.9 }],
-        "categories:seo": ["error", { "minScore": 1 }],
-        "categories:accessibility": ["error", { "minScore": 0.95 }]
+        "categories:performance": [
+          "error",
+          {
+            "minScore": 0.9
+          }
+        ],
+        "categories:seo": [
+          "error",
+          {
+            "minScore": 1
+          }
+        ],
+        "categories:accessibility": [
+          "error",
+          {
+            "minScore": 0.95
+          }
+        ]
       }
     },
-    "upload": { "target": "filesystem", "outputDir": ".lighthouseci" }
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
+    }
   }
 }

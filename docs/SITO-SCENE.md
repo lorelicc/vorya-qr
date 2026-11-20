@@ -39,3 +39,12 @@ prezzi · FAQ (menta) · invito finale (verde scuro). Testi in `content/site/hom
 
 `Section` accetta i toni `soft | mint | forest | sun | lilac | peach`; anche le landing interne alternano i colori.
 Il mega-menu mostra una riga di descrizione sotto ogni voce di Prodotto e Soluzioni.
+
+## Aggiornamento 0.6
+
+Scene aggiunte: `PhoneScene` (parametrica: 15 tipi di QR e 3 settori, contenuti in `scenes/specs.ts`),
+`PagesScene` (editor a blocchi), `CompaniesScene`, `ImportScene`, `FaqScene`, `PricingScene`, `PlanScene`
+(cosa succede se smetti di pagare, sostituisce la vecchia scena della garanzia). `HeroScene` e `LinkScene` usano
+contenuti neutri (catalogo, negozio) per non concentrare tutto sul menu. `scenes/for.tsx` decide quale scena
+illustra quale pagina. La home alterna sezioni a colori netti (`Section tone`: `soft|mint|forest|sun|lilac|peach|indigo|lime`).
+

@@ -52,3 +52,15 @@ report/onboarding con doppio opt-in), termini di servizio, informativa cookie se
 ## 6. Da verificare a mano su dispositivi
 
 Vedi `docs/VALIDATION.md` (sezione 0.5): iPhone/desktop, rendering email in Gmail e Apple Mail.
+
+## 7. Aggiunte della 0.6
+
+- **Regola Free** (solo i QR che rientrano nel piano restano attivi): testi riscritti in `faq.json`, `home.json`,
+  `messages.json`, `solutions.json`, `types.json`, nella guida «QR statico o dinamico», in `/prezzi`, `/chi-siamo`,
+  `/link-brevi` e nell'app. Verificare che descrivano esattamente la politica che si vuole applicare ai clienti
+  esistenti (vedi `docs/V06.md`, attenzione al deploy).
+- **FAQ nuove** (`faq.json`: `qr`, `privacy`): formati scaricabili, QR eliminati, indirizzi IP, pubblicità.
+- **Link a Vorya Sign** in `vorya-apps.json`: indirizzo da confermare.
+- **Striscia promo**: il testo predefinito segue la prova reale; qualunque offerta («7 giorni di Plus») va
+  impostata davvero in Admin → Sito, non solo scritta.
+
