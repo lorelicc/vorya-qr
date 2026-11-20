@@ -60,6 +60,7 @@ export default async function PricingPage() {
         art="pricing"
       />
       <Section>
+        <h2 className="visually-hidden">Confronta i piani</h2>
         {data ? (
           <PricingCards plans={data.plans} labels={data.type_labels} />
         ) : (

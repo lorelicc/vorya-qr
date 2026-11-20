@@ -11,6 +11,10 @@
   font-size: var(--fs-sm);
   color: var(--color-text-secondary);
 }
+.crumbs a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 .hero {
   padding: var(--space-8) 0 var(--space-10);
   background: linear-gradient(180deg, var(--color-canvas) 0%, #fff 100%);

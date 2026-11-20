@@ -23,6 +23,7 @@ export default function FeaturesIndex() {
         art="pages"
       />
       <Section>
+        <h2 className="visually-hidden">Tutte le funzionalità</h2>
         <Cards>
           {FEATURES.map((f, i) => (
             <Card
