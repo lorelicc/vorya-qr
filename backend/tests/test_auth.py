@@ -18,7 +18,7 @@ from tests.conftest import (
 
 def test_health(client):
     body = client.get("/health").json()
-    assert body == {"status": "ok", "database": "connected", "version": "0.4.0"}
+    assert body == {"status": "ok", "database": "connected", "version": "0.5.0"}
 
 
 def test_openapi_disabled_outside_development(client):

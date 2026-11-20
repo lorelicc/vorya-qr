@@ -60,6 +60,10 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_LIVE_ALLOWED: ${STRIPE_LIVE_ALLOWED:-false}
+      # 0.5: errors (GlitchTip DSN), detailed health token, JSON logs.
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      HEALTH_TOKEN: ${HEALTH_TOKEN:-}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
     networks: [data]
     depends_on:
       db:
@@ -109,6 +113,14 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+      args:
+        # 0.5: inlined at BUILD time (client bundle + CSP). Changing them needs a rebuild.
+        NEXT_PUBLIC_UMAMI_URL: ${NEXT_PUBLIC_UMAMI_URL:-}
+        NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+        NEXT_PUBLIC_ADS_ENABLED: ${NEXT_PUBLIC_ADS_ENABLED:-false}
+        NEXT_PUBLIC_GOOGLE_ADS_ID: ${NEXT_PUBLIC_GOOGLE_ADS_ID:-}
+        NEXT_PUBLIC_GOOGLE_ADS_CONVERSION: ${NEXT_PUBLIC_GOOGLE_ADS_CONVERSION:-}
     pull_policy: build
     environment:
       API_INTERNAL_URL: http://backend:8000
@@ -125,6 +137,105 @@ services:
       timeout: 10s
       retries: 5
       start_period: 20s
+    restart: unless-stopped
+
+  # ---- 0.5 production services. Enable with COMPOSE_PROFILES=analytics,errors,backup ----
+  # They share the app's Postgres server with SEPARATE databases and roles (db-init): one container
+  # less, one backup, ~300 MB of RAM saved. Each role has a connection limit so a burst of errors
+  # in GlitchTip can never starve the app database.
+  db-init:
+    image: postgres:17-bookworm
+    profiles: ["analytics", "errors"]
+    entrypoint: ["/bin/sh", "/db-init.sh"]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vorya_qr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Inserire POSTGRES_PASSWORD}
+      UMAMI_DB_PASSWORD: ${UMAMI_DB_PASSWORD:-}
+      GLITCHTIP_DB_PASSWORD: ${GLITCHTIP_DB_PASSWORD:-}
+    volumes:
+      - ./db-init.sh:/db-init.sh:ro
+    networks: [data]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  umami:
+    # Privacy-friendly site analytics (MIT), no cookies. Behind its own CloudPanel site.
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    profiles: ["analytics"]
+    environment:
+      DATABASE_URL: postgresql://umami:${UMAMI_DB_PASSWORD:?Impostare UMAMI_DB_PASSWORD}@db:5432/umami
+      APP_SECRET: ${UMAMI_APP_SECRET:?Impostare UMAMI_APP_SECRET (stringa casuale lunga)}
+    ports:
+      - "127.0.0.1:${UMAMI_HTTP_PORT:-3300}:3000"
+    networks: [app, data]
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    mem_limit: 400m
+    restart: unless-stopped
+
+  glitchtip-web:
+    # Error tracking (MIT), compatible with the Sentry SDKs.
+    image: glitchtip/glitchtip:latest
+    profiles: ["errors"]
+    environment: &glitchtip_env
+      DATABASE_URL: postgresql://glitchtip:${GLITCHTIP_DB_PASSWORD:?Impostare GLITCHTIP_DB_PASSWORD}@db:5432/glitchtip
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:?Impostare GLITCHTIP_SECRET_KEY (stringa casuale lunga)}
+      PORT: "8000"
+      GLITCHTIP_DOMAIN: ${GLITCHTIP_DOMAIN:-https://errori.vorya.it}
+      DEFAULT_FROM_EMAIL: ${SMTP_FROM_EMAIL:-noreply@vorya.it}
+      EMAIL_URL: ${GLITCHTIP_EMAIL_URL:-consolemail://}
+      ENABLE_USER_REGISTRATION: "false"
+      GLITCHTIP_MAX_EVENT_LIFE_DAYS: "30"
+      CELERY_WORKER_AUTOSCALE: "1,3"
+      CELERY_WORKER_MAX_TASKS_PER_CHILD: "10000"
+    ports:
+      - "127.0.0.1:${GLITCHTIP_HTTP_PORT:-3400}:8000"
+    networks: [app, data]
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    mem_limit: 600m
+    restart: unless-stopped
+
+  glitchtip-worker:
+    image: glitchtip/glitchtip:latest
+    profiles: ["errors"]
+    command: ./bin/run-celery-with-beat.sh
+    environment: *glitchtip_env
+    networks: [data]
+    depends_on:
+      glitchtip-web:
+        condition: service_started
+    mem_limit: 500m
+    restart: unless-stopped
+
+  backup:
+    # pg_dump + uploads -> restic (encrypted) -> S3-compatible storage outside the VPS.
+    build:
+      context: ./backup
+    pull_policy: build
+    profiles: ["backup"]
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-vorya_qr}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Inserire POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB:-vorya_qr}
+      EXTRA_DATABASES: ${BACKUP_EXTRA_DATABASES:-}
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:?Impostare RESTIC_REPOSITORY}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD:?Impostare RESTIC_PASSWORD}
+      AWS_ACCESS_KEY_ID: ${BACKUP_S3_ACCESS_KEY:?Impostare BACKUP_S3_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${BACKUP_S3_SECRET_KEY:?Impostare BACKUP_S3_SECRET_KEY}
+      BACKUP_CRON: ${BACKUP_CRON:-15 3 * * *}
+      BACKUP_PING_URL: ${BACKUP_PING_URL:-}
+    volumes:
+      - uploads_data:/data/uploads:ro
+    networks: [app, data]
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
 networks:
