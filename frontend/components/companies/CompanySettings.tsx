@@ -10,6 +10,7 @@ import { Dropzone } from "@/components/files/Dropzone";
 import { FilesPanel } from "@/components/files/FilesPanel";
 import { CompanyAvatar } from "@/components/layout/CompanyAvatar";
 import { DeleteCompany } from "./DeleteCompany";
+import { ReportsCard } from "./ReportsCard";
 import { TransferCompany } from "./TransferCompany";
 import styles from "./Companies.module.css";
 
@@ -110,6 +111,7 @@ export function CompanySettings() {
         </form>
       </Card>
       <FilesPanel />
+      <ReportsCard />
       <TransferCompany />
       <DeleteCompany />
     </div>

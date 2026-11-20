@@ -10,6 +10,7 @@ from .abuse.router import admin as abuse_admin_router
 from .abuse.router import public as abuse_public_router
 from .account import router as account_router
 from .admin.clients import router as clients_router
+from .admin.metrics_router import router as metrics_router
 from .admin.router import router as admin_router
 from .auth.onboarding import router as onboarding_router
 from .auth.router import router as auth_router
@@ -36,6 +37,8 @@ from .pages.public import router as pages_public_router
 from .qr.router import router as qr_router
 from .qr.styles_router import router as styles_router
 from .redirect.router import router as redirect_router
+from .reports.router import public as reports_public_router
+from .reports.router import router as reports_router
 from .stats.router import router as stats_router
 from .storage.public import router as files_public_router
 from .storage.router import router as files_router
@@ -76,11 +79,14 @@ def create_app() -> FastAPI:
         page_events_router,
         admin_router,
         clients_router,
+        metrics_router,
         abuse_admin_router,
         abuse_public_router,
         billing_router,
         generator_router,
         contact_router,
+        reports_router,
+        reports_public_router,
         site_router,
         billing_admin_router,
         redirect_router,

@@ -74,3 +74,38 @@ def expire_grants(session: Session) -> int:
         .values(trial_ends_at=Workspace.grant_until, grant_until=None)
     )
     return result.rowcount
+
+
+def onboarding_emails(session: Session) -> int:
+    """Activation emails: day 1 (no dynamic QR yet: quick guide) and day 3 (discover the pages).
+
+    Windows are bounded (7/10 days) so a first run never writes to old accounts. Each mail has a
+    unique key (sent once) and respects the owner's preference (checked again when sending).
+    """
+    from sqlalchemy import exists
+
+    from ..models import QrCode, User
+
+    at, queued = now(), 0
+    for kind, days, window in (("onboard_1d", 1, 7), ("onboard_3d", 3, 10)):
+        rows = session.execute(
+            select(Workspace.id, User.id)
+            .join(User, User.id == Workspace.owner_user_id)
+            .where(
+                User.is_active.is_(True),
+                User.email_verified_at <= at - timedelta(days=days),
+                User.email_verified_at > at - timedelta(days=window),
+                Workspace.status == "active",
+                ~exists().where(
+                    QrCode.workspace_id == Workspace.id,
+                    QrCode.kind == "dynamic",
+                    QrCode.deleted_at.is_(None),
+                )
+                if kind == "onboard_1d"
+                else Workspace.id.is_not(None),
+            )
+        ).all()
+        for workspace_id, user_id in rows:
+            service.enqueue_mail(session, workspace_id, f"{kind}:{user_id}", kind)
+            queued += 1
+    return queued

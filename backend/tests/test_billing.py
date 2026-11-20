@@ -280,7 +280,7 @@ def test_webhook_is_idempotent(customer, db):
         })  # fmt: skip
     assert db.scalars(select(BillingEvent)).all().__len__() == 2
     assert len(db.scalars(select(BillingPayment)).all()) == 1
-    assert len(db.scalars(select(BillingMail)).all()) == 1
+    assert len([m for m in db.scalars(select(BillingMail)) if m.kind != "welcome"]) == 1
 
 
 def test_payment_failed_enters_grace_then_free_and_payment_reactivates(customer, db):
@@ -315,7 +315,7 @@ def test_canceled_goes_to_free_nothing_is_switched_off(customer, db):
     w = workspace(db)
     assert w.billing_state == "canceled" and customer.get(qrs(customer)).status_code == 200
     assert customer.get("/api/account/billing").json()["plan"]["id"] == "free"
-    kinds = [m.kind for m in db.scalars(select(BillingMail))]
+    kinds = [m.kind for m in db.scalars(select(BillingMail)) if m.kind != "welcome"]
     assert kinds == ["canceled"]
     post_event(customer, "e3", "customer.subscription.created", sub_obj(id="sub_1"))
     assert workspace(db).billing_state == "active"
@@ -430,11 +430,11 @@ def test_payment_mails_are_sent_once(customer, db):
                                                 "amount_paid": 2900, "currency": "eur"})  # fmt: skip
     post_event(customer, "e2", "invoice.payment_failed", {"id": "in_2", "customer": "cus_1",
                                                           "amount_due": 2900, "currency": "eur"})  # fmt: skip
-    assert send_pending(db) == 2
+    assert send_pending(db) == 3  # welcome + payment ok + payment failed
     db.commit()
     assert send_pending(db) == 0
     assert "Pagamento ricevuto" in last_mail("billing", "cliente@example.com")["subject"] or True
-    subjects = {m["subject"] for m in _all_mail()}
+    subjects = {m["subject"] for m in _all_mail()} - {"Benvenuto in Vorya QR"}
     assert subjects == {"Pagamento ricevuto · Vorya QR", "Pagamento non riuscito · Vorya QR"}
 
 
@@ -452,12 +452,12 @@ def test_trial_reminders_three_days_before_and_last_day(customer, db):
     jobs.trial_reminders(db)
     jobs.trial_reminders(db)
     db.commit()
-    assert [m.kind for m in db.scalars(select(BillingMail))] == ["trial_3d"]
+    assert [m.kind for m in db.scalars(select(BillingMail)) if m.kind != "welcome"] == ["trial_3d"]
     db.execute(update(Workspace).values(trial_ends_at=now() + timedelta(hours=10)))
     db.commit()
     jobs.trial_reminders(db)
     db.commit()
-    kinds = sorted(m.kind for m in db.scalars(select(BillingMail)))
+    kinds = sorted(m.kind for m in db.scalars(select(BillingMail)) if m.kind != "welcome")
     assert "trial_0d" in kinds and kinds.count("trial_0d") == 1
 
 

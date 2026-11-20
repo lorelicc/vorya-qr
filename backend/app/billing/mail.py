@@ -1,8 +1,10 @@
 """Billing emails (Italian) and the outbox worker that sends them once each."""
 
 import html
+import json
 import logging
 from datetime import timedelta
+from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -17,6 +19,9 @@ from .settings import billing_settings
 log = logging.getLogger("vorya_qr.billing")
 MAX_ATTEMPTS = 5
 
+ONBOARDING = json.loads(
+    (Path(__file__).resolve().parent.parent / "mail" / "texts" / "onboarding_it.json").read_text()
+)  # editable copy: no code change needed to reword an email
 SUBJECTS = {
     "trial_3d": "La tua prova termina tra 3 giorni · Vorya QR",
     "trial_0d": "La tua prova termina oggi · Vorya QR",
@@ -72,6 +77,10 @@ def body_of(kind: str, name: str, grace_days: int, extra: str = "") -> tuple[str
     }[kind]
 
 
+def onboarding_enabled(owner: User) -> bool:
+    return (owner.mail_prefs or {}).get("onboarding", True)
+
+
 def send_pending(session: Session, limit: int = 20) -> int:
     rows = list(
         session.scalars(
@@ -89,6 +98,27 @@ def send_pending(session: Session, limit: int = 20) -> int:
         row.attempts += 1
         if owner is None or not owner.is_active:
             row.state = "failed"
+            continue
+        if row.kind in ONBOARDING:
+            if not onboarding_enabled(owner):
+                row.state = "skipped"
+                continue
+            copy = ONBOARDING[row.kind]
+            text = copy["text"].format(name=owner.display_name)
+            url = f"{get_settings().public_base_url}{copy['path']}"
+            footer = (
+                "\nNon vuoi più queste email di aiuto? Puoi disattivarle da "
+                f"{get_settings().public_base_url}/account/plan"
+            )
+            try:
+                send_email(owner.email, copy["subject"], f"{text}\n{url}{footer}",
+                           _layout(copy["title"], html.escape(text), url, copy["cta"]), kind="billing")  # fmt: skip
+                row.state, row.sent_at = "sent", now()
+                sent += 1
+            except Exception as exc:  # noqa: BLE001
+                log.warning("Onboarding mail failed (%s)", type(exc).__name__)
+                row.state = "failed" if row.attempts >= MAX_ATTEMPTS else "pending"
+                row.due_at = now() + timedelta(minutes=5 * row.attempts)
             continue
         extra = ""
         if row.kind == "gift":

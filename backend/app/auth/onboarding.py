@@ -131,6 +131,9 @@ def verify_email(
 
         create_from_handoff(session, user, workspace, company, registration.handoff)
     registration.handoff = None  # used once; nothing about it is kept
+    from ..billing.service import enqueue_mail
+
+    enqueue_mail(session, workspace.id, f"welcome:{user.id}", "welcome")
     session.execute(delete(PasswordReset).where(PasswordReset.user_id == user.id))
     token, csrf = start_session(session, user, remember=False)
     audit(session, user, "registration.verified", workspace.id)

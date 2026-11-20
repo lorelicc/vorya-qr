@@ -10,6 +10,7 @@ import { daysLeft, formatDate } from "@/lib/format";
 import { formatBytes } from "@/lib/upload";
 import { BillingBanner } from "./BillingBanner";
 import { BillingProfileForm } from "./BillingProfileForm";
+import { MailPreferences } from "./MailPreferences";
 import { PlanCards } from "./PlanCards";
 import { useCheckout } from "./useCheckout";
 import styles from "./billing.module.css";
@@ -212,6 +213,8 @@ export function AccountPlan() {
             </>
           )}
         </Card>
+
+        <MailPreferences />
 
         {info.payments.length > 0 && (
           <Card title="Pagamenti">

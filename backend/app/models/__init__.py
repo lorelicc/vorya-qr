@@ -22,6 +22,7 @@ from .link import (
     UtmTemplate,
 )
 from .qr import DailySalt, PageEvent, QrCode, QrPage, ReservedWord, ScanEvent
+from .report import MetricsSnapshot, ReportLog, ReportRecipient, ReportSettings
 from .style import StylePreset
 from .tenancy import MailLog, Plan, PlatformSetting, Workspace
 
@@ -50,12 +51,16 @@ __all__ = [
     "LinkAlias",
     "LinkTag",
     "LinkVersion",
+    "MetricsSnapshot",
     "Plan",
     "PlanGrant",
     "PlatformSetting",
     "QrCode",
     "QrPage",
     "Registration",
+    "ReportLog",
+    "ReportRecipient",
+    "ReportSettings",
     "ReservedWord",
     "ScanEvent",
     "StoredFile",

@@ -173,6 +173,10 @@ def run_queue(session: Session) -> int:
 
     mails = send_pending(session)  # payment emails go out within seconds, not minutes
     session.commit()
+    from .reports.service import send_due
+
+    mails += send_due(session)  # reports: queued with a spread due time, a few per tick
+    session.commit()
 
     job = session.scalar(
         select(ImportJob)
@@ -226,12 +230,38 @@ def purge_import_results(session: Session) -> int:
     return len(old)
 
 
+def compute_metrics(session: Session) -> int:
+    """Admin metrics snapshot, at most once an hour (the heavy queries never run on request)."""
+    from datetime import timedelta
+
+    from .metrics import latest, snapshot
+
+    last = latest(session)
+    if last is not None and last.created_at > now() - timedelta(hours=1):
+        return 0
+    snapshot(session)
+    return 1
+
+
+JOBS.append(compute_metrics)
+
+
+def schedule_reports(session: Session) -> int:
+    from .reports.service import schedule
+
+    return schedule(session)
+
+
+JOBS.append(schedule_reports)
+
+
 def _billing_jobs() -> None:
     from .billing import jobs
 
     for fn in (
         jobs.expire_grants,
         jobs.trial_reminders,
+        jobs.onboarding_emails,
         jobs.send_billing_mail,
         jobs.reconcile_subscriptions,
     ):

@@ -109,12 +109,15 @@ def test_gifts_stack_and_the_customer_gets_one_email(client, admin, db):
     second = grant(admin, months=1).json()["grant_until"]
     assert second > first
     assert len(db.scalars(select(PlanGrant)).all()) == 2
-    assert send_pending(db) == 2
+    assert send_pending(db) == 3  # welcome + two gift emails
     db.commit()
     from tests.test_billing import _all_mail
 
     mails = _all_mail()
-    assert {m["subject"] for m in mails} == {"Hai ricevuto un piano in omaggio · Vorya QR"}
+    assert {m["subject"] for m in mails} == {
+        "Hai ricevuto un piano in omaggio · Vorya QR",
+        "Benvenuto in Vorya QR",
+    }
     texts = " ".join(m["text"] for m in mails)
     assert "3 mesi del piano Pro" in texts and "1 mese del piano Pro" in texts
 

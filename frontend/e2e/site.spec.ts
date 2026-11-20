@@ -68,7 +68,10 @@ test.describe("navigazione del sito da mobile", () => {
     await expect(page).toHaveURL(/\/soluzioni\/ristoranti$/);
 
     // The footer links every landing page.
-    await page.getByRole("contentinfo").getByRole("link", { name: "Carta dei vini", exact: true }).click();
+    await page
+      .getByRole("contentinfo")
+      .getByRole("link", { name: "Carta dei vini", exact: true })
+      .click();
     await expect(page).toHaveURL(/\/qr-code\/carta-dei-vini$/);
     const after = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth,

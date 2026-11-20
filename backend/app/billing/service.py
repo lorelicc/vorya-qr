@@ -101,6 +101,11 @@ def apply_subscription(session: Session, sub: dict) -> str | None:
         else None
     )
     if price:
+        if account.plan_id and account.plan_id != price.plan_id:
+            from ..auth.service import audit
+
+            audit(session, None, "billing.plan_changed", workspace.id,
+                  old=account.plan_id, new=price.plan_id)  # fmt: skip
         account.price_id, account.plan_id, account.cycle = price_id, price.plan_id, price.cycle
     at = now()
     if status in LIVE:

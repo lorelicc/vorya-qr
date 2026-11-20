@@ -1,0 +1,23 @@
+{
+  "welcome": {
+    "subject": "Benvenuto in Vorya QR",
+    "title": "Benvenuto in Vorya QR",
+    "text": "Ciao {name}, il tuo account è pronto: hai 14 giorni per provare tutte le funzioni. Crea il tuo primo QR dinamico: lo puoi cambiare anche dopo la stampa. E ricorda: i tuoi QR non smettono mai di funzionare, anche quando la prova finisce.",
+    "cta": "Crea il tuo primo QR",
+    "path": "/app"
+  },
+  "onboard_1d": {
+    "subject": "Il tuo primo QR dinamico in un minuto · Vorya QR",
+    "title": "Crea il tuo primo QR dinamico",
+    "text": "Ciao {name}, non hai ancora creato un QR dinamico. Ci vuole un minuto: scegli il tipo (sito web, vCard, menu…), personalizza lo stile e scarica. Se cambi idea dopo la stampa, modifichi la destinazione senza ristampare.",
+    "cta": "Crea un QR dinamico",
+    "path": "/app"
+  },
+  "onboard_3d": {
+    "subject": "Scopri le pagine: vCard e menu · Vorya QR",
+    "title": "Più di un link: pagine per i tuoi QR",
+    "text": "Ciao {name}, con Vorya QR un QR può aprire una pagina pronta per il telefono: una vCard da salvare in rubrica, un menu con allergeni e piatti esauriti, una carta dei vini, un PDF, una galleria. Provale con i tuoi contenuti.",
+    "cta": "Scopri le pagine",
+    "path": "/app"
+  }
+}
