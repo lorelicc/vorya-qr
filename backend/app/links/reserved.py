@@ -9,7 +9,8 @@ ROUTE_WORDS = frozenset({
     "favicon.ico", "forgot-password", "health", "legal", "login", "logout", "p", "plans", "r",
     "register", "report", "reset-password", "robots.txt", "sitemap.xml", "static", "suspended",
     "verify-email", "billing", "checkout", "signup", "settings", "help", "docs", "status",
-    "www", "mail", "unlock", "expired",
+    "www", "mail", "unlock", "expired", "funzionalita", "qr-code", "link-brevi", "genera",
+    "soluzioni", "prezzi", "alternative", "guide", "chi-siamo", "contatti", "en", "og", "sitemap",
 })  # fmt: skip
 
 BLOCKED_WORDS = frozenset({

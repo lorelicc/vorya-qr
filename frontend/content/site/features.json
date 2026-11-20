@@ -1,0 +1,78 @@
+[
+  {
+    "slug": "link-brevi",
+    "label": "Link brevi",
+    "title": "Link brevi che portano ovunque",
+    "text": "Accorcia un link, personalizza il back-half e misura i clic. Scadenza, password e destinazioni programmate nei piani che le includono.",
+    "bullets": ["Back-half personalizzato", "UTM con modelli per azienda", "Scadenza e password"],
+    "page": true
+  },
+  {
+    "slug": "qr-dinamici",
+    "label": "QR dinamici",
+    "title": "QR code dinamici che puoi modificare",
+    "text": "Stampi una volta e cambi destinazione quando vuoi. I tuoi QR non smettono mai di funzionare.",
+    "bullets": [
+      "Cambia la destinazione dopo la stampa",
+      "Cronologia delle versioni",
+      "Mai disattivati per il piano"
+    ],
+    "page": true
+  },
+  {
+    "slug": "pagine-ospitate",
+    "label": "Pagine ospitate",
+    "title": "Pagine ospitate a blocchi",
+    "text": "vCard, PDF, musica, galleria, link in bio, attività e menu: pagine leggere, pronte per il telefono.",
+    "bullets": ["Tema, colori e font", "Aperte da un QR o da un link", "Niente pubblicità"],
+    "page": true
+  },
+  {
+    "slug": "design-qr",
+    "label": "Design del QR",
+    "title": "QR con il tuo stile",
+    "text": "Forme, colori, gradienti e logo, con verifica automatica che il codice resti leggibile.",
+    "bullets": [
+      "Verifica di scansionabilità",
+      "Download PNG, SVG, PDF",
+      "Stili salvati per azienda"
+    ],
+    "page": false
+  },
+  {
+    "slug": "statistiche",
+    "label": "Statistiche",
+    "title": "Statistiche chiare e rispettose",
+    "text": "Scansioni, dispositivi, paesi e città. Nessun indirizzo IP viene salvato.",
+    "bullets": ["Grafici per periodo", "Esporta in CSV", "Confronto con il periodo precedente"],
+    "page": true
+  },
+  {
+    "slug": "multi-azienda",
+    "label": "Multi-azienda",
+    "title": "Più aziende in un account",
+    "text": "Ogni azienda ha QR, file, stili e statistiche separati. Ideale per agenzie e gruppi.",
+    "bullets": [
+      "Passaggio rapido tra aziende",
+      "Trasferimento tra account",
+      "Limiti chiari per piano"
+    ],
+    "page": false
+  },
+  {
+    "slug": "import-massivo",
+    "label": "Importazione da CSV",
+    "title": "Crea centinaia di codici da un CSV",
+    "text": "Carica un file, controlla l'anteprima riga per riga e scarica uno ZIP con tutti i QR.",
+    "bullets": ["Anteprima con errori", "ZIP in PNG, SVG o PDF", "Esporta l'elenco in CSV"],
+    "page": false
+  },
+  {
+    "slug": "menu-carta-dei-vini",
+    "label": "Menu e carta dei vini",
+    "title": "Menu e carta dei vini digitali",
+    "text": "Sezioni, prezzi, allergeni, badge e lingua inglese, con piatti esauriti dal telefono.",
+    "bullets": ["14 allergeni UE", "Calice e bottiglia", "Si aggiorna dal telefono"],
+    "page": false
+  }
+]

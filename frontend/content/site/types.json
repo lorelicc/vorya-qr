@@ -1,0 +1,380 @@
+[
+  {
+    "slug": "sito-web",
+    "key": "website",
+    "label": "Sito web",
+    "h1": "QR code per sito web",
+    "lead": "Porta chi scansiona su qualsiasi pagina web. Gratis in versione statica; dinamico se vuoi cambiare destinazione dopo la stampa.",
+    "kind": "entrambi",
+    "useCases": [
+      "Biglietti da visita, volantini e locandine che portano al tuo sito",
+      "Pagina di una promozione che cambia ogni mese",
+      "Packaging con link alle istruzioni o al reso"
+    ],
+    "faq": [
+      {
+        "q": "Posso cambiare il link dopo aver stampato il QR?",
+        "a": "Con il QR dinamico sì: stampi una volta e cambi la destinazione quando vuoi. Il QR statico invece contiene il link scritto nel codice e non si può modificare."
+      },
+      {
+        "q": "Il QR code del sito web scade?",
+        "a": "Il QR statico non scade mai. Anche quelli dinamici di Vorya QR restano attivi: se il piano finisce, l'account passa al Free e i tuoi QR continuano a funzionare."
+      }
+    ],
+    "generator": "website",
+    "art": "website",
+    "solutions": ["ristoranti", "negozi", "eventi"]
+  },
+  {
+    "slug": "vcard",
+    "key": "vcard",
+    "label": "vCard",
+    "h1": "QR code vCard: il biglietto da visita digitale",
+    "lead": "Chi scansiona salva nome, telefono, email e indirizzo nella rubrica con un tocco.",
+    "kind": "entrambi",
+    "useCases": [
+      "Biglietti da visita e badge per fiere ed eventi",
+      "Firma email e materiali di vendita",
+      "Agenti, professionisti e team commerciali"
+    ],
+    "faq": [
+      {
+        "q": "Qual è la differenza tra vCard statica e dinamica?",
+        "a": "La vCard statica scrive i dati nel QR: gratis ma non modificabile. La dinamica apre una pagina con il tuo contatto che puoi aggiornare quando cambi numero o ruolo, senza ristampare."
+      },
+      {
+        "q": "Funziona su iPhone e Android?",
+        "a": "Sì: la Fotocamera di iPhone e quella di Android riconoscono i QR e propongono di salvare il contatto."
+      }
+    ],
+    "generator": "vcard",
+    "art": "vcard",
+    "solutions": ["agenzie", "immobiliare", "eventi"]
+  },
+  {
+    "slug": "pdf",
+    "key": "pdf",
+    "label": "PDF",
+    "h1": "QR code per PDF",
+    "lead": "Un QR che apre il tuo PDF: listino, brochure, catalogo, scheda tecnica. Lo aggiorni senza ristampare.",
+    "kind": "dinamico",
+    "useCases": [
+      "Listini e cataloghi sempre aggiornati",
+      "Schede tecniche sui prodotti",
+      "Menu in PDF e regolamenti"
+    ],
+    "faq": [
+      {
+        "q": "Posso sostituire il PDF dopo la stampa?",
+        "a": "Sì: il QR dinamico punta alla tua pagina, quindi carichi la nuova versione e il QR stampato resta valido."
+      },
+      {
+        "q": "Il PDF si apre bene da telefono?",
+        "a": "La pagina mostra un'anteprima leggera delle prime pagine e il pulsante per scaricare l'originale."
+      }
+    ],
+    "generator": "website",
+    "art": "pdf",
+    "solutions": ["negozi", "cantine"]
+  },
+  {
+    "slug": "musica",
+    "key": "music",
+    "label": "Musica",
+    "h1": "QR code per musica",
+    "lead": "Riunisci le tue tracce e i link a Spotify, Apple Music e YouTube Music in una sola pagina.",
+    "kind": "dinamico",
+    "useCases": [
+      "Locandine di concerti e singoli",
+      "Copertine di dischi e merchandising",
+      "Pagina promo per band e DJ"
+    ],
+    "faq": [
+      {
+        "q": "Posso caricare file audio?",
+        "a": "Sì: puoi caricare tracce MP3, M4A o WAV (nei limiti di spazio del tuo piano) e collegare le piattaforme di streaming."
+      },
+      {
+        "q": "Posso vedere quante persone ascoltano?",
+        "a": "Sì: le statistiche mostrano scansioni e clic sui link delle piattaforme."
+      }
+    ],
+    "generator": "website",
+    "art": "music",
+    "solutions": ["eventi"]
+  },
+  {
+    "slug": "link-in-bio",
+    "key": "link_in_bio",
+    "label": "Link in bio",
+    "h1": "Link in bio: tutti i tuoi link in un QR",
+    "lead": "Una pagina con i tuoi link e i social, raggiungibile da un QR o da un link breve.",
+    "kind": "dinamico",
+    "useCases": [
+      "Profili social e biografie",
+      "Bigliettini e adesivi con tutti i contatti",
+      "Campagne con più destinazioni"
+    ],
+    "faq": [
+      {
+        "q": "Posso usare il mio colore e il mio logo?",
+        "a": "Sì: colori, sfondo, font e logo si personalizzano, e il design del QR è libero."
+      },
+      {
+        "q": "Quanti link posso inserire?",
+        "a": "Fino a 30 link e 12 social per pagina."
+      }
+    ],
+    "generator": "website",
+    "art": "link_in_bio",
+    "solutions": ["agenzie", "negozi"]
+  },
+  {
+    "slug": "galleria",
+    "key": "gallery",
+    "label": "Galleria",
+    "h1": "QR code per galleria di immagini",
+    "lead": "Mostra le tue foto in una pagina leggera, ottimizzata per il telefono.",
+    "kind": "dinamico",
+    "useCases": [
+      "Portfolio di fotografi e artigiani",
+      "Immobili con le foto delle stanze",
+      "Eventi e matrimoni con le foto della giornata"
+    ],
+    "faq": [
+      {
+        "q": "Le immagini sono pesanti?",
+        "a": "No: le immagini vengono ottimizzate automaticamente e la pagina resta veloce anche con rete lenta."
+      },
+      {
+        "q": "Quante immagini posso caricare?",
+        "a": "Fino a 40 immagini per galleria, nei limiti di spazio del piano."
+      }
+    ],
+    "generator": "website",
+    "art": "gallery",
+    "solutions": ["immobiliare", "eventi"]
+  },
+  {
+    "slug": "attivita",
+    "key": "business",
+    "label": "Pagina attività",
+    "h1": "QR code per la pagina della tua attività",
+    "lead": "Orari, indirizzo con mappa, contatti e social in una sola pagina, sempre aggiornata.",
+    "kind": "dinamico",
+    "useCases": [
+      "Vetrine di negozi e studi professionali",
+      "Orari e festività che cambiano",
+      "Indicazioni per raggiungerti con un tocco"
+    ],
+    "faq": [
+      {
+        "q": "Posso mostrare gli orari di apertura?",
+        "a": "Sì: orari per giorno con fasce multiple, giorni di chiusura e una nota per le eccezioni."
+      },
+      {
+        "q": "L'indirizzo apre la mappa?",
+        "a": "Sì: pulsanti per Google Maps e Apple Maps."
+      }
+    ],
+    "generator": "website",
+    "art": "business",
+    "solutions": ["negozi", "ristoranti"]
+  },
+  {
+    "slug": "menu",
+    "key": "menu",
+    "label": "Menu",
+    "h1": "QR code per il menu del ristorante",
+    "lead": "Un menu digitale che aggiorni dal telefono: prezzi, allergeni, piatti esauriti e lingua inglese.",
+    "kind": "dinamico",
+    "useCases": [
+      "Tavoli di ristoranti, bar e pizzerie",
+      "Menu del giorno che cambia ogni mattina",
+      "Dehors e locali stagionali"
+    ],
+    "faq": [
+      {
+        "q": "Posso segnare un piatto come esaurito?",
+        "a": "Sì, con un tocco dal telefono: la pagina pubblica si aggiorna subito."
+      },
+      {
+        "q": "Gli allergeni sono indicati?",
+        "a": "Sì: i 14 allergeni del Reg. UE 1169/2011 con icona e legenda. Resta responsabilità dell'esercente verificarne l'esattezza."
+      }
+    ],
+    "generator": "website",
+    "art": "menu",
+    "solutions": ["ristoranti", "cantine"]
+  },
+  {
+    "slug": "carta-dei-vini",
+    "key": "menu",
+    "label": "Carta dei vini",
+    "h1": "QR code per la carta dei vini",
+    "lead": "Una carta dei vini con produttore, denominazione, annata, prezzo al calice e in bottiglia.",
+    "kind": "dinamico",
+    "useCases": [
+      "Enoteche, ristoranti e wine bar",
+      "Cantine con degustazione",
+      "Carta dei vini bilingue italiano/inglese"
+    ],
+    "faq": [
+      {
+        "q": "Posso indicare prezzo al calice e in bottiglia?",
+        "a": "Sì: entrambi i prezzi, più denominazione (DOC, DOCG, IGT…), annata, vitigni e zona."
+      },
+      {
+        "q": "La carta può essere in inglese?",
+        "a": "Sì: seconda lingua opzionale con selettore IT/EN; le voci senza traduzione restano in italiano."
+      }
+    ],
+    "generator": "website",
+    "art": "wine",
+    "solutions": ["cantine", "ristoranti"]
+  },
+  {
+    "slug": "wifi",
+    "key": "wifi",
+    "label": "Wi-Fi",
+    "h1": "QR code per il Wi-Fi",
+    "lead": "Chi scansiona si collega alla rete senza digitare la password. Gratis, per sempre.",
+    "kind": "statico",
+    "useCases": ["Bar, hotel e B&B", "Uffici e sale riunioni", "Casa, per gli ospiti"],
+    "faq": [
+      {
+        "q": "Il QR del Wi-Fi funziona su tutti i telefoni?",
+        "a": "Sì, sui telefoni recenti iPhone e Android la Fotocamera propone il collegamento."
+      },
+      {
+        "q": "Se cambio la password devo rifare il QR?",
+        "a": "Sì: è un QR statico, la password è nel codice. Cambiandola va rigenerato."
+      }
+    ],
+    "generator": "wifi",
+    "art": "wifi",
+    "solutions": ["ristoranti", "agenzie"]
+  },
+  {
+    "slug": "testo",
+    "key": "text",
+    "label": "Testo",
+    "h1": "QR code per testo",
+    "lead": "Un messaggio di testo leggibile anche offline, gratis e per sempre.",
+    "kind": "statico",
+    "useCases": [
+      "Codici, istruzioni brevi, note",
+      "Inviti e messaggi",
+      "Etichette con informazioni semplici"
+    ],
+    "faq": [
+      {
+        "q": "C'è un limite di caratteri?",
+        "a": "Il testo deve stare nel QR: più è lungo, più il codice diventa fitto e difficile da leggere."
+      },
+      {
+        "q": "Funziona senza internet?",
+        "a": "Sì: il testo è dentro il QR, per leggerlo basta la Fotocamera."
+      }
+    ],
+    "generator": "text",
+    "art": "text",
+    "solutions": []
+  },
+  {
+    "slug": "email",
+    "key": "email",
+    "label": "Email",
+    "h1": "QR code per email",
+    "lead": "Apre un'email già indirizzata, con oggetto e testo compilati.",
+    "kind": "statico",
+    "useCases": ["Richieste di informazioni", "Feedback e segnalazioni", "Prenotazioni via email"],
+    "faq": [
+      {
+        "q": "Posso precompilare l'oggetto?",
+        "a": "Sì: indirizzo, oggetto e testo del messaggio."
+      },
+      {
+        "q": "È gratis?",
+        "a": "Sì: il QR statico è gratuito e non scade."
+      }
+    ],
+    "generator": "email",
+    "art": "email",
+    "solutions": []
+  },
+  {
+    "slug": "sms",
+    "key": "sms",
+    "label": "SMS",
+    "h1": "QR code per SMS",
+    "lead": "Prepara un SMS con numero e testo già scritti.",
+    "kind": "statico",
+    "useCases": [
+      "Prenotazioni e conferme",
+      "Iscrizioni a un servizio",
+      "Contatto rapido con un reparto"
+    ],
+    "faq": [
+      {
+        "q": "L'SMS parte da solo?",
+        "a": "No: si apre il messaggio già compilato e l'utente decide se inviarlo."
+      },
+      {
+        "q": "È gratis?",
+        "a": "Sì, per sempre."
+      }
+    ],
+    "generator": "sms",
+    "art": "sms",
+    "solutions": []
+  },
+  {
+    "slug": "telefono",
+    "key": "phone",
+    "label": "Telefono",
+    "h1": "QR code per numero di telefono",
+    "lead": "Con un tocco parte la chiamata al tuo numero.",
+    "kind": "statico",
+    "useCases": [
+      "Biglietti da visita e furgoni",
+      "Annunci e cartelli",
+      "Assistenza e prenotazioni"
+    ],
+    "faq": [
+      {
+        "q": "Funziona su tutti i telefoni?",
+        "a": "Sì: la Fotocamera propone di chiamare il numero."
+      },
+      {
+        "q": "Posso cambiare il numero dopo la stampa?",
+        "a": "Il QR statico no. Con una vCard o una pagina dinamica sì."
+      }
+    ],
+    "generator": "phone",
+    "art": "phone",
+    "solutions": []
+  },
+  {
+    "slug": "whatsapp",
+    "key": "whatsapp",
+    "label": "WhatsApp",
+    "h1": "QR code per WhatsApp",
+    "lead": "Apre una chat WhatsApp con il tuo numero e un messaggio già scritto.",
+    "kind": "statico",
+    "useCases": ["Assistenza clienti e preventivi", "Prenotazioni", "Locandine e vetrine"],
+    "faq": [
+      {
+        "q": "Posso scrivere il primo messaggio?",
+        "a": "Sì: scegli il testo che comparirà già nella chat."
+      },
+      {
+        "q": "Serve un account business?",
+        "a": "No: funziona con un normale numero WhatsApp."
+      }
+    ],
+    "generator": "whatsapp",
+    "art": "whatsapp",
+    "solutions": []
+  }
+]

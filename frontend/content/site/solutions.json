@@ -1,0 +1,122 @@
+[
+  {
+    "slug": "ristoranti",
+    "label": "Ristoranti e bar",
+    "h1": "QR code per ristoranti e bar",
+    "problem": "Stampare il menu costa e invecchia: un prezzo cambia, un piatto finisce, un allergene va aggiunto e il menu stampato è già sbagliato.",
+    "solution": "Un menu digitale che aggiorni dal telefono, con allergeni, piatti esauriti e lingua inglese. Il QR sul tavolo non cambia mai.",
+    "types": ["menu", "carta-dei-vini", "wifi", "attivita"],
+    "bullets": [
+      "Prezzi e piatti aggiornati in un tocco",
+      "Allergeni UE e badge (vegano, senza glutine…)",
+      "Menu in italiano e inglese"
+    ],
+    "faq": [
+      {
+        "q": "Il QR resta attivo se cambio piano?",
+        "a": "Sì: i QR non vengono mai disattivati per il piano. Se l'abbonamento finisce, passi al Free e i tuoi QR continuano a funzionare."
+      }
+    ],
+    "art": "ristoranti"
+  },
+  {
+    "slug": "cantine",
+    "label": "Cantine ed enoteche",
+    "h1": "QR code per cantine ed enoteche",
+    "problem": "Le schede dei vini cambiano a ogni annata e le carte stampate non tengono il passo.",
+    "solution": "Una carta dei vini con produttore, denominazione, annata, prezzo al calice e in bottiglia, aggiornabile quando vuoi.",
+    "types": ["carta-dei-vini", "menu", "pdf", "galleria"],
+    "bullets": [
+      "Schede vino complete, in due lingue",
+      "Etichette con QR sempre valido",
+      "Statistiche su quali vini vengono guardati"
+    ],
+    "faq": [
+      {
+        "q": "Posso mettere il QR sull'etichetta?",
+        "a": "Sì. Scegli un QR dinamico: l'etichetta resta quella, il contenuto cambia con l'annata."
+      }
+    ],
+    "art": "cantine"
+  },
+  {
+    "slug": "eventi",
+    "label": "Eventi",
+    "h1": "QR code per eventi",
+    "problem": "Programmi, mappe e informazioni cambiano fino all'ultimo e il materiale stampato no.",
+    "solution": "Pagine che aggiorni mentre l'evento è in corso, e link brevi da condividere ovunque.",
+    "types": ["sito-web", "musica", "galleria", "vcard"],
+    "bullets": [
+      "Programma sempre aggiornato",
+      "Link breve per ogni canale, con statistiche",
+      "Foto dell'evento in una galleria leggera"
+    ],
+    "faq": [
+      {
+        "q": "Posso misurare da dove arrivano i visitatori?",
+        "a": "Sì: crea un link breve per ogni canale (locandina, social, newsletter) e confronta le scansioni."
+      }
+    ],
+    "art": "eventi"
+  },
+  {
+    "slug": "agenzie",
+    "label": "Agenzie",
+    "h1": "QR code per agenzie e freelance",
+    "problem": "Gestisci molti clienti: ognuno vuole il suo marchio, le sue statistiche e un report.",
+    "solution": "Più aziende nello stesso account, ognuna con il suo marchio, stili salvati e statistiche separate.",
+    "types": ["sito-web", "link-in-bio", "vcard", "pdf"],
+    "bullets": [
+      "Una dashboard, molte aziende",
+      "Importazione massiva da CSV",
+      "Report periodici per i tuoi clienti"
+    ],
+    "faq": [
+      {
+        "q": "Posso gestire più clienti?",
+        "a": "Sì: i piani Plus, Pro e Agency includono più aziende, ognuna separata dalle altre."
+      }
+    ],
+    "art": "agenzie"
+  },
+  {
+    "slug": "negozi",
+    "label": "Negozi",
+    "h1": "QR code per negozi e vetrine",
+    "problem": "Vetrine, scaffali e pacchi hanno poco spazio e le informazioni cambiano spesso.",
+    "solution": "QR in vetrina verso orari e promozioni, sullo scaffale verso la scheda prodotto, sul pacco verso istruzioni o recensioni.",
+    "types": ["attivita", "pdf", "sito-web", "link-in-bio"],
+    "bullets": [
+      "Promozioni aggiornate senza ristampare",
+      "Schede prodotto in PDF",
+      "Statistiche per ogni punto vendita"
+    ],
+    "faq": [
+      {
+        "q": "Posso avere un QR per ogni negozio?",
+        "a": "Sì: un'azienda per marchio e tutti i QR che servono, nei limiti del piano."
+      }
+    ],
+    "art": "negozi"
+  },
+  {
+    "slug": "immobiliare",
+    "label": "Immobiliare",
+    "h1": "QR code per agenzie immobiliari",
+    "problem": "Il cartello in vetrina resta, l'annuncio cambia: prezzo, disponibilità, foto.",
+    "solution": "Un QR sul cartello che porta a una pagina con foto, planimetria in PDF e contatti, sempre aggiornata.",
+    "types": ["galleria", "pdf", "vcard", "sito-web"],
+    "bullets": [
+      "Galleria foto e planimetrie",
+      "Contatto dell'agente da salvare in rubrica",
+      "Statistiche per immobile"
+    ],
+    "faq": [
+      {
+        "q": "Posso aggiornare un annuncio già stampato?",
+        "a": "Sì, con un QR dinamico il cartello non cambia mai."
+      }
+    ],
+    "art": "immobiliare"
+  }
+]

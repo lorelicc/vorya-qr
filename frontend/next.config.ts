@@ -1,3 +1,4 @@
+import createMDX from "@next/mdx";
 import type { NextConfig } from "next";
 
 const privateHeaders = [
@@ -10,6 +11,7 @@ const privateHeaders = [
 
 const config: NextConfig = {
   output: "standalone",
+  pageExtensions: ["ts", "tsx", "mdx"],
   poweredByHeader: false,
   async headers() {
     return [
@@ -28,4 +30,5 @@ const config: NextConfig = {
   },
 };
 
-export default config;
+// Guides are MDX files under /content (imported by the guide pages, never routed directly).
+export default createMDX()(config);

@@ -1,0 +1,37 @@
+export const meta = {
+  title: "Come misurare le scansioni di un QR code",
+  description: "Come contare le scansioni di un QR code, cosa significano i numeri e come usare più codici per capire quale canale funziona meglio.",
+  category: "Statistiche",
+  date: "2026-11-20",
+  draft: true,
+  readingMinutes: 4,
+};
+
+## Solo i QR dinamici si misurano
+
+Un QR statico porta direttamente alla destinazione: nessuno passa dal tuo servizio, quindi nessuno può contare le scansioni. Per misurarle serve un **QR dinamico** (o un link breve), che passa da un indirizzo intermedio prima di arrivare alla pagina.
+
+## Cosa puoi vedere
+
+- **Scansioni** nel tempo, con confronto sul periodo precedente.
+- **Dispositivi** e sistemi operativi (iPhone, Android, computer).
+- **Paesi e città**, in modo approssimativo.
+- **Clic** sui pulsanti e sui link delle pagine ospitate (per esempio "Salva contatto").
+
+Le statistiche di Vorya QR non salvano l'indirizzo IP di chi scansiona.
+
+## Un QR per ogni canale
+
+Per capire quale canale funziona meglio, usa un codice diverso per ogni posto dove lo pubblichi: locandina, vetrina, volantino, packaging, newsletter. Confrontando le scansioni capisci dove investire.
+
+## Parametri UTM
+
+Se la destinazione è il tuo sito, puoi aggiungere i parametri UTM (sorgente, mezzo, campagna) al link: così le visite arrivano etichettate anche nei tuoi strumenti di analisi del sito.
+
+## Attenzione ai numeri
+
+Una scansione non è una persona: la stessa persona può scansionare più volte. Il conteggio dei "visitatori unici" è una stima giornaliera e va letto come un ordine di grandezza.
+
+## Report periodici
+
+Se lavori per altri, puoi programmare un report via email con scansioni, codici più scansionati, paesi e dispositivi.
