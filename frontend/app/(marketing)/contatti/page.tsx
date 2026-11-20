@@ -1,4 +1,5 @@
 import { ContactForm } from "@/components/site/ContactForm";
+import { FaqScene } from "@/components/site/scenes";
 import { Crumbs, Hero, Section } from "@/components/site/blocks";
 import { pageMetadata } from "@/lib/site/config";
 
@@ -12,12 +13,14 @@ export const metadata = pageMetadata({
 export default function ContactPage() {
   return (
     <>
-      <Crumbs items={[{ label: "Contatti", href: "/contatti" }]} />
+      <Crumbs tone="mint" items={[{ label: "Contatti", href: "/contatti" }]} />
       <Hero
         eyebrow="Contatti"
         title="Scrivici, rispondiamo noi"
         lead="Domande sui piani, sulla fatturazione o su come usare i QR: raccontaci cosa ti serve."
         art="contact"
+        scene={<FaqScene />}
+        tone="mint"
       />
       <Section>
         <ContactForm />

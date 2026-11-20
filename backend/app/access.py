@@ -1,8 +1,8 @@
 """Single source of truth for whether a workspace may use the app.
 
-Since 0.5 nothing is blocked by money: when a trial ends or a subscription lapses the workspace
-is simply on the Free plan (see plans.effective_plan_id) and every link, page and file keeps
-working. States:
+When a trial ends or a subscription lapses the workspace is simply on the Free plan (see
+plans.effective_plan_id): the app stays usable, and only the dynamic codes that fit the plan keep
+answering scans (see app/limits.py). States:
 - trial:     trial running (Pro limits).
 - active:    paid subscription, gift, or a plan assigned by an admin.
 - free:      Free plan (trial ended / subscription cancelled or unpaid / gift ended).
@@ -46,5 +46,5 @@ def ensure_usable(workspace: Workspace) -> str:
 
 
 def redirects_enabled(workspace_status: str) -> bool:
-    """Redirects only stop on manual suspension: never because of money."""
+    """Workspace-level switch: only a manual suspension. Plan limits act per code (limits.py)."""
     return workspace_status != "suspended"

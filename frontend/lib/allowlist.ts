@@ -81,7 +81,9 @@ const rules: Rule[] = [
   r("POST", `company-transfers/${ID}/(accept|decline|cancel)`),
   // Free public generator and site counters (no session)
   r("POST", "public/generator/(preview|download|track)"),
-  r("GET", "public/site/counters"),
+  r("GET", "public/site/(counters|offer)"),
+  r("GET", "admin/site-offer"),
+  r("PUT", "admin/site-offer"),
   r("POST", "public/contact"),
   // 0.5: email reports, mail preferences, metrics
   r("GET", `${C}/reports`),

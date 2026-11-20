@@ -18,9 +18,9 @@ export function BillingBanner({ info }: { info: BillingInfo }) {
     return (
       <div className={styles.banner} data-tone="info" role="status">
         <span>
-          Sei sul piano <strong>Free</strong>: tutti i tuoi QR e link restano attivi, senza
-          pubblicità. Oltre i limiti del Free i codici sono in sola lettura finché non scegli un
-          piano.
+          Sei sul piano <strong>Free</strong>: restano attivi i codici che rientrano nei limiti del
+          Free, senza pubblicità. Gli altri QR dinamici sono sospesi finché non scegli un piano o
+          ne elimini alcuni; non viene cancellato nulla.
         </span>
       </div>
     );

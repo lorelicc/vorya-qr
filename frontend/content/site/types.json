@@ -18,7 +18,7 @@
       },
       {
         "q": "Il QR code del sito web scade?",
-        "a": "Il QR statico non scade mai. Anche quelli dinamici di Vorya QR restano attivi: se il piano finisce, l'account passa al Free e i tuoi QR continuano a funzionare."
+        "a": "Il QR statico non scade mai. Quelli dinamici dipendono dal piano: se finisce, restano attivi i 2 del Free e gli altri vengono sospesi finché non torni a un piano."
       }
     ],
     "generator": "website",

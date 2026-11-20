@@ -40,6 +40,8 @@ from .qr.styles_router import router as styles_router
 from .redirect.router import router as redirect_router
 from .reports.router import public as reports_public_router
 from .reports.router import router as reports_router
+from .site_offer import admin as site_offer_admin
+from .site_offer import public as site_offer_public
 from .stats.router import router as stats_router
 from .storage.public import router as files_public_router
 from .storage.router import router as files_router
@@ -63,6 +65,8 @@ def create_app() -> FastAPI:
     startup_check()
     for router in (
         auth_router,
+        site_offer_public,
+        site_offer_admin,
         onboarding_router,
         account_router,
         company_account_router,

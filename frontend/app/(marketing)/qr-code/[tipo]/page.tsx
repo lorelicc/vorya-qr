@@ -54,6 +54,7 @@ export default async function TypePage({ params }: { params: Promise<{ tipo: str
         }}
       />
       <Crumbs
+        tone="indigo"
         items={[
           { label: "Tipi di QR", href: "/qr-code" },
           { label: t.label, href: `/qr-code/${t.slug}` },
@@ -65,6 +66,7 @@ export default async function TypePage({ params }: { params: Promise<{ tipo: str
         lead={t.lead}
         art={t.art}
         scene={typeScene(t.slug)}
+        tone="indigo"
         actions={
           dynamicOnly ? (
             <ButtonLink href="/register" data-umami-event={`landing-${t.slug}-prova`}>

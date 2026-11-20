@@ -12,14 +12,17 @@ from urllib.parse import urlsplit
 
 from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
-from sqlalchemy import func, select, update
+from sqlalchemy import func, literal, select, tuple_, update
+from sqlalchemy.orm import aliased
 
 from ..access import redirects_enabled
 from ..auth.service import client_ip
 from ..core.database import session_factory
 from ..core.security import now
+from ..limits import verdict_from_ranks
 from ..links.service import cookie_name, is_expired, scheduled_url, unlocked
-from ..models import Company, LinkAlias, QrCode, ScanEvent, Workspace
+from ..models import Company, LinkAlias, Plan, QrCode, ScanEvent, Workspace
+from ..plans import FREE_PLAN, effective_plan_id
 from ..stats.geo import lookup
 from ..stats.periods import local_today
 from ..stats.visitors import salt_for, visitor_hash
@@ -81,18 +84,59 @@ def resolve(session, slug: str):
         .where(LinkAlias.alias == slug.lower(), LinkAlias.removed_at.is_(None))
         .scalar_subquery(),
     )
+    # Still ONE query: the plan limits (assigned plan and Free, the only two that can apply) and
+    # the position of the code inside its company/workspace ride along as subqueries.
+    assigned, free = aliased(Plan), aliased(Plan)
+    older_qr, older_company = aliased(QrCode), aliased(Company)
+    qr_rank = (
+        select(func.count())
+        .where(
+            older_qr.company_id == QrCode.company_id,
+            older_qr.kind == "dynamic",
+            older_qr.deleted_at.is_(None),
+            tuple_(older_qr.created_at, older_qr.id) < tuple_(QrCode.created_at, QrCode.id),
+        )
+        .scalar_subquery()
+    )
+    company_rank = (
+        select(func.count())
+        .where(
+            older_company.workspace_id == Company.workspace_id,
+            older_company.deleted_at.is_(None),
+            tuple_(older_company.created_at, older_company.id)
+            < tuple_(Company.created_at, Company.id),
+        )
+        .scalar_subquery()
+    )
     return session.execute(
         select(
             QrCode.id, QrCode.target_url, QrCode.status, QrCode.deleted_at, QrCode.destination,
             QrCode.slug, QrCode.expires_at, QrCode.max_scans, QrCode.scan_total,
-            QrCode.fallback_url, QrCode.password_hash, QrCode.schedule,
+            QrCode.fallback_url, QrCode.password_hash, QrCode.schedule, QrCode.kind,
             Company.deleted_at.label("company_deleted_at"),
             Workspace.status.label("workspace_status"),
+            Workspace.plan_id, Workspace.billing_state, Workspace.grace_until,
+            Workspace.trial_ends_at, Workspace.grant_until,
+            assigned.max_companies.label("assigned_companies"),
+            assigned.max_dynamic_qr.label("assigned_dynamic"),
+            free.max_companies.label("free_companies"),
+            free.max_dynamic_qr.label("free_dynamic"),
+            qr_rank.label("qr_rank"), company_rank.label("company_rank"),
         )
         .join(Company, Company.id == QrCode.company_id)
         .join(Workspace, Workspace.id == Company.workspace_id)
+        .join(assigned, assigned.id == Workspace.plan_id)
+        .join(free, free.id == literal(FREE_PLAN))
         .where(QrCode.id == target)
     ).one_or_none()  # fmt: skip
+
+
+def plan_suspended(row) -> bool:
+    """True if the plan in force does not include this dynamic code (see app/limits.py)."""
+    on_free = effective_plan_id(row) == FREE_PLAN
+    companies = row.free_companies if on_free else row.assigned_companies
+    dynamic = row.free_dynamic if on_free else row.assigned_dynamic
+    return bool(verdict_from_ranks(row.kind, companies, dynamic, row.company_rank, row.qr_rank))
 
 
 def expired_page() -> HTMLResponse:
@@ -113,6 +157,8 @@ def follow(slug: str, request: Request, tasks: BackgroundTasks):
             or row.status != "active"
             or not redirects_enabled(row.workspace_status)
         ):
+            return inactive(410)
+        if plan_suspended(row):
             return inactive(410)
         at = now()
 

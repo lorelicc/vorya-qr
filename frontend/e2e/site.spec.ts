@@ -30,7 +30,7 @@ test("pagina prezzi coerente con la tabella dei piani (nessun prezzo nel codice)
   }
   // The comparison table has one column per plan and the guarantee is visible.
   await expect(page.getByRole("columnheader")).toHaveCount(data.plans.length + 1);
-  await expect(page.getByRole("heading", { name: /Garanzia «QR sempre attivi»/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Cosa succede se smetti di pagare/ })).toBeVisible();
   // Yearly toggle: the numbers change to the yearly prices of the table.
   const yearly = data.plans.find((p: { prices: { yearly?: unknown } }) => p.prices.yearly);
   if (yearly) {

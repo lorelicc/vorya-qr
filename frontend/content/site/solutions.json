@@ -14,7 +14,7 @@
     "faq": [
       {
         "q": "Il QR resta attivo se cambio piano?",
-        "a": "Sì: i QR non vengono mai disattivati per il piano. Se l'abbonamento finisce, passi al Free e i tuoi QR continuano a funzionare."
+        "a": "Se l'abbonamento finisce passi al Free: restano attivi i 2 QR dinamici più vecchi, gli altri vengono sospesi e si riattivano quando torni a un piano. I QR statici non dipendono dall'abbonamento."
       }
     ],
     "art": "ristoranti"

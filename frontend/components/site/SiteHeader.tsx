@@ -5,10 +5,12 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Brand } from "@/components/layout/Brand";
 import { AuthCta } from "./AuthCta";
+import { NavIcon } from "./NavIcon";
+import { VoryaFamily } from "./VoryaFamily";
 import type { NavGroup } from "./nav";
-import styles from "./site.module.css";
+import styles from "./header.module.css";
 
-/** Header with an animated mega-menu (hover or click) and an accordion menu on mobile. */
+/** Header with a coloured mega-menu (hover or click) and an accordion menu on phones. */
 export function SiteHeader({ groups }: { groups: NavGroup[] }) {
   // Keyed by path: every navigation remounts it, so the menus are closed again.
   return <HeaderInner key={usePathname()} groups={groups} />;
@@ -37,13 +39,16 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
       <a href="#main" className={styles.skip}>
         Vai al contenuto
       </a>
-      <div className={`${styles.container} ${styles.headerBar}`}>
-        <Brand href="/" />
+      <div className={`${styles.container} ${styles.bar}`}>
+        <div className={styles.brandRow}>
+          <Brand href="/" />
+          <VoryaFamily />
+        </div>
         <nav className={styles.nav} aria-label="Principale">
           {groups.map((group) => (
             <div
               key={group.key}
-              className={styles.navItem}
+              className={styles.item}
               onPointerEnter={(e) => e.pointerType === "mouse" && setOpen(group.key)}
               onPointerLeave={(e) => e.pointerType === "mouse" && setOpen(null)}
             >
@@ -57,16 +62,42 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
               </button>
               <div
                 id={`menu-${group.key}`}
-                className={styles.panel}
+                className={styles.mega}
                 data-open={open === group.key || undefined}
-                data-wide={group.wide || undefined}
+                data-tone={group.tone}
               >
-                {group.links.map((link) => (
-                  <Link key={link.href} href={link.href} tabIndex={open === group.key ? 0 : -1}>
-                    <span>{link.label}</span>
-                    {link.hint && <small>{link.hint}</small>}
-                  </Link>
-                ))}
+                <div className={`${styles.container} ${styles.megaInner}`}>
+                  <div className={styles.intro}>
+                    <strong>{group.intro.title}</strong>
+                    <p>{group.intro.text}</p>
+                    <Link href={group.intro.cta.href} tabIndex={open === group.key ? 0 : -1}>
+                      {group.intro.cta.label} →
+                    </Link>
+                  </div>
+                  <div className={styles.columns} data-cols={group.columns.length}>
+                    {group.columns.map((column, i) => (
+                      <div key={column.title ?? i} className={styles.column}>
+                        {column.title && <h2>{column.title}</h2>}
+                        {column.items.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={styles.tile}
+                            tabIndex={open === group.key ? 0 : -1}
+                          >
+                            <span className={styles.bubble}>
+                              <NavIcon name={item.icon} />
+                            </span>
+                            <span className={styles.tileText}>
+                              <b>{item.label}</b>
+                              {item.hint && <small>{item.hint}</small>}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           ))}
@@ -74,7 +105,7 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
             Prezzi
           </Link>
         </nav>
-        <div className={styles.headerCta}>
+        <div className={styles.cta}>
           <AuthCta />
         </div>
         <button
@@ -90,14 +121,19 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
       {mobile && (
         <div className={styles.mobilePanel}>
           {groups.map((group) => (
-            <details key={group.key}>
+            <details key={group.key} data-tone={group.tone}>
               <summary>{group.label}</summary>
               <div>
-                {group.links.map((link) => (
-                  <Link key={link.href} href={link.href}>
-                    {link.label}
-                  </Link>
-                ))}
+                {group.columns
+                  .flatMap((c) => c.items)
+                  .map((item) => (
+                    <Link key={item.href} href={item.href}>
+                      <span className={styles.bubble}>
+                        <NavIcon name={item.icon} size={16} />
+                      </span>
+                      {item.label}
+                    </Link>
+                  ))}
               </div>
             </details>
           ))}

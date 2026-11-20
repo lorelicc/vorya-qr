@@ -1,7 +1,7 @@
 {
   "hero": {
-    "title": "I tuoi QR non smettono mai di funzionare",
-    "lead": "Link brevi e codici QR statici e dinamici, in italiano e senza pubblicità. Crea il tuo qui sotto, gratis e senza registrarti.",
+    "title": "Stampa il QR una volta. Cambia la destinazione quando vuoi.",
+    "lead": "Link brevi e codici QR dinamici con statistiche, in italiano e senza pubblicità. Crea il tuo qui sotto, gratis e senza registrarti.",
     "cta": "Prova gratis",
     "ctaSecondary": "Vedi i prezzi",
     "eyebrow": "Link brevi e QR code, in italiano"
@@ -37,23 +37,23 @@
     },
     "features": {
       "title": "Tutto quello che ti serve",
-      "lead": "Dal link breve alla carta dei vini, senza strumenti separati."
+      "lead": "Link, QR, pagine, statistiche e report: senza strumenti separati."
     },
     "sectors": {
       "kicker": "Per chi stampa",
-      "title": "Cambi il prezzo, non il QR",
-      "text": "Stampi il QR una volta sul tavolo, in vetrina o sul volantino. Menu, carta dei vini, eventi e offerte si aggiornano dal telefono, senza ristampare nulla.",
-      "cta": "Le soluzioni per i ristoranti",
+      "title": "Un QR, mille usi",
+      "text": "Biglietti da visita, vetrine, cartelli, volantini, eventi, imballaggi: stampi una volta e aggiorni dal telefono, senza ristampare nulla.",
+      "cta": "Scopri le soluzioni",
       "lead": "Ristoranti, cantine, eventi, agenzie, negozi e immobiliari."
     },
     "guarantee": {
-      "kicker": "La nostra promessa",
-      "title": "Se smetti di pagare, i tuoi QR continuano a funzionare",
-      "text": "Nessun QR viene mai disattivato perché la prova è finita o l’abbonamento è scaduto: passi al piano Free e tutto resta raggiungibile.",
+      "kicker": "Trasparenza",
+      "title": "Cosa succede se smetti di pagare",
+      "text": "Nessuna sorpresa: lo diciamo prima, non dopo la stampa. I tuoi dati non vengono cancellati.",
       "points": [
-        "Nessuna pubblicità sulla pagina di destinazione, nemmeno nel piano Free",
-        "La dashboard resta sempre accessibile",
-        "Oltre i limiti del Free i codici diventano in sola lettura e si sbloccano subito scegliendo un piano"
+        "Restano attivi i 2 QR dinamici più vecchi, come nel piano Free",
+        "I QR statici funzionano sempre: il contenuto è dentro il codice",
+        "Gli altri vengono sospesi («QR non attivo») e si riattivano appena torni a un piano o ne elimini altri"
       ]
     },
     "report": {

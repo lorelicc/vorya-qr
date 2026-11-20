@@ -23,7 +23,7 @@ export function HeroScene({ active }: Props) {
     >
       <div className={s.hStage}>
         <div className={s.hCard}>
-          <span className={s.hCardLabel}>Scansiona il menu</span>
+          <span className={s.hCardLabel}>Scansiona e scopri</span>
           <div className={s.hQr}>
             <QrGlyph />
             <i className={s.hBeam} />
@@ -34,22 +34,22 @@ export function HeroScene({ active }: Props) {
         <div className={s.hPhone}>
           <span className={s.hNotch} />
           <div className={`${s.hScreen} ${s.hScreenA}`}>
-            <header>Menu estate</header>
+            <header>Catalogo estate</header>
             <Rows
               items={[
-                ["Spritz", "8 €"],
-                ["Insalata di mare", "14 €"],
-                ["Gelato", "5 €"],
+                ["Borsa in tela", "24 €"],
+                ["Cappello", "18 €"],
+                ["Maglietta", "22 €"],
               ]}
             />
           </div>
           <div className={`${s.hScreen} ${s.hScreenB}`}>
-            <header>Menu autunno</header>
+            <header>Catalogo autunno</header>
             <Rows
               items={[
-                ["Vino caldo", "6 €"],
-                ["Risotto alla zucca", "13 €"],
-                ["Castagnaccio", "6 €"],
+                ["Zaino", "39 €"],
+                ["Sciarpa", "19 €"],
+                ["Felpa", "45 €"],
               ]}
             />
           </div>
@@ -58,8 +58,8 @@ export function HeroScene({ active }: Props) {
         <div className={s.hChip}>
           <small>Destinazione del QR</small>
           <div className={s.hField}>
-            <span className={`${s.hText} ${s.hTextA}`}>menu-estate</span>
-            <span className={`${s.hText} ${s.hTextB}`}>menu-autunno</span>
+            <span className={`${s.hText} ${s.hTextA}`}>catalogo-estate</span>
+            <span className={`${s.hText} ${s.hTextB}`}>catalogo-autunno</span>
           </div>
           <span className={s.hSave}>
             <span className={s.hSaveLabel}>Salva</span>
@@ -88,12 +88,12 @@ export function LinkScene({ active }: Props) {
         <div className={s.lLong}>
           <Link2 size={16} />
           <span>
-            https://www.ristorante-esempio.it/menu/estate/2025?utm_source=instagram&amp;utm_medium=social&amp;utm_campaign=aperitivo
+            https://www.negozio-esempio.it/catalogo/estate/2025?utm_source=instagram&amp;utm_medium=social&amp;utm_campaign=estate
           </span>
         </div>
         <div className={s.lShort}>
           <span>
-            <b>qr.vorya.it/</b>aperitivo
+            <b>qr.vorya.it/</b>estate
           </span>
           <em className={s.lCopy}>
             <Check size={14} /> Copiato
@@ -102,7 +102,7 @@ export function LinkScene({ active }: Props) {
         <div className={s.lChat}>
           <small>Chat</small>
           <p>
-            Ecco il menu di stasera! <u>qr.vorya.it/aperitivo</u>
+            Guarda le novità! <u>qr.vorya.it/estate</u>
           </p>
         </div>
         <div className={s.lCount}>

@@ -106,7 +106,7 @@ FREE_PLAN = "free"
 
 
 def effective_plan_id(workspace, at: datetime | None = None) -> str:
-    """The plan that applies RIGHT NOW (0.5 guarantee: nothing is ever switched off).
+    """The plan that applies RIGHT NOW (trial, gift or subscription ended -> Free).
 
     A running trial, gift or paid subscription gives the assigned plan; in every other case the
     workspace is on Free. All existing links, pages and files keep working on Free: only editing

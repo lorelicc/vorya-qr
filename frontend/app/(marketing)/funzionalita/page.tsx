@@ -1,4 +1,5 @@
 import { Bullets, Card, Cards, Crumbs, CtaBand, Hero, Section } from "@/components/site/blocks";
+import { HeroScene } from "@/components/site/scenes";
 import { Reveal } from "@/components/site/Reveal";
 import { SiteArt } from "@/components/site/art/SiteArt";
 import { FEATURE_ART } from "@/lib/site/feature-art";
@@ -15,12 +16,14 @@ export const metadata = pageMetadata({
 export default function FeaturesIndex() {
   return (
     <>
-      <Crumbs items={[{ label: "Funzionalità", href: "/funzionalita" }]} />
+      <Crumbs tone="dark" items={[{ label: "Funzionalità", href: "/funzionalita" }]} />
       <Hero
         eyebrow="Funzionalità"
         title="Tutto per link e QR, in un solo posto"
         lead="Dal link breve alla carta dei vini: strumenti pensati per chi stampa, condivide e vuole misurare."
         art="pages"
+        scene={<HeroScene />}
+        tone="dark"
       />
       <Section>
         <h2 className="visually-hidden">Tutte le funzionalità</h2>

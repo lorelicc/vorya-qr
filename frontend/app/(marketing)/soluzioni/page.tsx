@@ -1,4 +1,5 @@
 import { Card, Cards, Crumbs, CtaBand, Hero, Section } from "@/components/site/blocks";
+import { PagesScene } from "@/components/site/scenes";
 import { pageMetadata } from "@/lib/site/config";
 import { SOLUTIONS } from "@/lib/site/content";
 
@@ -12,12 +13,14 @@ export const metadata = pageMetadata({
 export default function SolutionsIndex() {
   return (
     <>
-      <Crumbs items={[{ label: "Soluzioni", href: "/soluzioni" }]} />
+      <Crumbs tone="sun" items={[{ label: "Soluzioni", href: "/soluzioni" }]} />
       <Hero
         eyebrow="Soluzioni"
         title="Pensato per chi lavora con i QR"
         lead="Scegli il tuo settore e parti dai tipi di QR più utili."
         art="agency"
+        scene={<PagesScene />}
+        tone="sun"
       />
       <Section>
         <Cards>

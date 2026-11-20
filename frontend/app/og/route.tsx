@@ -52,7 +52,7 @@ export function GET(request: NextRequest) {
           {title}
         </div>
         <div style={{ fontSize: 30, color: "#087f5b" }}>
-          I tuoi QR non smettono mai di funzionare
+          Stampi una volta, cambi quando vuoi
         </div>
       </div>
     ),

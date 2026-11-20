@@ -11,10 +11,10 @@ export function SiteFooter() {
     <footer className={styles.footer}>
       <div className={`${styles.container} ${styles.footerGrid}`}>
         <div className={styles.footerBrand}>
-          <Brand href="/" />
+          <Brand href="/" tone="light" />
           <p>
-            Link brevi e codici QR in italiano, senza pubblicità. I tuoi QR non smettono mai di
-            funzionare.
+            Link brevi e codici QR dinamici in italiano, senza pubblicità. Stampi una volta, cambi
+            la destinazione quando vuoi.
           </p>
           <p className={styles.parent}>
             a <a href={SITE.parent.url}>Vorya</a> product

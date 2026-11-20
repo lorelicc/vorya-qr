@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { PlanScene } from "@/components/site/scenes";
 import { Bullets, Crumbs, CtaBand, Hero, Section } from "@/components/site/blocks";
 import { ALTERNATIVES, alternativeBySlug } from "@/lib/site/content";
 import { pageMetadata } from "@/lib/site/config";
@@ -22,12 +23,17 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
   if (!a) notFound();
   return (
     <>
-      <Crumbs items={[{ label: `Alternativa a ${a.name}`, href: `/alternative/${a.slug}` }]} />
+      <Crumbs
+        tone="indigo"
+        items={[{ label: `Alternativa a ${a.name}`, href: `/alternative/${a.slug}` }]}
+      />
       <Hero
         eyebrow="Confronto"
         title={`Alternativa a ${a.name}`}
         lead={`Cosa cambia scegliendo Vorya QR al posto di ${a.name}. Solo fatti verificabili, con la fonte.`}
         art="alternative"
+        scene={<PlanScene />}
+        tone="indigo"
       />
       {!a.verified && (
         <Section>

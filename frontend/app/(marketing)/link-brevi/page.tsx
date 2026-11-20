@@ -17,7 +17,7 @@ const FAQ = [
   },
   {
     q: "Il link breve scade?",
-    a: "No. I tuoi link non vengono mai disattivati perché finisce la prova o l'abbonamento: se passi al piano Free continuano a funzionare.",
+    a: "Non per tempo. Se l'abbonamento finisce passi al Free: restano attivi i 2 link dinamici più vecchi, gli altri vengono sospesi finché non torni a un piano.",
   },
   {
     q: "Posso scegliere la parte finale del link?",
@@ -32,13 +32,14 @@ const FAQ = [
 export default function ShortLinksPage() {
   return (
     <>
-      <Crumbs items={[{ label: "Link brevi", href: "/link-brevi" }]} />
+      <Crumbs tone="dark" items={[{ label: "Link brevi", href: "/link-brevi" }]} />
       <Hero
         eyebrow="Link brevi"
         title="Accorcia i tuoi link, misura i clic"
         lead="Link brevi che puoi cambiare dopo averli condivisi, con scadenza, password e destinazioni programmate nei piani che le includono."
         art="links"
         scene={featureScene("link-brevi")}
+        tone="dark"
       />
       <Section>
         <ShortLinkTab />

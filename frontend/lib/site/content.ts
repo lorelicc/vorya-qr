@@ -20,7 +20,7 @@ export const FEATURES = featuresJson;
 export const ALTERNATIVES = alternativesJson;
 export const MESSAGES = messagesJson;
 export const HOME = homeJson;
-export const FAQ = faqJson as { home: FaqItem[]; pricing: FaqItem[] };
+export const FAQ = faqJson as Record<"home" | "pricing" | "qr" | "privacy", FaqItem[]>;
 export const SOCIAL = socialJson as {
   testimonials: { quote: string; author: string; role?: string }[];
   logos: { name: string; src: string }[];

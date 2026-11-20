@@ -11,11 +11,11 @@
     "slug": "qr-dinamici",
     "label": "QR dinamici",
     "title": "QR code dinamici che puoi modificare",
-    "text": "Stampi una volta e cambi destinazione quando vuoi. I tuoi QR non smettono mai di funzionare.",
+    "text": "Stampi una volta e cambi destinazione quando vuoi, senza ristampare.",
     "bullets": [
       "Cambia la destinazione dopo la stampa",
       "Cronologia delle versioni",
-      "Mai disattivati per il piano"
+      "Nessuna ristampa quando cambi pagina"
     ],
     "page": true
   },

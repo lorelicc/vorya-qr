@@ -2,7 +2,7 @@
   "home": [
     {
       "q": "Cosa succede ai miei QR se smetto di pagare?",
-      "a": "Niente di grave: il tuo account passa al piano Free e tutti i tuoi QR e link continuano a funzionare. Oltre i limiti del Free i codici diventano in sola lettura (non puoi modificarli) finché non scegli un piano."
+      "a": "Passi al piano Free: restano attivi i 2 QR dinamici più vecchi, più tutti i QR statici che non dipendono da noi. Gli altri QR dinamici vengono sospesi: chi li scansiona vede «QR non attivo». Non cancelliamo nulla: si riattivano subito se torni a un piano a pagamento, e puoi scegliere quali tenere eliminando gli altri."
     },
     {
       "q": "C'è davvero un piano gratuito per sempre?",
@@ -36,11 +36,47 @@
     },
     {
       "q": "Cosa succede ai miei QR se smetto di pagare?",
-      "a": "Passi al piano Free e i tuoi QR continuano a funzionare. Oltre i limiti del Free i codici sono in sola lettura; se fai di nuovo l'upgrade si sbloccano subito."
+      "a": "Passi al piano Free: restano attivi i 2 QR dinamici più vecchi e i QR statici (che funzionano sempre). Gli altri QR dinamici vengono sospesi e mostrano «QR non attivo» finché non fai di nuovo l'upgrade o ne elimini altri. Non cancelliamo nulla."
     },
     {
       "q": "I prezzi includono l'IVA?",
       "a": "I prezzi sono indicati IVA esclusa, se dovuta."
+    }
+  ],
+  "qr": [
+    {
+      "q": "Un QR dinamico si può modificare dopo la stampa?",
+      "a": "Sì. Il QR stampato resta identico: cambi la destinazione dalla dashboard quando vuoi, senza ristampare."
+    },
+    {
+      "q": "Come faccio a sapere se il mio QR si legge bene?",
+      "a": "Il controllo di leggibilità automatico ti avvisa se il contrasto è basso o se il logo copre troppo il codice, prima che tu lo stampi."
+    },
+    {
+      "q": "Posso mettere il mio logo e i miei colori?",
+      "a": "Sì, nel design del QR puoi scegliere colori, forma dei moduli e logo. Il controllo di leggibilità verifica il risultato."
+    },
+    {
+      "q": "Che formati posso scaricare?",
+      "a": "PNG, SVG e PDF, senza filigrana."
+    },
+    {
+      "q": "Cosa succede a un QR che elimino?",
+      "a": "L'indirizzo resta registrato e non viene mai riassegnato ad altri: chi lo scansiona vede «QR non attivo». Libera un posto nel tuo piano."
+    }
+  ],
+  "privacy": [
+    {
+      "q": "Salvate gli indirizzi IP di chi scansiona?",
+      "a": "No. Nelle statistiche vedi scansioni, dispositivi e paesi, ma nessun indirizzo IP viene salvato."
+    },
+    {
+      "q": "Mostrate pubblicità sulle pagine dei miei QR?",
+      "a": "Mai, nemmeno nel piano Free. Le pagine sono tue e dei tuoi clienti."
+    },
+    {
+      "q": "Chi può vedere le statistiche dei miei QR?",
+      "a": "Solo tu e le persone che invitano nel tuo account. Ogni azienda è separata dalle altre."
     }
   ]
 }

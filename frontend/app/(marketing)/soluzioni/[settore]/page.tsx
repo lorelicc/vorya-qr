@@ -31,6 +31,7 @@ export default async function SolutionPage({ params }: { params: Promise<{ setto
   return (
     <>
       <Crumbs
+        tone="sun"
         items={[
           { label: "Soluzioni", href: "/soluzioni" },
           { label: s.label, href: `/soluzioni/${s.slug}` },
@@ -42,6 +43,7 @@ export default async function SolutionPage({ params }: { params: Promise<{ setto
         lead={s.solution}
         art={s.art}
         scene={solutionScene(s.slug)}
+        tone="sun"
         actions={
           <ButtonLink href="/register" data-umami-event={`soluzione-${s.slug}-prova`}>
             Prova gratis
@@ -71,7 +73,7 @@ export default async function SolutionPage({ params }: { params: Promise<{ setto
       <FaqList items={s.faq} />
       <CtaBand
         title={`Vorya QR per ${s.label.toLowerCase()}`}
-        text="Prova gratis per 14 giorni. I tuoi QR non smettono mai di funzionare."
+        text="Prova gratis per 14 giorni. Poi il piano Free per sempre."
         event={`soluzione-${s.slug}-cta`}
       />
     </>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LinkScene } from "@/components/site/scenes";
 import { Crumbs, CtaBand, Hero, Section } from "@/components/site/blocks";
 import { pageMetadata } from "@/lib/site/config";
 import { allGuides } from "@/lib/site/guides";
@@ -16,12 +17,14 @@ export default async function GuidesIndex() {
   const categories = [...new Set(guides.map((g) => g.meta.category))];
   return (
     <>
-      <Crumbs items={[{ label: "Guide", href: "/guide" }]} />
+      <Crumbs tone="indigo" items={[{ label: "Guide", href: "/guide" }]} />
       <Hero
         eyebrow="Guide"
         title="Guide pratiche sui QR code"
         lead="Poche cose chiare, in italiano, per usare i QR senza pentirti dopo la stampa."
         art="guide"
+        scene={<LinkScene />}
+        tone="indigo"
       />
       {categories.map((category) => (
         <Section key={category} title={category}>

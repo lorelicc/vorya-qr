@@ -1,0 +1,21 @@
+{
+  "apps": [
+    {
+      "key": "qr",
+      "name": "Vorya QR",
+      "text": "Link brevi e codici QR dinamici con statistiche",
+      "href": "/",
+      "current": true,
+      "tone": "mint"
+    },
+    {
+      "key": "sign",
+      "name": "Vorya Sign",
+      "text": "Firme email aziendali centralizzate per tutto il team",
+      "href": "https://sign.vorya.it",
+      "verify": true,
+      "tone": "lilac"
+    }
+  ],
+  "all": { "label": "Tutte le app Vorya", "href": "https://vorya.it" }
+}

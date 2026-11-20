@@ -10,7 +10,7 @@ ROUTE_WORDS = frozenset({
     "register", "report", "reset-password", "robots.txt", "sitemap.xml", "static", "suspended",
     "verify-email", "billing", "checkout", "signup", "settings", "help", "docs", "status",
     "www", "mail", "unlock", "expired", "funzionalita", "qr-code", "link-brevi", "genera",
-    "soluzioni", "prezzi", "alternative", "guide", "chi-siamo", "contatti", "en", "og", "sitemap",
+    "soluzioni", "prezzi", "alternative", "guide", "chi-siamo", "contatti", "en", "og", "sitemap", "faq",
 })  # fmt: skip
 
 BLOCKED_WORDS = frozenset({

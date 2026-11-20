@@ -5,7 +5,7 @@ import { Counter } from "@/components/site/Counter";
 import { HowItWorks } from "@/components/site/HowItWorks";
 import { PlansPreview } from "@/components/site/PlansPreview";
 import { Reveal } from "@/components/site/Reveal";
-import { GuaranteeScene, HeroScene, MenuScene, ReportScene } from "@/components/site/scenes";
+import { HeroScene, PagesScene, PlanScene, ReportScene } from "@/components/site/scenes";
 import { HeroGenerator } from "@/components/site/generator/HeroGenerator";
 import { ButtonLink } from "@/components/ui";
 import { pageMetadata } from "@/lib/site/config";
@@ -35,7 +35,7 @@ export default function HomePage() {
                 <ButtonLink href="/register" data-umami-event="hero-prova-gratis">
                   {HOME.hero.cta}
                 </ButtonLink>
-                <ButtonLink href="#genera" variant="secondary">
+                <ButtonLink href="#genera" variant="secondary" className={styles.ghost}>
                   Genera un QR gratis
                 </ButtonLink>
               </div>
@@ -65,7 +65,7 @@ export default function HomePage() {
         <HowItWorks />
       </Section>
 
-      <Section id="funzioni" tone="lilac" title={S.features.title} lead={S.features.lead}>
+      <Section id="funzioni" tone="indigo" title={S.features.title} lead={S.features.lead}>
         <Cards>
           {FEATURES.map((f, i) => (
             <Card
@@ -87,11 +87,11 @@ export default function HomePage() {
             <h2>{S.sectors.title}</h2>
             <p>{S.sectors.text}</p>
             <p>
-              <ButtonLink href="/soluzioni/ristoranti">{S.sectors.cta}</ButtonLink>
+              <ButtonLink href="/soluzioni">{S.sectors.cta}</ButtonLink>
             </p>
           </Reveal>
           <Reveal delay={80}>
-            <MenuScene />
+            <PagesScene />
           </Reveal>
         </div>
         <div className={styles.afterSplit}>
@@ -126,7 +126,7 @@ export default function HomePage() {
             </ul>
           </Reveal>
           <Reveal delay={80}>
-            <GuaranteeScene />
+            <PlanScene />
           </Reveal>
         </div>
       </Section>

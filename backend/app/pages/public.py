@@ -37,6 +37,10 @@ def load_page(slug: str, cookies: dict | None = None):
             or not redirects_enabled(row.Workspace.status)
         ):
             raise HTTPException(404, "Pagina non disponibile.")
+        from ..limits import suspension_reason
+
+        if suspension_reason(session, row.Workspace, row.Company, row.QrCode):
+            raise HTTPException(404, "Pagina non disponibile.")
         from ..core.security import now
         from ..links.service import cookie_name, is_expired, unlocked
 

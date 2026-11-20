@@ -1,4 +1,5 @@
 import { Card, Cards, Crumbs, CtaBand, Hero, Section } from "@/components/site/blocks";
+import { DesignScene } from "@/components/site/scenes";
 import { pageMetadata } from "@/lib/site/config";
 import { TYPES } from "@/lib/site/content";
 
@@ -14,12 +15,14 @@ export default function TypesIndex() {
   const rest = TYPES.filter((t) => t.kind !== "statico");
   return (
     <>
-      <Crumbs items={[{ label: "Tipi di QR", href: "/qr-code" }]} />
+      <Crumbs tone="indigo" items={[{ label: "Tipi di QR", href: "/qr-code" }]} />
       <Hero
         eyebrow="Tipi di QR"
         title="Un QR code per ogni cosa che vuoi condividere"
         lead="I QR statici sono gratuiti e funzionano per sempre. I QR dinamici si modificano dopo la stampa e mostrano le scansioni."
         art="website"
+        scene={<DesignScene />}
+        tone="indigo"
       />
       <Section title="Dinamici e statici" lead="Sito web e vCard esistono in entrambe le versioni.">
         <Cards>

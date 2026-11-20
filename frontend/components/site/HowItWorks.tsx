@@ -8,7 +8,7 @@ const STEPS = [
     key: "link",
     kicker: "1 · Crea",
     title: "Incolla un link, ottieni l’indirizzo breve",
-    text: "Un indirizzo lungo diventa qr.vorya.it/aperitivo: lo copi, lo condividi in chat e sui social, e vedi i click salire. Cartelle, tag e ricerca per non perderti.",
+    text: "Un indirizzo lungo diventa qr.vorya.it/estate: lo copi, lo condividi in chat e sui social, e vedi i click salire. Cartelle, tag e ricerca per non perderti.",
   },
   {
     key: "design",

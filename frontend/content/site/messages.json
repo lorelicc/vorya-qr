@@ -1,8 +1,8 @@
 [
   {
-    "key": "always-on",
-    "title": "I tuoi QR non smettono mai di funzionare",
-    "text": "Nessun QR viene disattivato perché la prova è finita o l'abbonamento è scaduto. Se smetti di pagare, passi al piano Free e tutto continua a funzionare.",
+    "key": "change-anytime",
+    "title": "Stampi una volta, cambi quando vuoi",
+    "text": "Il QR resta quello stampato, la destinazione la cambi dalla dashboard: niente ristampe, e vedi quante persone lo scansionano.",
     "art": "guarantee"
   },
   {

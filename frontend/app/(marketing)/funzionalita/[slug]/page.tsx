@@ -32,6 +32,7 @@ export default async function FeaturePage({ params }: { params: Promise<{ slug: 
   return (
     <>
       <Crumbs
+        tone="dark"
         items={[
           { label: "Funzionalità", href: "/funzionalita" },
           { label: f.label, href: `/funzionalita/${f.slug}` },
@@ -43,6 +44,7 @@ export default async function FeaturePage({ params }: { params: Promise<{ slug: 
         lead={f.text}
         art={FEATURE_ART[f.slug]}
         scene={featureScene(f.slug)}
+        tone="dark"
       />
       <Section title="In pratica">
         <Bullets items={f.bullets} />

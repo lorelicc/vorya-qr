@@ -1,4 +1,4 @@
-"""0.5: the Free plan and the "QR always on" guarantee. Nothing is switched off for money."""
+"""The Free plan: only the dynamic codes that fit it keep answering; the rest are suspended."""
 
 from datetime import timedelta
 
@@ -40,19 +40,18 @@ def test_the_five_plans_and_their_limits(db):
     assert rows["agency"].features["stats_retention_days"] is None
 
 
-def test_trial_ending_lands_on_free_and_every_link_keeps_working(client, db):
+def test_trial_ending_lands_on_free_and_only_the_free_codes_stay_active(client, db):
     signup(client)
     qrs_ = [create(client).json() for _ in range(4)]
     assert plan_id(client) == "pro"  # the trial gives Pro
     db.execute(update(Workspace).values(trial_ends_at=now() - timedelta(minutes=1)))
     db.commit()
     assert plan_id(client) == "free"
-    for q in qrs_:  # all four still redirect, even the two above the Free limit
-        assert follow(client, q["slug"]).status_code == 302
-    assert client.get(qrs(client)).status_code == 200  # the dashboard is not blocked
+    assert [follow(client, q["slug"]).status_code for q in qrs_] == [302, 302, 410, 410]
+    assert client.get(qrs(client)).status_code == 200  # the dashboard is never blocked
 
 
-def test_above_the_limit_is_read_only_not_off(client, db):
+def test_above_the_limit_is_suspended_and_read_only(client, db):
     signup(client)
     items = [create(client).json() for _ in range(4)]
     on_free(db)  # Free: 2 dynamic per company
@@ -66,7 +65,8 @@ def test_above_the_limit_is_read_only_not_off(client, db):
     )
     locked = update_qr(client, items[3]["id"], name="No", target_url="https://example.com/nuovo")
     assert locked.status_code == 403 and locked.json()["code"] == "read_only_over_limit"
-    assert follow(client, items[3]["slug"]).status_code == 302  # still working
+    assert follow(client, items[3]["slug"]).status_code == 410  # suspended: "QR non attivo"
+    assert follow(client, items[0]["slug"]).status_code == 302  # the Free ones keep working
     detail = client.get(f"{qrs(client)}/{items[3]['id']}").json()
     assert detail["locked"] and detail["locked_reason"] == "quota"
     # Pausing and deleting stay possible: the user is always in control.
@@ -74,8 +74,9 @@ def test_above_the_limit_is_read_only_not_off(client, db):
         client.post(f"{qrs(client)}/{items[3]['id']}/pause", headers=csrf(client)).status_code
         == 200
     )
-    # Deleting one fitting code makes room: the newest locked one is now editable.
+    # Deleting one fitting code makes room: the oldest suspended one is reactivated.
     client.delete(f"{qrs(client)}/{items[0]['id']}", headers=csrf(client))
+    assert follow(client, items[2]["slug"]).status_code == 302
     assert (
         update_qr(
             client, items[2]["id"], name="Ora sì", target_url="https://example.com/nuovo"
@@ -95,8 +96,10 @@ def test_upgrade_unlocks_at_once(client, db, stripe_fake=None):
         ).status_code
         == 403
     )
+    assert follow(client, items[3]["slug"]).status_code == 410
     post_event(client, "e1", "customer.subscription.created", sub_obj("price_start_m"))
     assert plan_id(client) == "start"  # 10 dynamic per company
+    assert follow(client, items[3]["slug"]).status_code == 302  # reactivated at once
     assert (
         update_qr(
             client, items[3]["id"], name="Sì", target_url="https://example.com/nuovo"
@@ -184,6 +187,47 @@ def test_stats_beyond_the_plan_window_are_kept_for_twelve_months(client, db):
     assert stats_retention(db) == 0  # hidden, not deleted
     db.commit()
     assert db.scalar(text("SELECT count(*) FROM scan_events")) == 1
+
+
+def test_static_codes_and_the_second_company_on_free(client, db):
+    signup(client)
+    static = create(client, kind="static").json()
+    first = create(client).json()
+    second_company = client.post("/api/companies", json={"name": "Seconda"}, headers=csrf(client))
+    assert second_company.status_code == 201
+    other = client.get("/api/companies").json()
+    other_id = [c["id"] for c in other if c["name"] == "Seconda"][0]
+    in_second = client.post(
+        f"/api/companies/{other_id}/qr-codes",
+        json={"name": "Altra", "qr_type": "website", "dynamic": True,
+              "target_url": "https://example.com/altra"},
+        headers=csrf(client),
+    ).json()  # fmt: skip
+    on_free(db)
+    assert follow(client, first["slug"]).status_code == 302
+    assert follow(client, in_second["slug"]).status_code == 410  # company above the Free limit
+    assert static["kind"] == "static" and "slug" not in static or static.get("slug") is None
+
+
+def test_a_suspended_hosted_page_is_not_served(client, db):
+    from tests.test_pages_types import create_page_qr
+
+    signup(client)
+    page = create_page_qr(client, "link_in_bio", {"template": "link_in_bio", "blocks": [
+        {"id": "l", "type": "link_list", "items": [{"label": "Sito", "url": "https://example.com"}]}]}).json()  # fmt: skip
+    for _ in range(2):
+        create(client)
+    on_free(db)  # the page is the oldest: it fits; push it out by deleting nothing, add a newer one
+    assert client.get(f"/api/public/pages/{page['slug']}").status_code == 200
+    db.execute(update(Workspace).values(plan_id="free"))
+    from app.models import QrCode
+
+    db.execute(
+        update(QrCode).where(QrCode.id == page["id"]).values(created_at=now() + timedelta(days=1))
+    )
+    db.commit()
+    assert client.get(f"/api/public/pages/{page['slug']}").status_code == 404
+    assert follow(client, page["slug"]).status_code == 410
 
 
 def test_suspension_is_still_the_only_switch_off(client, db):

@@ -1,0 +1,1471 @@
+/* Extra scenes (see scenes.module.css for the rules: the base style is the FINAL frame). */
+.card2 {
+  position: absolute;
+  background: #fff;
+  border-radius: 1.4em;
+  box-shadow: 0 0.6em 2em rgba(9, 20, 17, 0.12);
+}
+.fade {
+  position: absolute;
+  inset: 0;
+}
+
+/* ================= PHONE (QR types, sectors) ================= */
+.pStage {
+  position: absolute;
+  inset: 0;
+  animation: pFade 10s linear infinite;
+}
+.pCard {
+  position: absolute;
+  left: 3.5em;
+  top: 6em;
+  width: 19em;
+  height: 22em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1em;
+  padding: 1em;
+  text-align: center;
+  background: #fff;
+  border-radius: 1.6em;
+  box-shadow: 0 1em 2.6em rgba(9, 20, 17, 0.16);
+  transform: rotate(-2.5deg);
+}
+.pCardLabel {
+  font-size: 1.45em;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.pQr {
+  position: relative;
+  width: 12.5em;
+  height: 12.5em;
+  overflow: hidden;
+  color: var(--ink, #091411);
+}
+.pQr svg {
+  width: 100%;
+  height: 100%;
+}
+.pBeam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 0.4em;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  box-shadow: 0 0 1.2em var(--accent);
+  animation: pBeam 10s linear infinite;
+}
+.pPhone {
+  position: absolute;
+  left: 27em;
+  top: 3em;
+  width: 17em;
+  height: 30em;
+  padding: 0.7em;
+  border-radius: 2.2em;
+  background: #091411;
+  box-shadow: 0 1em 2.6em rgba(9, 20, 17, 0.28);
+}
+.pNotch {
+  position: absolute;
+  z-index: 3;
+  top: 0.9em;
+  left: 50%;
+  width: 4em;
+  height: 0.8em;
+  margin-left: -2em;
+  border-radius: 1em;
+  background: #091411;
+}
+.pScreen {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 1.6em;
+  background: #fff;
+  animation: pScreen 10s linear infinite;
+}
+.pScreen header {
+  display: grid;
+  gap: 0.2em;
+  padding: 2.4em 1.2em 1.1em;
+  background: var(--accent);
+  color: #fff;
+}
+.pScreen header b {
+  font-size: 1.6em;
+  line-height: 1.15;
+}
+.pScreen header small {
+  font-size: 1.05em;
+  opacity: 0.9;
+}
+.pScreen ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pScreen li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8em;
+  padding: 1em 1.2em;
+  border-bottom: 1px solid #eef3f0;
+  font-size: 1.15em;
+}
+.pScreen li b {
+  font-weight: 700;
+  text-align: right;
+}
+.pCta {
+  position: absolute;
+  left: 1.2em;
+  right: 1.2em;
+  bottom: 1.4em;
+  padding: 0.8em 0.6em;
+  border-radius: 0.8em;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.3em;
+  font-weight: 700;
+  text-align: center;
+  animation: pCta 10s linear infinite;
+}
+.pBadge {
+  position: absolute;
+  left: 3.5em;
+  top: 1.1em;
+  padding: 0.55em 1.1em;
+  border-radius: 99em;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.3em;
+  font-weight: 700;
+  animation: pBadge 10s linear infinite;
+}
+@keyframes pFade {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes pBeam {
+  0%,
+  6% {
+    top: 0;
+    opacity: 1;
+  }
+  18% {
+    top: 100%;
+    opacity: 1;
+  }
+  19%,
+  100% {
+    top: 0;
+    opacity: 0;
+  }
+}
+@keyframes pScreen {
+  0%,
+  18% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  24%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pCta {
+  0%,
+  44% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  50% {
+    opacity: 1;
+    transform: none;
+  }
+  58% {
+    transform: scale(1.06);
+  }
+  64%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pBadge {
+  0%,
+  26% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  32%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pRow0 {
+  0%,
+  28% {
+    opacity: 0;
+    transform: translateX(1.2em);
+  }
+  34%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pScreen li:nth-child(1) {
+  animation: pRow0 10s linear infinite;
+}
+@keyframes pRow1 {
+  0%,
+  33% {
+    opacity: 0;
+    transform: translateX(1.2em);
+  }
+  39%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pScreen li:nth-child(2) {
+  animation: pRow1 10s linear infinite;
+}
+@keyframes pRow2 {
+  0%,
+  38% {
+    opacity: 0;
+    transform: translateX(1.2em);
+  }
+  44%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pScreen li:nth-child(3) {
+  animation: pRow2 10s linear infinite;
+}
+@keyframes pRow3 {
+  0%,
+  43% {
+    opacity: 0;
+    transform: translateX(1.2em);
+  }
+  49%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pScreen li:nth-child(4) {
+  animation: pRow3 10s linear infinite;
+}
+@keyframes pRow4 {
+  0%,
+  48% {
+    opacity: 0;
+    transform: translateX(1.2em);
+  }
+  54%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pScreen li:nth-child(5) {
+  animation: pRow4 10s linear infinite;
+}
+
+/* ================= PLAN (what happens if you stop paying) ================= */
+.gStage {
+  position: absolute;
+  inset: 0;
+  animation: gFade2 12s linear infinite;
+}
+.gPlans {
+  position: absolute;
+  left: 4em;
+  right: 4em;
+  top: 3.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2em;
+  font-size: 1.3em;
+  font-weight: 700;
+}
+.gPaid,
+.gFree {
+  padding: 0.6em 1.3em;
+  border-radius: 99em;
+}
+.gPaid {
+  background: #00e99a;
+  color: #064b38;
+  opacity: 0.55;
+  animation: gPaid 12s linear infinite;
+}
+.gFree {
+  background: #064b38;
+  color: #fff;
+  animation: gFree 12s linear infinite;
+}
+.gArrow {
+  color: #064b38;
+}
+.gGrid {
+  position: absolute;
+  left: 4em;
+  right: 4em;
+  top: 9.5em;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4em;
+}
+.gTile {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.5em;
+  padding: 1.2em 1em 1em;
+  border-radius: 1.2em;
+  background: #fff;
+  box-shadow: 0 0.5em 1.6em rgba(9, 20, 17, 0.12);
+  color: #064b38;
+}
+.gTile svg {
+  width: 6.2em;
+  height: 6.2em;
+}
+.gName {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: #091411;
+}
+.gPill {
+  position: relative;
+  display: block;
+  width: 7em;
+  height: 2em;
+}
+.gPill i {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 99em;
+  font-size: 1em;
+  font-style: normal;
+  font-weight: 700;
+}
+.gOn {
+  background: #00e99a;
+  color: #064b38;
+  opacity: 1;
+}
+.gOff {
+  background: #e5e7e6;
+  color: #567067;
+  opacity: 0;
+}
+.gTile[data-n="1"] .gOn,
+.gTile[data-n="2"] .gOn {
+  opacity: 1;
+}
+.gTile[data-n="1"] .gOff,
+.gTile[data-n="2"] .gOff {
+  opacity: 0;
+}
+.gTile:nth-child(n + 3) {
+  filter: grayscale(1);
+  opacity: 0.55;
+  animation: gSusp 12s linear infinite;
+}
+.gTile:nth-child(n + 3) .gOn {
+  opacity: 0;
+  animation: gOn 12s linear infinite;
+}
+.gTile:nth-child(n + 3) .gOff {
+  opacity: 1;
+  animation: gOff 12s linear infinite;
+}
+.gNote {
+  position: absolute;
+  left: 4em;
+  right: 4em;
+  top: 30.2em;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  font-size: 1.25em;
+  font-weight: 700;
+  color: #064b38;
+  animation: gNote2 12s linear infinite;
+}
+@keyframes gFade2 {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes gPaid {
+  0%,
+  32% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  38%,
+  100% {
+    opacity: 0.55;
+    transform: none;
+  }
+}
+@keyframes gFree {
+  0%,
+  32% {
+    opacity: 0.4;
+    transform: none;
+  }
+  38%,
+  100% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+@keyframes gSusp {
+  0%,
+  36% {
+    filter: none;
+    opacity: 1;
+  }
+  42%,
+  100% {
+    filter: grayscale(1);
+    opacity: 0.55;
+  }
+}
+@keyframes gOn {
+  0%,
+  36% {
+    opacity: 1;
+  }
+  40%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes gOff {
+  0%,
+  36% {
+    opacity: 0;
+  }
+  40%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes gNote2 {
+  0%,
+  62% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  70%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ================= PAGES (block editor) ================= */
+.aStage {
+  position: absolute;
+  inset: 0;
+  animation: aFade 10s linear infinite;
+}
+.aEditor {
+  left: 3em;
+  top: 5em;
+  width: 23em;
+  padding: 1.6em;
+  display: grid;
+  gap: 0.9em;
+}
+.aEditor > b {
+  font-size: 1.4em;
+}
+.aBlock {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.9em 1em;
+  border-radius: 0.8em;
+  background: #f3f0ff;
+  font-size: 1.2em;
+  font-weight: 600;
+  color: #2d2470;
+}
+.aPhone {
+  position: absolute;
+  left: 30em;
+  top: 3em;
+  width: 14.5em;
+  height: 30em;
+  padding: 0.7em;
+  border-radius: 2.2em;
+  background: #091411;
+  box-shadow: 0 1em 2.6em rgba(9, 20, 17, 0.28);
+}
+.aScreen {
+  height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 1em;
+  padding-bottom: 1em;
+  overflow: hidden;
+  border-radius: 1.6em;
+  background: #fff;
+}
+.aScreen header {
+  padding: 2.4em 1em 1.4em;
+  background: #4b3fa0;
+  color: #fff;
+  font-size: 1.5em;
+  font-weight: 700;
+}
+.aBtn {
+  margin: 0 1.2em;
+  padding: 0.9em;
+  border-radius: 0.8em;
+  background: #4b3fa0;
+  color: #fff;
+  font-size: 1.25em;
+  font-weight: 700;
+  text-align: center;
+}
+.aLink {
+  margin: 0 1.2em;
+  font-size: 1.2em;
+  text-decoration: underline;
+  color: #4b3fa0;
+  text-align: center;
+}
+@keyframes aFade {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes aBlock0 {
+  0%,
+  12% {
+    opacity: 0;
+    transform: translateX(-1em);
+  }
+  18%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.aEditor .aBlock:nth-of-type(1) {
+  animation: aBlock0 10s linear infinite;
+}
+@keyframes aBlock1 {
+  0%,
+  25% {
+    opacity: 0;
+    transform: translateX(-1em);
+  }
+  31%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.aEditor .aBlock:nth-of-type(2) {
+  animation: aBlock1 10s linear infinite;
+}
+@keyframes aBlock2 {
+  0%,
+  38% {
+    opacity: 0;
+    transform: translateX(-1em);
+  }
+  44%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.aEditor .aBlock:nth-of-type(3) {
+  animation: aBlock2 10s linear infinite;
+}
+@keyframes aBlock3 {
+  0%,
+  51% {
+    opacity: 0;
+    transform: translateX(-1em);
+  }
+  57%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.aEditor .aBlock:nth-of-type(4) {
+  animation: aBlock3 10s linear infinite;
+}
+@keyframes aShow0 {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  24%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.aScreen header {
+  animation: aShow0 10s linear infinite;
+}
+@keyframes aShow1 {
+  0%,
+  31% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  37%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.aScreen .aBtn:nth-of-type(1) {
+  animation: aShow1 10s linear infinite;
+}
+@keyframes aShow2 {
+  0%,
+  44% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  50%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.aScreen .aBtn:nth-of-type(2) {
+  animation: aShow2 10s linear infinite;
+}
+@keyframes aShow3 {
+  0%,
+  57% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  63%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.aScreen .aLink {
+  animation: aShow3 10s linear infinite;
+}
+
+/* ================= COMPANIES ================= */
+.cStage {
+  position: absolute;
+  inset: 0;
+  animation: cFade 12s linear infinite;
+}
+.cList {
+  left: 3em;
+  top: 5em;
+  width: 17em;
+  padding: 1.5em;
+  display: grid;
+  gap: 0.7em;
+}
+.cList > b {
+  font-size: 1.4em;
+}
+.cItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85em 1em;
+  border-radius: 0.8em;
+  background: #f3f6f4;
+  font-size: 1.15em;
+  font-weight: 600;
+}
+.cItem em {
+  font-style: normal;
+  font-weight: 700;
+  color: #567067;
+}
+.cItem[data-i="2"] {
+  background: #ffd84d;
+  color: #3a2c00;
+}
+.cPanel {
+  left: 22em;
+  top: 3em;
+  width: 23em;
+  height: 29em;
+  padding: 1.6em;
+}
+.cRows {
+  position: absolute;
+  inset: 1.6em;
+  display: grid;
+  align-content: start;
+  gap: 1em;
+  opacity: 0;
+}
+.cRows[data-i="2"] {
+  opacity: 1;
+}
+.cRows > b {
+  font-size: 1.5em;
+}
+.cRow {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  padding: 0.8em;
+  border-radius: 0.9em;
+  background: #f8faf9;
+}
+.cRow svg {
+  width: 3.6em;
+  height: 3.6em;
+  color: #064b38;
+  flex: none;
+}
+.cRow i {
+  display: block;
+  flex: 1;
+  height: 0.9em;
+  border-radius: 1em;
+  background: #dce9e2;
+}
+.cRow u {
+  display: block;
+  width: 3em;
+  height: 0.9em;
+  border-radius: 1em;
+  background: #00e99a;
+}
+.cItem[data-i="0"] {
+  animation: cSel0 12s linear infinite;
+}
+.cItem[data-i="1"] {
+  animation: cSel1 12s linear infinite;
+}
+.cItem[data-i="2"] {
+  animation: cSel2 12s linear infinite;
+}
+.cRows[data-i="0"] {
+  animation: cShow0 12s linear infinite;
+}
+.cRows[data-i="1"] {
+  animation: cShow1 12s linear infinite;
+}
+.cRows[data-i="2"] {
+  animation: cShow2 12s linear infinite;
+}
+@keyframes cFade {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes cSel0 {
+  0%,
+  8% {
+    background: #f3f6f4;
+    color: inherit;
+  }
+  12%,
+  32% {
+    background: #ffd84d;
+    color: #3a2c00;
+  }
+  36%,
+  100% {
+    background: #f3f6f4;
+    color: inherit;
+  }
+}
+@keyframes cSel1 {
+  0%,
+  38% {
+    background: #f3f6f4;
+    color: inherit;
+  }
+  42%,
+  62% {
+    background: #ffd84d;
+    color: #3a2c00;
+  }
+  66%,
+  100% {
+    background: #f3f6f4;
+    color: inherit;
+  }
+}
+@keyframes cSel2 {
+  0%,
+  68% {
+    background: #f3f6f4;
+    color: inherit;
+  }
+  72%,
+  100% {
+    background: #ffd84d;
+    color: #3a2c00;
+  }
+}
+@keyframes cShow0 {
+  0%,
+  10% {
+    opacity: 0;
+  }
+  14%,
+  32% {
+    opacity: 1;
+  }
+  36%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes cShow1 {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  44%,
+  62% {
+    opacity: 1;
+  }
+  66%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes cShow2 {
+  0%,
+  70% {
+    opacity: 0;
+  }
+  74%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* ================= IMPORT ================= */
+.iStage {
+  position: absolute;
+  inset: 0;
+  animation: iFade 10s linear infinite;
+}
+.iCsv {
+  left: 3em;
+  top: 6em;
+  width: 17em;
+  padding: 1.5em;
+  display: grid;
+  gap: 0.8em;
+  font-size: 1em;
+}
+.iCsv > b {
+  font-size: 1.4em;
+}
+.iCsv span {
+  padding: 0.6em 0.8em;
+  border-radius: 0.6em;
+  background: #f3f6f4;
+  font-family: ui-monospace, monospace;
+  font-size: 1.05em;
+}
+.iArrow {
+  position: absolute;
+  left: 21em;
+  top: 14em;
+  font-size: 3em;
+  font-weight: 800;
+  color: #e4572e;
+  animation: iArrow 10s linear infinite;
+}
+.iGrid {
+  position: absolute;
+  left: 26em;
+  top: 5em;
+  width: 19em;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2em;
+}
+.iTile {
+  padding: 0.8em;
+  border-radius: 1em;
+  background: #fff;
+  box-shadow: 0 0.5em 1.4em rgba(9, 20, 17, 0.12);
+  color: #064b38;
+}
+.iTile svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.iDone {
+  position: absolute;
+  left: 26em;
+  top: 31em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.6em 1.2em;
+  border-radius: 99em;
+  background: #064b38;
+  color: #fff;
+  font-size: 1.3em;
+  font-weight: 700;
+  animation: iDone 10s linear infinite;
+}
+@keyframes iFade {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes iArrow {
+  0%,
+  16% {
+    opacity: 0;
+    transform: translateX(-1em);
+  }
+  24%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes iDone {
+  0%,
+  70% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  78%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes iPop0 {
+  0%,
+  22% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  28%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.iTile[data-n="1"] {
+  animation: iPop0 10s linear infinite;
+}
+@keyframes iPop1 {
+  0%,
+  27% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  33%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.iTile[data-n="2"] {
+  animation: iPop1 10s linear infinite;
+}
+@keyframes iPop2 {
+  0%,
+  32% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  38%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.iTile[data-n="3"] {
+  animation: iPop2 10s linear infinite;
+}
+@keyframes iPop3 {
+  0%,
+  37% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  43%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.iTile[data-n="4"] {
+  animation: iPop3 10s linear infinite;
+}
+@keyframes iPop4 {
+  0%,
+  42% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  48%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.iTile[data-n="5"] {
+  animation: iPop4 10s linear infinite;
+}
+@keyframes iPop5 {
+  0%,
+  47% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  53%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.iTile[data-n="6"] {
+  animation: iPop5 10s linear infinite;
+}
+@keyframes iPop6 {
+  0%,
+  52% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  58%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.iTile[data-n="7"] {
+  animation: iPop6 10s linear infinite;
+}
+@keyframes iPop7 {
+  0%,
+  57% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  63%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.iTile[data-n="8"] {
+  animation: iPop7 10s linear infinite;
+}
+
+/* ================= FAQ ================= */
+.fStage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  gap: 2.2em;
+  padding: 2em 3em;
+  animation: fFade 12s linear infinite;
+}
+.fPair {
+  display: grid;
+  gap: 0.8em;
+}
+.fQ,
+.fA {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  width: fit-content;
+  max-width: 34em;
+  margin: 0;
+  padding: 0.8em 1.2em;
+  border-radius: 1.2em;
+  font-size: 1.35em;
+  font-weight: 600;
+  box-shadow: 0 0.4em 1.2em rgba(9, 20, 17, 0.1);
+}
+.fQ {
+  background: #fff;
+  border-bottom-left-radius: 0.2em;
+}
+.fA {
+  justify-self: end;
+  background: #2d2470;
+  color: #fff;
+  border-bottom-right-radius: 0.2em;
+}
+@keyframes fFade {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fQ0 {
+  0%,
+  6% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  11%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fA0 {
+  0%,
+  17% {
+    opacity: 0;
+    transform: translateY(0.8em) scale(0.96);
+  }
+  22%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.fPair[data-i="0"] .fQ {
+  animation: fQ0 12s linear infinite;
+}
+.fPair[data-i="0"] .fA {
+  animation: fA0 12s linear infinite;
+}
+@keyframes fQ1 {
+  0%,
+  34% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  39%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fA1 {
+  0%,
+  45% {
+    opacity: 0;
+    transform: translateY(0.8em) scale(0.96);
+  }
+  50%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.fPair[data-i="1"] .fQ {
+  animation: fQ1 12s linear infinite;
+}
+.fPair[data-i="1"] .fA {
+  animation: fA1 12s linear infinite;
+}
+@keyframes fQ2 {
+  0%,
+  62% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  67%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fA2 {
+  0%,
+  73% {
+    opacity: 0;
+    transform: translateY(0.8em) scale(0.96);
+  }
+  78%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.fPair[data-i="2"] .fQ {
+  animation: fQ2 12s linear infinite;
+}
+.fPair[data-i="2"] .fA {
+  animation: fA2 12s linear infinite;
+}
+
+/* ================= PRICING ================= */
+.xStage {
+  position: absolute;
+  inset: 0;
+  animation: xFade 10s linear infinite;
+}
+.xSwitch {
+  position: absolute;
+  left: 13em;
+  top: 3.4em;
+  width: 22em;
+  height: 4em;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  place-items: center;
+  border-radius: 99em;
+  background: #fff;
+  box-shadow: 0 0.5em 1.6em rgba(9, 20, 17, 0.12);
+  font-size: 1em;
+}
+.xSwitch b {
+  position: relative;
+  z-index: 1;
+  font-size: 1.3em;
+}
+.xSwitch b:first-of-type {
+  color: #567067;
+}
+.xSwitch b:last-of-type {
+  color: #fff;
+}
+.xThumb {
+  position: absolute;
+  top: 0.3em;
+  bottom: 0.3em;
+  left: 11em;
+  width: 10.7em;
+  border-radius: 99em;
+  background: #064b38;
+  animation: xThumb 10s linear infinite;
+}
+.xSave {
+  position: absolute;
+  left: 31em;
+  top: 1.2em;
+  padding: 0.4em 1em;
+  border-radius: 99em;
+  background: #ffd84d;
+  color: #3a2c00;
+  font-size: 1.2em;
+  font-weight: 800;
+  transform: rotate(-4deg);
+  animation: xSave 10s linear infinite;
+}
+.xSave::after {
+  content: " 20%";
+}
+.xCard {
+  left: 14em;
+  top: 11em;
+  width: 20em;
+  padding: 2.2em 1.8em 1.8em;
+  display: grid;
+  gap: 0.8em;
+  justify-items: center;
+  background: linear-gradient(165deg, #0b6b4f, #064b38);
+  color: #fff;
+}
+.xRibbon {
+  position: absolute;
+  top: -1.3em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.4em 1em;
+  border-radius: 99em;
+  background: #00e99a;
+  color: #064b38;
+  font-size: 1.15em;
+  font-weight: 800;
+}
+.xName {
+  font-size: 1.8em;
+}
+.xPrice {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0.3em;
+  height: 3.2em;
+  font-size: 1em;
+}
+.xMonth,
+.xYear {
+  font-size: 3em;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.xAmt {
+  display: grid;
+}
+.xMonth,
+.xYear {
+  grid-area: 1 / 1;
+}
+.xMonth {
+  opacity: 0;
+  animation: xMonth 10s linear infinite;
+}
+.xYear {
+  animation: xYear 10s linear infinite;
+}
+.xPrice small {
+  font-size: 1.2em;
+  opacity: 0.85;
+}
+.xLine {
+  display: block;
+  width: 100%;
+  height: 0.9em;
+  border-radius: 1em;
+  background: rgba(255, 255, 255, 0.22);
+}
+@keyframes xFade {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes xThumb {
+  0%,
+  20% {
+    transform: translateX(-10.7em);
+  }
+  34%,
+  100% {
+    transform: none;
+  }
+}
+@keyframes xSave {
+  0%,
+  30% {
+    opacity: 0;
+    transform: rotate(-4deg) scale(0.6);
+  }
+  40%,
+  100% {
+    opacity: 1;
+    transform: rotate(-4deg);
+  }
+}
+@keyframes xMonth {
+  0%,
+  28% {
+    opacity: 1;
+  }
+  34%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes xYear {
+  0%,
+  28% {
+    opacity: 0;
+    transform: translateY(0.5em);
+  }
+  36%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}

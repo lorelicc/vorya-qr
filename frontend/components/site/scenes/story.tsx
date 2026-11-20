@@ -1,6 +1,5 @@
 import { BarChart3, Mail, Wine } from "lucide-react";
 import { Cursor } from "./parts";
-import { QrGlyph } from "./Qr";
 import { Scene } from "./Scene";
 import s from "./scenes.module.css";
 
@@ -66,58 +65,6 @@ export function MenuScene({ active }: Props) {
           <span className={s.mUpdated}>Aggiornato ora</span>
         </div>
         <Cursor className={s.mCursor} />
-      </div>
-    </Scene>
-  );
-}
-
-/* 6 — The promise: the QR keeps working after the subscription ends. */
-export function GuaranteeScene({ active }: Props) {
-  return (
-    <Scene
-      active={active}
-      label="Animazione: anche quando l’abbonamento finisce e si passa al piano Free, il QR continua a funzionare e le scansioni continuano ad arrivare"
-      caption="L’abbonamento finisce, il QR no. Dati di esempio."
-      tone="forest"
-    >
-      <div className={s.gStage}>
-        <div className={s.gTimeline}>
-          <span className={s.gSeg} data-k="trial">
-            Prova
-          </span>
-          <span className={s.gSeg} data-k="paid">
-            Piano a pagamento
-          </span>
-          <span className={s.gSeg} data-k="free">
-            Free per sempre
-          </span>
-          <i className={s.gHead} />
-          <span className={s.gEnded}>Abbonamento terminato</span>
-        </div>
-        <div className={s.gQrWrap}>
-          <span className={s.gRing} />
-          <span className={`${s.gRing} ${s.gRing2}`} />
-          <div className={s.gQr}>
-            <QrGlyph />
-          </div>
-        </div>
-        <div className={s.gStatus}>
-          <span className={s.gDot} /> QR attivo
-        </div>
-        <div className={s.gScans}>
-          <small>Scansioni</small>
-          <div className={s.gWindow}>
-            <div className={s.gNums}>
-              <i>2.310</i>
-              <i>2.311</i>
-              <i>2.312</i>
-              <i>2.313</i>
-              <i>2.314</i>
-              <i>2.315</i>
-            </div>
-          </div>
-        </div>
-        <span className={s.gNote}>Nessuna pagina bloccata, nessuna ristampa.</span>
       </div>
     </Scene>
   );

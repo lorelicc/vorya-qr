@@ -1,2 +1,11 @@
 export { DesignScene, HeroScene, LinkScene, StatsScene } from "./product";
-export { GuaranteeScene, MenuScene, ReportScene } from "./story";
+export { MenuScene, ReportScene } from "./story";
+export {
+  CompaniesScene,
+  FaqScene,
+  ImportScene,
+  PagesScene,
+  PlanScene,
+  PricingScene,
+} from "./extra";
+export { PhoneScene } from "./phone";

@@ -36,9 +36,12 @@ os.environ.update(
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 
+import app.limits as _limits  # noqa: E402
 from app.core.database import get_engine, session_factory  # noqa: E402
 from app.main import app  # noqa: E402
 from app.migrate import migrate  # noqa: E402
+
+_limits.VERDICT_TTL = _limits.LIMITS_TTL = 0  # plan changes inside a test apply at once
 
 ORIGIN = "http://testserver"
 PASSWORD = "una-password-sicura-123"
