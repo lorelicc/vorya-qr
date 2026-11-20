@@ -143,3 +143,47 @@ Esempio di riga cron (utente con accesso a Docker; adattare il percorso):
 ```bash
 15 3 * * * docker exec vorya-qr-db-1 sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > /root/backups/vorya-qr-$(date +\%Y\%m\%d).dump && find /root/backups -name 'vorya-qr-*.dump' -mtime +14 -delete
 ```
+
+## Backup automatici (0.5)
+
+Il servizio `backup` (profilo `backup`, `COMPOSE_PROFILES=backup`) salva ogni giorno alle 03:15 (`BACKUP_CRON`) il dump del database dell'app (e di Umami/GlitchTip con `BACKUP_EXTRA_DATABASES`) più il volume dei file, **cifrati da restic** e inviati a uno storage S3 compatibile **fuori dal VPS** (es. OVH Object Storage).
+
+- Variabili: `RESTIC_REPOSITORY` (es. `s3:https://s3.gra.io.cloud.ovh.net/vorya-backup`), `RESTIC_PASSWORD` (**conservarla fuori dal VPS: senza non si recupera nulla**), `BACKUP_S3_ACCESS_KEY`, `BACKUP_S3_SECRET_KEY`.
+- Ritenzione: 7 giornalieri, 4 settimanali, 6 mensili. Ogni domenica `restic check` su un campione del 5%.
+- `BACKUP_PING_URL` (facoltativo): URL di un servizio tipo Healthchecks chiamato a ogni backup riuscito, per essere avvisati se **non** parte.
+- Backup su richiesta: `docker compose exec backup backup.sh`.
+
+### Restore da restic
+
+```bash
+docker compose exec backup restore.sh latest
+```
+
+Il contenuto finisce in `/restore` nel container `backup` (sola lettura sul database vivo: non lo tocca). Poi seguire il restore del dump come sopra, copiando il file `vorya_qr.dump` fuori dal container.
+
+### Test di restore mensile
+
+```bash
+docker compose exec backup restore-test.sh
+```
+
+Ripristina l'ultimo dump in un database temporaneo, conta tabelle e utenti, lo elimina. Segnare la data nel calendario: **un backup mai provato non è un backup**.
+
+## Email: SPF, DKIM, DMARC (0.5)
+
+Report, email di attivazione e fatture partono da `SMTP_FROM_EMAIL`. Per non finire in spam, sul DNS del dominio mittente:
+
+| Record | Valore (esempio, adattare al provider SMTP) |
+|---|---|
+| SPF (TXT su `vorya.it`) | `v=spf1 include:<provider-smtp> -all` |
+| DKIM (TXT `<selettore>._domainkey`) | chiave pubblica fornita dal provider SMTP |
+| DMARC (TXT `_dmarc`) | `v=DMARC1; p=none; rua=mailto:dmarc@vorya.it` → dopo 2–4 settimane di report puliti passare a `p=quarantine` |
+
+All'avvio il backend prova la connessione SMTP e scrive l'esito nei log (`app.mail.check`). Verificare con un invio di prova a Gmail e controllare in «Mostra originale» `SPF: PASS`, `DKIM: PASS`, `DMARC: PASS`.
+
+## Monitoraggio esterno (0.5)
+
+- Servizio esterno (UptimeRobot, Better Stack…) su `https://qr.vorya.it/api/health` ogni minuto, e su un QR di prova `https://qr.vorya.it/r/<slug>` (atteso 302).
+- `/api/health/detail` con header `X-Health-Token: $HEALTH_TOKEN` mostra database, storage, SMTP e heartbeat del worker (allarme se il worker non risponde da più di 10 minuti).
+- Errori applicativi: GlitchTip (`errors`). Visite: Umami (`analytics`).
+

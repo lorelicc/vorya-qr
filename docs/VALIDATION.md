@@ -230,5 +230,28 @@ Prima in **modalità test** (chiavi `sk_test_`, webhook di test configurato), po
 | 20.4 | Dashboard Stripe → Developers → Webhooks | PC | Eventi consegnati con risposta 200 | |
 | 20.5 | Passa da Pro a Plus | PC | Anteprima del conguaglio, conferma, nuovi limiti subito | |
 | 20.6 | Carta `4000 0000 0000 0341` al rinnovo (o «Pay» fallita da Stripe) | PC | Banner «Pagamento non riuscito», email, accesso attivo fino alla fine della tolleranza | |
-| 20.7 | Annulla l'abbonamento dal portale clienti | PC | Piano attivo fino a fine periodo; poi dashboard bloccata con invito ai piani, QR ancora funzionanti | |
+| 20.7 | Annulla l'abbonamento dal portale clienti | PC | Piano attivo fino a fine periodo; poi piano Free: dashboard accessibile, QR oltre i limiti in sola lettura e ancora funzionanti | |
 | 20.8 | Admin → Pagamenti → Esporta CSV | PC | I pagamenti con i dati di fatturazione, apribili in Excel | |
+
+## 21. Sito, generatore e Free (0.5)
+
+Da iPhone (Safari) e da PC. Sezione da compilare dopo il deploy di prova; non è stata eseguita su dispositivi reali.
+
+| # | Verifica | Dove | Atteso | Esito |
+| --- | --- | --- | --- | --- |
+| 21.1 | Apri `/`, `/prezzi`, `/funzionalita`, `/qr-code/menu`, `/soluzioni/ristoranti`, `/link-brevi` | iPhone + PC | Nessun testo tagliato, menu mobile apribile, animazioni fluide, nessuno scorrimento orizzontale | |
+| 21.2 | `/prezzi`: confronta con Admin → Piani e Admin → Pagamenti | PC | Limiti e prezzi identici alla tabella; nessun importo scritto a mano | |
+| 21.3 | Generatore in home: sito web, colori, logo, scarica PNG e SVG | iPhone | File senza filigrana, il QR si scansiona | |
+| 21.4 | Tipo vCard statica: compila e scarica | iPhone | La scansione propone il salvataggio del contatto | |
+| 21.5 | Dal generatore: «Crealo dinamico» → registrazione → link nella email → password | iPhone | Esiste un QR dinamico con la stessa destinazione e lo stesso stile | |
+| 21.6 | Anteprima link breve nel generatore senza account | PC | Chiede la registrazione; nessun dato salvato | |
+| 21.7 | Account di prova con prova scaduta | PC | Piano Free, dashboard utilizzabile, QR oltre i 2 dinamici in sola lettura ma che aprono la destinazione | |
+| 21.8 | Scansiona un QR stampato con la 0.2/0.3 | iPhone | Stessa destinazione di prima | |
+| 21.9 | Impostazioni → Report: aggiungi un destinatario esterno | PC | Email di conferma (doppio opt-in); report solo dopo la conferma | |
+| 21.10 | Email di benvenuto, giorno 1, giorno 3, report, conferma destinatario | Gmail + Apple Mail | Layout corretto, link funzionanti, link di disiscrizione presente | |
+| 21.11 | Modulo `/contatti` | iPhone | Arriva una email a supporto; il sesto invio in un'ora è rifiutato | |
+| 21.12 | Admin → Metriche | PC | Cifre coerenti con i dati; esporta CSV | |
+| 21.13 | Con Umami attivo: naviga il sito | PC | Visite registrate, nessun cookie | |
+| 21.14 | Errore forzato (es. `SENTRY_DSN` valido + rotta di prova) | PC | Evento in GlitchTip senza email/IP/token | |
+| 21.15 | `/alternative/*` e `/guide/*` | PC | Sono `noindex` finché non verificate (vedi `docs/CONTENUTI-DA-VERIFICARE.md`) | |
+

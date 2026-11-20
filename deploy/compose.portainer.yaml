@@ -76,6 +76,8 @@ services:
       context: ../backend
       dockerfile: Dockerfile
     pull_policy: build
+    # 0.5: several processes; one uvicorn process saturates at ~150 redirects/s (see docs/V05.md).
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-server-header", "--workers", "${BACKEND_WORKERS:-3}"]
     environment: *backend_environment
     volumes:
       - uploads_data:/data/uploads
