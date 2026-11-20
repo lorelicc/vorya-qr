@@ -142,6 +142,8 @@ services:
     restart: unless-stopped
 
   # ---- 0.5 production services. Enable with COMPOSE_PROFILES=analytics,errors,backup ----
+  # Their secrets are optional here (the stack must deploy without them); each service refuses to
+  # start with empty ones: set the variables BEFORE enabling its profile.
   # They share the app's Postgres server with SEPARATE databases and roles (db-init): one container
   # less, one backup, ~300 MB of RAM saved. Each role has a connection limit so a burst of errors
   # in GlitchTip can never starve the app database.
@@ -167,8 +169,8 @@ services:
     image: ghcr.io/umami-software/umami:postgresql-latest
     profiles: ["analytics"]
     environment:
-      DATABASE_URL: postgresql://umami:${UMAMI_DB_PASSWORD:?Impostare UMAMI_DB_PASSWORD}@db:5432/umami
-      APP_SECRET: ${UMAMI_APP_SECRET:?Impostare UMAMI_APP_SECRET (stringa casuale lunga)}
+      DATABASE_URL: postgresql://umami:${UMAMI_DB_PASSWORD:-}@db:5432/umami
+      APP_SECRET: ${UMAMI_APP_SECRET:-}
     ports:
       - "127.0.0.1:${UMAMI_HTTP_PORT:-3300}:3000"
     networks: [app, data]
@@ -183,8 +185,8 @@ services:
     image: glitchtip/glitchtip:latest
     profiles: ["errors"]
     environment: &glitchtip_env
-      DATABASE_URL: postgresql://glitchtip:${GLITCHTIP_DB_PASSWORD:?Impostare GLITCHTIP_DB_PASSWORD}@db:5432/glitchtip
-      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:?Impostare GLITCHTIP_SECRET_KEY (stringa casuale lunga)}
+      DATABASE_URL: postgresql://glitchtip:${GLITCHTIP_DB_PASSWORD:-}@db:5432/glitchtip
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-}
       PORT: "8000"
       GLITCHTIP_DOMAIN: ${GLITCHTIP_DOMAIN:-https://errori.vorya.it}
       DEFAULT_FROM_EMAIL: ${SMTP_FROM_EMAIL:-noreply@vorya.it}
@@ -226,10 +228,10 @@ services:
       PGPASSWORD: ${POSTGRES_PASSWORD:?Inserire POSTGRES_PASSWORD}
       PGDATABASE: ${POSTGRES_DB:-vorya_qr}
       EXTRA_DATABASES: ${BACKUP_EXTRA_DATABASES:-}
-      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:?Impostare RESTIC_REPOSITORY}
-      RESTIC_PASSWORD: ${RESTIC_PASSWORD:?Impostare RESTIC_PASSWORD}
-      AWS_ACCESS_KEY_ID: ${BACKUP_S3_ACCESS_KEY:?Impostare BACKUP_S3_ACCESS_KEY}
-      AWS_SECRET_ACCESS_KEY: ${BACKUP_S3_SECRET_KEY:?Impostare BACKUP_S3_SECRET_KEY}
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:-}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD:-}
+      AWS_ACCESS_KEY_ID: ${BACKUP_S3_ACCESS_KEY:-}
+      AWS_SECRET_ACCESS_KEY: ${BACKUP_S3_SECRET_KEY:-}
       BACKUP_CRON: ${BACKUP_CRON:-15 3 * * *}
       BACKUP_PING_URL: ${BACKUP_PING_URL:-}
     volumes:
