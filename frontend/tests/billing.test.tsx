@@ -104,9 +104,7 @@ describe("BillingBanner", () => {
       <BillingBanner info={info({ state: "past_due", grace_until: "2030-01-10T00:00:00Z" })} />,
     );
     expect(screen.getByRole("status")).toHaveTextContent(/non è andato a buon fine/);
-    rerender(
-      <BillingBanner info={info({ state: "canceled", redirects_until: "2030-02-10T00:00:00Z" })} />,
-    );
-    expect(screen.getByRole("status")).toHaveTextContent(/continuano a funzionare/);
+    rerender(<BillingBanner info={info({ state: "canceled" })} />);
+    expect(screen.getByRole("status")).toHaveTextContent(/restano attivi/);
   });
 });

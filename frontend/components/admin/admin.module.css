@@ -299,3 +299,41 @@
 .facts dd {
   margin: 0;
 }
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+.kpi span {
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+}
+.kpi strong {
+  font-size: var(--fs-2xl);
+}
+.kpi small {
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+}
+.bars {
+  width: 100%;
+  height: 140px;
+}
+.bars rect {
+  fill: var(--vorya-green-middle);
+}
+.legend {
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+}

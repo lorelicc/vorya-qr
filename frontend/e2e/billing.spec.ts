@@ -28,7 +28,7 @@ test("piani → dati di fatturazione → checkout (Stripe simulato) → piano at
   await expect(page.getByRole("region", { name: "Piano Pro" })).toContainText(
     "Menu e carta dei vini",
   );
-  await expect(page.getByRole("region", { name: "Piano Start" })).not.toContainText("Menu e carta");
+  await expect(page.getByRole("region", { name: "Piano Free" })).not.toContainText("Menu e carta");
 
   // No billing data yet: the form comes first, with formal validation of the VAT number.
   await page.getByRole("button", { name: "Scegli Pro" }).click();

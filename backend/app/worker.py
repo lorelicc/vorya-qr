@@ -106,7 +106,7 @@ def rotate_salts(session: Session) -> int:
 
 @job
 def stats_retention(session: Session) -> int:
-    """Deletes scans and clicks older than the retention of each workspace's plan."""
+    """Deletes scans and clicks older than max(plan retention, 12 months)."""
     from datetime import timedelta
 
     from .models import PageEvent, Plan, Workspace
@@ -117,7 +117,9 @@ def stats_retention(session: Session) -> int:
         days = features_of(plan).stats_retention_days
         if days is None:
             continue
-        cutoff = now() - timedelta(days=days + 1)  # one day of slack for time zones
+        # 0.5: older than the plan window = hidden, not deleted; data is kept for at least 12
+        # months so that an upgrade finds it again.
+        cutoff = now() - timedelta(days=max(days, 365) + 1)  # one day of slack for time zones
         qr_ids = (
             select(QrCode.id)
             .join(Workspace, Workspace.id == QrCode.workspace_id)
@@ -170,6 +172,10 @@ def run_queue(session: Session) -> int:
     from .storage.backends import get_storage
 
     mails = send_pending(session)  # payment emails go out within seconds, not minutes
+    session.commit()
+    from .reports.service import send_due
+
+    mails += send_due(session)  # reports: queued with a spread due time, a few per tick
     session.commit()
 
     job = session.scalar(
@@ -224,13 +230,38 @@ def purge_import_results(session: Session) -> int:
     return len(old)
 
 
+def compute_metrics(session: Session) -> int:
+    """Admin metrics snapshot, at most once an hour (the heavy queries never run on request)."""
+    from datetime import timedelta
+
+    from .metrics import latest, snapshot
+
+    last = latest(session)
+    if last is not None and last.created_at > now() - timedelta(hours=1):
+        return 0
+    snapshot(session)
+    return 1
+
+
+JOBS.append(compute_metrics)
+
+
+def schedule_reports(session: Session) -> int:
+    from .reports.service import schedule
+
+    return schedule(session)
+
+
+JOBS.append(schedule_reports)
+
+
 def _billing_jobs() -> None:
     from .billing import jobs
 
     for fn in (
         jobs.expire_grants,
-        jobs.trial_redirect_windows,
         jobs.trial_reminders,
+        jobs.onboarding_emails,
         jobs.send_billing_mail,
         jobs.reconcile_subscriptions,
     ):
@@ -281,12 +312,19 @@ def run_queue_once() -> int:
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO)
+    from .core.observability import init_errors, setup_logging
+    from .health import beat
+
+    setup_logging()
+    init_errors()
     log.info("Vorya QR worker avviato (coda ogni %ss, manutenzione ogni %ss)", QUEUE_SECONDS,
              INTERVAL_SECONDS)  # fmt: skip
-    next_maintenance = 0.0
+    next_maintenance, next_beat = 0.0, 0.0
     while True:
         try:
+            if time.monotonic() >= next_beat:
+                beat()
+                next_beat = time.monotonic() + 30
             if time.monotonic() >= next_maintenance:
                 log.info("Esecuzione job: %s", run_once())
                 next_maintenance = time.monotonic() + INTERVAL_SECONDS

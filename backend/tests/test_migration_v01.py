@@ -62,7 +62,7 @@ def test_populated_v01_database_upgrades_without_regressions(monkeypatch, client
     assert qr[0].company_id != qr[2].company_id
     assert [(r.qr_type, r.destination) for r in qr] == [("website", "redirect")] * 3
     assert qr[2].static_data == {"url": "https://anna.example.com"} and qr[0].static_data is None
-    assert features == [1, 3, 10]
+    assert features == [1, 1, 3, 10, None]  # free, start, plus, pro, agency
 
     response = client.get("/r/Ab3dEf7", follow_redirects=False)
     assert (

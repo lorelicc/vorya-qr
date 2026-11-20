@@ -1,4 +1,4 @@
-# Vorya QR 0.4: stack in Portainer
+# Vorya QR 0.5: stack in Portainer
 
 Configurazione per **Portainer CE / Docker Standalone**, con lo stesso schema di Vorya Sign: stack Git, build delle immagini sul server, CloudPanel come reverse proxy sullo stesso host. Per il sito in CloudPanel, i certificati e i backup vedere [VPS.md](VPS.md).
 
@@ -90,6 +90,29 @@ Le migrazioni 0.2 sono additive, ma il codice 0.1 non conosce le aziende né le 
 3. Nello stack rimettere la reference annotata (0.1) e fare **Update the stack**. `migrate` della 0.1 trova lo schema `0001` del dump e non fa nulla.
 4. I volumi `uploads_data` e `geoip_data` possono restare: la 0.1 li ignora. QR, pagine e file creati dopo l'aggiornamento vanno persi con il rollback.
 
+## Aggiornare da 0.3/0.4 a 0.5
+
+La 0.5 aggiunge solo tabelle, colonne e righe (migrazioni `0015`–`0018`): **tutti i QR e i link esistenti continuano a funzionare**. Cambia il modello dei piani: non esiste più il blocco a fine prova, si passa al piano **Free** ([docs/V05.md](../docs/V05.md)). Le identità dei piani `pro` e `plus` vengono scambiate dalla migrazione `0015` insieme ad abbonamenti, prezzi, omaggi e pagamenti (nessun cliente cambia diritti); il downgrade della migrazione non esiste: il rollback è il backup.
+
+1. **Backup** del database e del volume dei file ([VPS.md](VPS.md#backup-e-restore-del-database)). Annotare la reference attuale.
+2. **Prima del deploy**, sul database di produzione, controllare le collisioni con i nuovi percorsi del sito: `docker compose exec backend python -m app.cli check-reserved`. Se elenca slug esistenti, la migrazione `0016` si ferma: risolvere i casi (o accettarli con `VORYA_ALLOW_RESERVED_COLLISIONS=1`, sapendo che il sito vince sul vecchio alias).
+3. Variabili nuove (vedi `deploy/.env.example`): `HEALTH_TOKEN`, `SENTRY_DSN`, `BACKEND_WORKERS`, `NEXT_PUBLIC_*` (incorporate nell'immagine: dopo averle cambiate serve **Re-pull and redeploy** con rebuild), e per i servizi opzionali `COMPOSE_PROFILES=analytics,errors,backup` con le relative password/chiavi.
+4. **Prezzi Stripe**: creare (o ricollegare) in Stripe i prezzi ricorrenti Start 5,90, Plus 11,90, Pro 21,90, Agency 45,90 € e incollare gli ID in **Admin → Pagamenti**. Gli importi non sono nel codice. Se esistono già abbonamenti, verificare che il prezzo collegato a `plus` sia quello a 3 aziende e a `pro` quello a 10 (le identità sono state scambiate).
+5. Reference `refs/heads/vorya-qr-v0.5` (o `main` dopo il merge) → **Update the stack** con **Re-pull image and redeploy**. Ordine atteso: `migrate` applica `0015`–`0018` ed esce con 0; ripartono `backend` (più processi), `worker` e `frontend`.
+6. Controllare: `curl --fail http://127.0.0.1:3200/api/health` risponde `"version":"0.5.0"`; scansionare un QR stampato in precedenza; aprire `/` e `/prezzi`.
+7. Eseguire la sezione 21 di [docs/VALIDATION.md](../docs/VALIDATION.md).
+
+### Servizi opzionali (profili)
+
+- `analytics` → **Umami** su `127.0.0.1:3300`. Creare un sito reverse proxy CloudPanel `stats.vorya.it`, accedere (utente iniziale `admin`, password predefinita da cambiare subito), creare il sito `qr.vorya.it` e copiare l'ID in `NEXT_PUBLIC_UMAMI_WEBSITE_ID`, l'URL in `NEXT_PUBLIC_UMAMI_URL`.
+- `errors` → **GlitchTip** (`glitchtip-web` su `127.0.0.1:3400` + `glitchtip-worker`). Sito CloudPanel `errori.vorya.it`; creare l'utente con `docker compose exec glitchtip-web ./manage.py createsuperuser`; creare progetti backend e frontend e copiare i DSN in `SENTRY_DSN` e `NEXT_PUBLIC_SENTRY_DSN`.
+- Umami e GlitchTip usano **lo stesso Postgres** con database e ruoli separati creati da `db-init` (`UMAMI_DB_PASSWORD`, `GLITCHTIP_DB_PASSWORD`).
+- `backup` → backup cifrati giornalieri ([VPS.md](VPS.md#backup-automatici-05)).
+
+### Rollback a 0.3/0.4
+
+Come per la 0.3: fermare `frontend`, `backend`, `worker`, ripristinare il dump fatto al punto 1, rimettere la reference precedente e **Update the stack**. Le migrazioni 0.5 sono additive ma il codice precedente non conosce Free permanente né i report; gli iscritti, i report e i QR creati dopo l'aggiornamento vanno persi col ripristino.
+
 ## Aggiornare da 0.2 a 0.3
 
 La 0.3 aggiunge solo tabelle e colonne (migrazioni `0008`–`0013`, nessuna cancellazione): **tutti i QR e i link esistenti continuano ad aprire la stessa destinazione** e `/r/{slug}` non cambia. Gli account la cui prova era già scaduta con la 0.2 ricevono una nuova finestra di 30 giorni di redirect (non vengono spenti al deploy).
@@ -97,7 +120,7 @@ La 0.3 aggiunge solo tabelle e colonne (migrazioni `0008`–`0013`, nessuna canc
 1. **Backup** del database ([VPS.md](VPS.md#backup-e-restore-del-database)) e del volume dei file. Annotare la reference attuale (es. `refs/heads/vorya-qr-v0.2`).
 2. In Portainer, nello stack `vorya-qr` → **Editor**: reference `refs/heads/vorya-qr-v0.3` (o `main` dopo il merge). I pagamenti sono facoltativi: senza `STRIPE_*` tutto il resto funziona.
 3. **Update the stack** con **Re-pull image and redeploy**. Ordine atteso: `migrate` applica `0008`–`0013` ed esce con 0; ripartono `backend`, `worker` e `frontend`.
-4. Controllare: `curl --fail http://127.0.0.1:3200/api/health` deve rispondere `"version":"0.4.0"`, e un QR stampato con la 0.2 deve aprire la stessa destinazione di prima.
+4. Controllare: `curl --fail http://127.0.0.1:3200/api/health` deve rispondere `"version":"0.5.0"`, e un QR stampato con la 0.2 deve aprire la stessa destinazione di prima.
 5. Eseguire le sezioni 0.3 di [docs/VALIDATION.md](../docs/VALIDATION.md).
 
 ### Configurare il webhook Stripe

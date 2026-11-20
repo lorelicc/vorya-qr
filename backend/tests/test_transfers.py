@@ -150,11 +150,11 @@ def test_recipient_without_capacity_gets_a_clear_refusal(client, db):
     assert follow(client, qr["slug"]).status_code == 302
 
 
-def test_blocked_recipient_cannot_accept(client, db):
+def test_suspended_recipient_cannot_accept(client, db):
     cid, _ = setup_pair(client)
     tid = request_transfer(client, cid).json()["id"]
     recipient_ws = db.scalar(select(Workspace).order_by(Workspace.id))
-    recipient_ws.trial_ends_at = now() - timedelta(days=1)
+    recipient_ws.status = "suspended"
     db.commit()
     as_user(client, RECIPIENT)
     assert (

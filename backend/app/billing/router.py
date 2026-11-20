@@ -24,7 +24,7 @@ from ..models import (
     Plan,
     Workspace,
 )
-from ..plans import TYPE_LABELS, effective_types, features_of
+from ..plans import TYPE_LABELS, effective_types, features_of, plan_of
 from ..quotas import usage
 from . import gateway, service
 from .settings import billing_settings
@@ -89,7 +89,7 @@ def state_of(workspace: Workspace) -> str:
         return "past_due"
     if workspace.billing_state in ("canceled", "unpaid"):
         return workspace.billing_state
-    return "trialing" if access == "trial" else "unpaid" if access == "trial_expired" else "active"
+    return {"trial": "trialing", "free": "free"}.get(access, "active")
 
 
 def plan_card(plan: Plan, prices: dict) -> dict:
@@ -134,7 +134,7 @@ def read_billing(
 ):
     _, workspace = ctx
     account = session.get(BillingAccount, workspace.id)
-    plan = session.get(Plan, workspace.plan_id)
+    plan = plan_of(session, workspace)
     prices = price_map(session)
     payments = session.scalars(
         select(BillingPayment)
@@ -165,9 +165,7 @@ def read_billing(
         "trial_ends_at": workspace.trial_ends_at,
         "grace_until": workspace.grace_until,
         "grant_until": workspace.grant_until,
-        "redirects_until": workspace.redirects_until,
         "grace_days": cfg["grace_days"],
-        "redirect_days": cfg["redirect_days"],
         "usage": usage(session, workspace),
         "profile": profile_out(session.get(BillingProfile, workspace.id)),
         "online_payments": gateway.configured(),

@@ -64,7 +64,7 @@ describe("api client", () => {
   });
 
   it("redirects to /suspended on 423 and to /login on 401", async () => {
-    vi.stubGlobal("fetch", respond(423, { detail: "Prova terminata", code: "trial_expired" }));
+    vi.stubGlobal("fetch", respond(423, { detail: "Account sospeso", code: "suspended" }));
     await api("qr-codes").catch(() => undefined);
     expect(assign).toHaveBeenCalledWith("/suspended");
     vi.stubGlobal("fetch", respond(401, { detail: "Accesso richiesto." }));

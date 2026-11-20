@@ -170,7 +170,10 @@ def test_public_plans_show_features_and_admin_prices_only(client, db):
     pro = next(p for p in data["plans"] if p["id"] == "pro")
     assert pro["prices"]["monthly"]["amount_cents"] == 2900 and pro["features"]["menu_type"]
     start = next(p for p in data["plans"] if p["id"] == "start")
-    assert "yearly" not in start["prices"] and start["features"]["menu_type"] is False
+    assert "yearly" not in start["prices"] and start["features"]["custom_back_half"]
+    free = next(p for p in data["plans"] if p["id"] == "free")  # no price: not for sale
+    assert free["prices"] == {} and free["features"]["menu_type"] is False
+    assert [p["id"] for p in data["plans"]] == ["free", "start", "plus", "pro", "agency"]
 
 
 def test_admin_links_stripe_price_and_replaces_the_active_one(client, stripe_fake, db):
@@ -213,12 +216,13 @@ def test_checkout_needs_billing_data_then_creates_a_session(customer, stripe_fak
     assert unknown.status_code == 409
 
 
-def test_blocked_account_can_still_reach_plans_and_checkout(customer, stripe_fake, db):
+def test_expired_trial_lands_on_free_and_can_still_buy(customer, stripe_fake, db):
     db.execute(update(Workspace).values(trial_ends_at=now() - timedelta(days=1)))
     db.commit()
-    assert customer.get(qrs(customer)).status_code == 423
+    assert customer.get(qrs(customer)).status_code == 200  # never blocked
     state = customer.get("/api/account/billing").json()
-    assert state["state"] == "unpaid" and state["access"] == "trial_expired"
+    assert state["state"] == "free" and state["access"] == "free"
+    assert state["plan"]["id"] == "free"
     customer.put("/api/account/billing/profile", json=PROFILE, headers=csrf(customer))
     assert customer.post("/api/account/billing/checkout", json={"plan_id": "pro", "cycle": "monthly"},
                          headers=csrf(customer)).status_code == 200  # fmt: skip
@@ -276,46 +280,46 @@ def test_webhook_is_idempotent(customer, db):
         })  # fmt: skip
     assert db.scalars(select(BillingEvent)).all().__len__() == 2
     assert len(db.scalars(select(BillingPayment)).all()) == 1
-    assert len(db.scalars(select(BillingMail)).all()) == 1
+    assert len([m for m in db.scalars(select(BillingMail)) if m.kind != "welcome"]) == 1
 
 
-def test_payment_failed_enters_grace_then_blocks_and_payment_reactivates(customer, db):
+def test_payment_failed_enters_grace_then_free_and_payment_reactivates(customer, db):
     post_event(customer, "e1", "customer.subscription.created", sub_obj())
     post_event(customer, "e2", "customer.subscription.updated", sub_obj(status="past_due"))
     w = workspace(db)
     assert w.billing_state == "past_due" and w.grace_until > now() + timedelta(days=6)
-    assert w.redirects_until > w.grace_until
-    assert customer.get(qrs(customer)).status_code == 200  # grace: still usable
-    assert customer.get("/api/account/billing").json()["state"] == "past_due"
+    assert customer.get(qrs(customer)).status_code == 200  # grace: paid plan still in force
+    assert customer.get("/api/account/billing").json()["plan"]["id"] == "pro"
     db.execute(update(Workspace).values(grace_until=now() - timedelta(minutes=1)))
     db.commit()
-    assert customer.get(qrs(customer)).status_code == 423
+    assert customer.get(qrs(customer)).status_code == 200  # never blocked: now on Free
+    assert customer.get("/api/account/billing").json()["plan"]["id"] == "free"
     post_event(customer, "e3", "customer.subscription.updated", sub_obj(status="active"))
     w = workspace(db)
-    assert (w.billing_state, w.grace_until, w.redirects_until) == ("active", None, None)
-    assert customer.get(qrs(customer)).status_code == 200
+    assert (w.billing_state, w.grace_until) == ("active", None)
+    assert customer.get("/api/account/billing").json()["plan"]["id"] == "pro"
 
 
 def test_grace_days_come_from_platform_settings(customer, db):
-    db.get(PlatformSetting, "billing").data = {"grace_days": 2, "redirect_days": 10}
+    db.get(PlatformSetting, "billing").data = {"grace_days": 2}
     db.commit()
     post_event(customer, "e1", "customer.subscription.created", sub_obj())
     post_event(customer, "e2", "customer.subscription.updated", sub_obj(status="past_due"))
     w = workspace(db)
     assert timedelta(days=1) < w.grace_until - now() <= timedelta(days=2)
-    assert timedelta(days=11) < w.redirects_until - now() <= timedelta(days=12)
 
 
-def test_canceled_blocks_dashboard_keeps_redirects_then_goes_neutral(customer, db):
+def test_canceled_goes_to_free_nothing_is_switched_off(customer, db):
     post_event(customer, "e1", "customer.subscription.created", sub_obj())
     post_event(customer, "e2", "customer.subscription.deleted", sub_obj(status="canceled"))
     w = workspace(db)
-    assert w.billing_state == "canceled" and customer.get(qrs(customer)).status_code == 423
-    assert timedelta(days=29) < w.redirects_until - now() <= timedelta(days=30)
-    kinds = [m.kind for m in db.scalars(select(BillingMail))]
+    assert w.billing_state == "canceled" and customer.get(qrs(customer)).status_code == 200
+    assert customer.get("/api/account/billing").json()["plan"]["id"] == "free"
+    kinds = [m.kind for m in db.scalars(select(BillingMail)) if m.kind != "welcome"]
     assert kinds == ["canceled"]
     post_event(customer, "e3", "customer.subscription.created", sub_obj(id="sub_1"))
     assert workspace(db).billing_state == "active"
+    assert customer.get("/api/account/billing").json()["plan"]["id"] == "pro"
 
 
 def test_old_subscription_ending_does_not_cancel_the_current_one(customer, db):
@@ -390,21 +394,16 @@ def test_change_requires_a_subscription(customer, stripe_fake):
 # ------------------------------------------------------------------ redirects window
 
 
-def test_redirects_survive_the_window_then_turn_neutral(customer, db):
+def test_redirects_never_stop_for_money(customer, db):
     from tests.test_redirect import follow
 
     link = customer.post(qrs(customer).replace("/qr-codes", "/links"),
                          json={"target_url": "https://www.example.com/promo"}, headers=csrf(customer))  # fmt: skip
     slug = link.json()["slug"]
     assert follow(customer, slug).status_code == 302
-    db.execute(update(Workspace).values(trial_ends_at=now() - timedelta(days=2)))
+    db.execute(update(Workspace).values(trial_ends_at=now() - timedelta(days=400)))
     db.commit()
-    assert jobs.trial_redirect_windows(db) == 1
-    db.commit()
-    assert follow(customer, slug).status_code == 302  # expired but inside the window
-    db.execute(update(Workspace).values(redirects_until=now() - timedelta(seconds=1)))
-    db.commit()
-    assert follow(customer, slug).status_code == 410
+    assert follow(customer, slug).status_code == 302  # a year after the trial: still working
 
 
 def test_admin_assigning_a_plan_lifts_a_lapsed_subscription(customer, db):
@@ -418,7 +417,7 @@ def test_admin_assigning_a_plan_lifts_a_lapsed_subscription(customer, db):
     )
     assert response.status_code == 200
     w = workspace(db)
-    assert (w.billing_state, w.redirects_until) == (None, None)
+    assert w.billing_state is None
 
 
 # ------------------------------------------------------------------ emails & worker
@@ -431,11 +430,11 @@ def test_payment_mails_are_sent_once(customer, db):
                                                 "amount_paid": 2900, "currency": "eur"})  # fmt: skip
     post_event(customer, "e2", "invoice.payment_failed", {"id": "in_2", "customer": "cus_1",
                                                           "amount_due": 2900, "currency": "eur"})  # fmt: skip
-    assert send_pending(db) == 2
+    assert send_pending(db) == 3  # welcome + payment ok + payment failed
     db.commit()
     assert send_pending(db) == 0
     assert "Pagamento ricevuto" in last_mail("billing", "cliente@example.com")["subject"] or True
-    subjects = {m["subject"] for m in _all_mail()}
+    subjects = {m["subject"] for m in _all_mail()} - {"Benvenuto in Vorya QR"}
     assert subjects == {"Pagamento ricevuto · Vorya QR", "Pagamento non riuscito · Vorya QR"}
 
 
@@ -453,12 +452,12 @@ def test_trial_reminders_three_days_before_and_last_day(customer, db):
     jobs.trial_reminders(db)
     jobs.trial_reminders(db)
     db.commit()
-    assert [m.kind for m in db.scalars(select(BillingMail))] == ["trial_3d"]
+    assert [m.kind for m in db.scalars(select(BillingMail)) if m.kind != "welcome"] == ["trial_3d"]
     db.execute(update(Workspace).values(trial_ends_at=now() + timedelta(hours=10)))
     db.commit()
     jobs.trial_reminders(db)
     db.commit()
-    kinds = sorted(m.kind for m in db.scalars(select(BillingMail)))
+    kinds = sorted(m.kind for m in db.scalars(select(BillingMail)) if m.kind != "welcome")
     assert "trial_0d" in kinds and kinds.count("trial_0d") == 1
 
 

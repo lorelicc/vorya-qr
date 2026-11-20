@@ -9,8 +9,8 @@ from ..auth.deps import CompanyContext, owned_company
 from ..auth.service import audit, rate_limit
 from ..core.database import get_session
 from ..core.errors import CodedError, QuotaExceeded
-from ..models import Company, Plan, StoredFile
-from ..plans import features_of
+from ..models import Company, StoredFile
+from ..plans import features_of, plan_of
 from ..quotas import limits, lock_workspace
 from .backends import get_storage
 from .process import InvalidFile, process
@@ -63,7 +63,7 @@ def store_upload(session: Session, ctx: CompanyContext, upload: UploadFile, purp
         raise HTTPException(422, "Tipo di caricamento non valido.")
     if not rate_limit(session, "upload", str(ctx.workspace.id), UPLOADS_PER_WINDOW, UPLOAD_WINDOW):
         raise HTTPException(429, "Troppi caricamenti. Riprova tra qualche minuto.")
-    plan = session.get(Plan, ctx.workspace.plan_id)
+    plan = plan_of(session, ctx.workspace)
     data = _read_limited(upload, features_of(plan).max_file_mb * 1024 * 1024)
     sniffed = sniff(data[:64])
     if sniffed is None or sniffed.kind != PURPOSES[purpose]:
@@ -84,7 +84,7 @@ def store_upload(session: Session, ctx: CompanyContext, upload: UploadFile, purp
     total = sum(v["size"] for v in variants.values())
     try:
         workspace = lock_workspace(session, ctx.workspace.id)
-        limit = limits(session.get(Plan, workspace.plan_id))["storage_bytes"]
+        limit = limits(plan_of(session, workspace))["storage_bytes"]
         if limit is not None and storage_used(session, workspace.id) + total > limit:
             raise QuotaExceeded(
                 "Spazio di archiviazione esaurito per il piano attuale. Elimina qualche file "
@@ -134,7 +134,7 @@ def list_files(
     if kind:
         query = query.where(StoredFile.kind == kind)
     files = session.scalars(query.order_by(StoredFile.created_at.desc()).limit(500))
-    plan = session.get(Plan, ctx.workspace.plan_id)
+    plan = plan_of(session, ctx.workspace)
     return {
         "files": [file_out(f) for f in files],
         "storage": {

@@ -79,6 +79,20 @@ const rules: Rule[] = [
   r("GET", "company-transfers"),
   r("POST", "company-transfers/by-token"),
   r("POST", `company-transfers/${ID}/(accept|decline|cancel)`),
+  // Free public generator and site counters (no session)
+  r("POST", "public/generator/(preview|download|track)"),
+  r("GET", "public/site/counters"),
+  r("POST", "public/contact"),
+  // 0.5: email reports, mail preferences, metrics
+  r("GET", `${C}/reports`),
+  r("PUT", `${C}/reports`),
+  r("POST", `${C}/reports/recipients`),
+  r("DELETE", `${C}/reports/recipients/${ID}`),
+  r("GET", "account/mail-preferences"),
+  r("PUT", "account/mail-preferences"),
+  r("POST", "public/report-subscriptions/(confirm|unsubscribe)"),
+  r("GET", "admin/metrics"),
+  r("GET", "admin/metrics/export\\.csv"),
   // Billing (the webhook is signature-verified by the backend; Stripe cannot send cookies)
   r("POST", "public/stripe-webhook"),
   r("GET", "public/plans"),

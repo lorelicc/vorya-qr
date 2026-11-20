@@ -18,6 +18,7 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=False)
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    mail_prefs: Mapped[dict | None] = mapped_column(JSON)  # 0.5: e.g. {"onboarding": false}
     last_company_id: Mapped[int | None] = mapped_column(
         ForeignKey("companies.id", ondelete="SET NULL", use_alter=True)
     )
@@ -78,4 +79,6 @@ class Registration(Base):
     workspace_name: Mapped[str] = mapped_column(String(160))
     terms_accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    attribution: Mapped[dict | None] = mapped_column(JSON)  # 0.5 signup source
+    handoff: Mapped[dict | None] = mapped_column(JSON)  # 0.5 static QR to turn dynamic
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

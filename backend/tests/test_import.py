@@ -152,7 +152,7 @@ def test_plan_gates_rows_back_half_and_availability(client, db):
     )
     assert {(e["row"], e["column"]) for e in dup.json()["errors"]} == {(3, "back_half")}
 
-    db.execute(update(Workspace).values(plan_id="start", trial_ends_at=None))
+    db.execute(update(Workspace).values(plan_id="free", trial_ends_at=None))
     db.commit()
     locked = upload(client, GOOD)
     assert locked.status_code == 403 and locked.json()["code"] == "feature_locked"

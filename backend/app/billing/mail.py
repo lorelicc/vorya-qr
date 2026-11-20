@@ -1,8 +1,10 @@
 """Billing emails (Italian) and the outbox worker that sends them once each."""
 
 import html
+import json
 import logging
 from datetime import timedelta
+from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -17,6 +19,9 @@ from .settings import billing_settings
 log = logging.getLogger("vorya_qr.billing")
 MAX_ATTEMPTS = 5
 
+ONBOARDING = json.loads(
+    (Path(__file__).resolve().parent.parent / "mail" / "texts" / "onboarding_it.json").read_text()
+)  # editable copy: no code change needed to reword an email
 SUBJECTS = {
     "trial_3d": "La tua prova termina tra 3 giorni · Vorya QR",
     "trial_0d": "La tua prova termina oggi · Vorya QR",
@@ -27,21 +32,20 @@ SUBJECTS = {
 }
 
 
-def body_of(
-    kind: str, name: str, grace_days: int, redirect_days: int, extra: str = ""
-) -> tuple[str, str, str]:
+def body_of(kind: str, name: str, grace_days: int, extra: str = "") -> tuple[str, str, str]:
     """(title, text, cta label). Plain facts: no promises the product does not keep."""
     return {
         "trial_3d": (
             "La prova termina tra 3 giorni",
-            f"Ciao {name}, la tua prova gratuita di Vorya QR termina tra 3 giorni. Scegli un "
-            "piano per continuare a modificare i tuoi QR e link senza interruzioni.",
+            f"Ciao {name}, la tua prova gratuita di Vorya QR termina tra 3 giorni. Se non scegli un "
+            "piano, il tuo account passa al piano Free: tutti i tuoi QR e link restano attivi, "
+            "ma potrai modificare solo quelli compresi nei limiti del Free.",
             "Scegli un piano",
         ),
         "trial_0d": (
             "La prova termina oggi",
-            f"Ciao {name}, oggi termina la tua prova gratuita. I QR già pubblicati continuano a "
-            f"funzionare per altri {redirect_days} giorni; per modificarli scegli un piano.",
+            f"Ciao {name}, oggi termina la tua prova gratuita. I tuoi QR e link restano attivi: "
+            "l'account passa al piano Free. Per continuare a modificarli tutti, scegli un piano.",
             "Scegli un piano",
         ),
         "payment_ok": (
@@ -64,12 +68,17 @@ def body_of(
         ),
         "canceled": (
             "Abbonamento annullato",
-            f"Ciao {name}, il tuo abbonamento è stato annullato. I QR pubblicati restano attivi "
-            f"per {redirect_days} giorni; puoi riattivare il piano in qualsiasi momento, "
-            "tutto torna subito disponibile.",
+            f"Ciao {name}, il tuo abbonamento è stato annullato e l'account è passato al piano "
+            "Free. I tuoi QR e link restano attivi; oltre i limiti del Free diventano in sola "
+            "lettura. Puoi riattivare il piano in qualsiasi momento: tutto torna subito "
+            "modificabile.",
             "Riattiva il piano",
         ),
     }[kind]
+
+
+def onboarding_enabled(owner: User) -> bool:
+    return (owner.mail_prefs or {}).get("onboarding", True)
 
 
 def send_pending(session: Session, limit: int = 20) -> int:
@@ -90,15 +99,34 @@ def send_pending(session: Session, limit: int = 20) -> int:
         if owner is None or not owner.is_active:
             row.state = "failed"
             continue
+        if row.kind in ONBOARDING:
+            if not onboarding_enabled(owner):
+                row.state = "skipped"
+                continue
+            copy = ONBOARDING[row.kind]
+            text = copy["text"].format(name=owner.display_name)
+            url = f"{get_settings().public_base_url}{copy['path']}"
+            footer = (
+                "\nNon vuoi più queste email di aiuto? Puoi disattivarle da "
+                f"{get_settings().public_base_url}/account/plan"
+            )
+            try:
+                send_email(owner.email, copy["subject"], f"{text}\n{url}{footer}",
+                           _layout(copy["title"], html.escape(text), url, copy["cta"]), kind="billing")  # fmt: skip
+                row.state, row.sent_at = "sent", now()
+                sent += 1
+            except Exception as exc:  # noqa: BLE001
+                log.warning("Onboarding mail failed (%s)", type(exc).__name__)
+                row.state = "failed" if row.attempts >= MAX_ATTEMPTS else "pending"
+                row.due_at = now() + timedelta(minutes=5 * row.attempts)
+            continue
         extra = ""
         if row.kind == "gift":
             grant = session.get(PlanGrant, int(row.event_key.split(":")[1]))  # "gift:<id>"
             plan = session.get(Plan, grant.plan_id) if grant else None
             if grant and plan:
                 extra = f"{grant.months} {'mese' if grant.months == 1 else 'mesi'} del piano {plan.name}"
-        title, text, cta = body_of(
-            row.kind, owner.display_name, int(cfg["grace_days"]), int(cfg["redirect_days"]), extra
-        )
+        title, text, cta = body_of(row.kind, owner.display_name, int(cfg["grace_days"]), extra)
         url = f"{get_settings().public_base_url}/app/account/plan"
         try:
             send_email(

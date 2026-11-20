@@ -32,5 +32,5 @@ def test_downgrade_and_upgrade_roundtrip(monkeypatch):
         trial = connection.execute(
             text("SELECT data FROM platform_settings WHERE key='general'")
         ).scalar_one()
-    assert plans == ["start", "pro", "plus"]
+    assert plans == ["free", "start", "plus", "pro", "agency"]
     assert trial == {"trial_days": 14, "trial_plan_id": "pro"}

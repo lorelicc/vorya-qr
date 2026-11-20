@@ -72,13 +72,17 @@ export function PlanCards({
                 {plan.description && <p>{plan.description}</p>}
               </div>
               <div className={styles.price}>
-                {price ? (
+                {plan.id === "free" ? (
+                  <>
+                    Gratis <small>per sempre</small>
+                  </>
+                ) : price ? (
                   <>
                     {formatMoney(price.amount_cents, price.currency)}{" "}
                     <small>/ {CYCLE_LABEL[cycle]} + IVA se dovuta</small>
                   </>
                 ) : (
-                  <small>Non acquistabile online</small>
+                  <small>Prezzo su richiesta</small>
                 )}
               </div>
               <ul className={styles.features}>

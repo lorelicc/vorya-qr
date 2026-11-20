@@ -58,9 +58,9 @@ def test_alias_removal_needs_confirmation_and_quarantine(client, db):
         assert add_alias(second, mine["id"], "promo-estate").status_code == 201
 
 
-def test_back_half_is_locked_on_start(client, db):
+def test_back_half_is_locked_on_free(client, db):
     signup(client)
-    db.execute(update(Workspace).values(plan_id="start", trial_ends_at=None))
+    db.execute(update(Workspace).values(plan_id="free", trial_ends_at=None))
     db.commit()
     link = short_link(client)
     assert add_alias(client, link["id"], "promo").json()["code"] == "feature_locked"

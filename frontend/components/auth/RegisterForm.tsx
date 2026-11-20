@@ -1,12 +1,23 @@
 "use client";
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useState, useSyncExternalStore, type FormEvent } from "react";
 import { Button, Input } from "@/components/ui";
 import { api, errorMessage, fieldErrors, type FieldErrors } from "@/lib/api";
+import { clearHandoff, readAttribution, readHandoff } from "@/lib/site/attribution";
+import { adsConversion } from "@/components/site/ConsentBanner";
+import { trackEvent } from "@/lib/site/public-api";
 import { Notice } from "./Notice";
 import styles from "./forms.module.css";
 
+const noop = () => () => undefined;
+
 export function RegisterForm() {
+  // A QR started in the free generator is turned into a dynamic one after the email check.
+  const hasHandoff = useSyncExternalStore(
+    noop,
+    () => readHandoff() !== null,
+    () => false,
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [fields, setFields] = useState<FieldErrors>({});
@@ -24,7 +35,12 @@ export function RegisterForm() {
         workspace_name: form.get("workspace_name"),
         email: form.get("email"),
         accept_terms: form.get("accept_terms") === "on",
+        attribution: readAttribution() ?? undefined,
+        handoff: readHandoff() ?? undefined,
       });
+      trackEvent("registrazione-inviata");
+      adsConversion();
+      clearHandoff();
       setSent(result.message);
     } catch (err) {
       setError(errorMessage(err));
@@ -46,6 +62,11 @@ export function RegisterForm() {
 
   return (
     <form className={styles.form} onSubmit={submit} noValidate>
+      {hasHandoff && (
+        <Notice tone="success">
+          Dopo la conferma dell’email troverai già il tuo QR dinamico, con lo stesso stile.
+        </Notice>
+      )}
       {error && <Notice tone="error">{error}</Notice>}
       <Input
         label="Nome e cognome"

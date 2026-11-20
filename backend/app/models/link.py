@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import (
     JSON,
+    Date,
     DateTime,
     ForeignKey,
     Index,
@@ -123,3 +124,14 @@ class ImportJob(Base):
     error: Mapped[str | None] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class GeneratorCounter(Base):
+    """Anonymous daily counters of the public generator (no visitor data of any kind)."""
+
+    __tablename__ = "generator_counters"
+    day: Mapped[date] = mapped_column(Date, primary_key=True)
+    event: Mapped[str] = mapped_column(String(12), primary_key=True)
+    qr_type: Mapped[str] = mapped_column(String(16), primary_key=True)
+    landing: Mapped[str] = mapped_column(String(64), primary_key=True)
+    count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")

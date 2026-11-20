@@ -25,8 +25,14 @@ def test_signup_creates_default_company_named_after_workspace(client):
     assert companies[0]["qr_count"] == 0 and companies[0]["scans_7d"] == 0
 
 
-def test_company_quota_is_atomic_and_counts_per_workspace(client):
-    signup(client)  # trial = Pro limits: 3 companies
+def on_plan(db, plan_id: str) -> None:
+    db.execute(update(Workspace).values(trial_ends_at=None, plan_id=plan_id))
+    db.commit()
+
+
+def test_company_quota_is_atomic_and_counts_per_workspace(client, db):
+    signup(client)
+    on_plan(db, "plus")  # 3 companies
     assert new_company(client, "Due").status_code == 201
     assert new_company(client, "Tre").status_code == 201
     response = new_company(client, "Quattro")
@@ -38,6 +44,7 @@ def test_company_quota_is_atomic_and_counts_per_workspace(client):
 def test_concurrent_company_creation_never_exceeds_the_limit(client, db):
     me = signup(client)
     workspace_id = me["workspace"]["id"]
+    on_plan(db, "plus")  # 3 companies
     barrier, results = threading.Barrier(6), []
 
     def worker(index: int):
@@ -88,23 +95,21 @@ def test_qr_codes_are_isolated_between_companies_of_same_account(client):
     assert len(client.get(f"/api/companies/{first}/qr-codes").json()) == 1
 
 
-def test_qr_quota_is_total_across_companies(client, db):
+def test_dynamic_quota_is_per_company(client, db):
+    """0.5: `max_dynamic_qr` is per company (Plus: 3 companies, 25 each; Free: 1 company, 2)."""
     signup(client)
-    db.execute(update(Workspace).values(trial_ends_at=None, plan_id="start"))  # 3 dynamic
-    db.commit()
+    on_plan(db, "free")  # 1 company, 2 dynamic codes
     create(client)
     create(client)
-    second = new_company(client)
-    assert second.status_code == 409  # Start allows 1 company
-    db.execute(update(Workspace).values(plan_id="pro"))
-    db.commit()
+    assert create(client).json()["code"] == "quota_dynamic"
+    assert new_company(client).status_code == 409  # Free allows 1 company
+    on_plan(db, "plus")  # 3 companies, 25 dynamic per company
     cid = new_company(client).json()["id"]
     client.put("/api/account/last-company", json={"company_id": cid}, headers=csrf(client))
-    create(client)
-    db.execute(update(Workspace).values(plan_id="start"))
-    db.commit()
+    assert create(client).status_code == 201  # the new company has its own quota
+    on_plan(db, "free")  # the second company is now beyond the plan: read-only
     response = create(client)
-    assert response.status_code == 409 and response.json()["code"] == "quota_dynamic"
+    assert response.status_code == 409 and response.json()["code"] == "quota_companies"
 
 
 def test_delete_requires_exact_name_and_disables_redirects(client):
@@ -126,6 +131,7 @@ def test_delete_requires_exact_name_and_disables_redirects(client):
 
 def test_restore_respects_company_quota(client, db):
     signup(client)
+    on_plan(db, "plus")  # 3 companies
     cid = company_id(client)
     client.request(
         "DELETE",

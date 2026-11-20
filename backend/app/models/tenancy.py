@@ -38,6 +38,7 @@ class Workspace(Base):
     redirects_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # Admin gift (0.4): while in the future the plan is active without payment.
     grant_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    attribution: Mapped[dict | None] = mapped_column(JSON)  # 0.5 where the signup came from
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

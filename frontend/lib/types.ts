@@ -1,11 +1,5 @@
 export type Role = "super_admin" | "platform_admin" | "company_admin";
-export type Access =
-  | "active"
-  | "trial"
-  | "trial_expired"
-  | "suspended"
-  | "past_due"
-  | "payment_blocked";
+export type Access = "active" | "trial" | "free" | "suspended" | "past_due";
 export type QrKind = "static" | "dynamic";
 export type ErrorCorrection = "L" | "M" | "Q" | "H";
 
@@ -34,6 +28,8 @@ export type QrStyle = {
 
 export type QrCode = QrStyle & {
   id: number;
+  locked?: boolean;
+  locked_reason?: "company" | "quota" | "type" | null;
   name: string;
   kind: QrKind;
   content_type: "url";

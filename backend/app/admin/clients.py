@@ -59,7 +59,7 @@ def billing_state(workspace: Workspace) -> str:
         return "gift"
     if workspace.billing_state in ("active", "past_due", "canceled", "unpaid"):
         return workspace.billing_state
-    return {"trial": "trialing", "trial_expired": "expired"}.get(access, "none")
+    return {"trial": "trialing", "free": "free"}.get(access, "none")
 
 
 @router.get("")

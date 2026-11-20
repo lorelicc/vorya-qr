@@ -59,12 +59,16 @@ def _file_send(message: EmailMessage, recipient: str, kind: str, text: str) -> N
     (folder / f"{kind}-{uuid.uuid4().hex}.json").write_text(json.dumps(payload), encoding="utf-8")
 
 
-def send_email(recipient: str, subject: str, text: str, html_body: str, kind: str) -> None:
+def send_email(
+    recipient: str, subject: str, text: str, html_body: str, kind: str, reply_to: str | None = None
+) -> None:
     s = get_settings()
     message = EmailMessage()
     message["Subject"] = subject
     message["From"] = formataddr((s.smtp_from_name, s.smtp_from_email))
     message["To"] = recipient
+    if reply_to and "\n" not in reply_to and "\r" not in reply_to:
+        message["Reply-To"] = reply_to
     message.set_content(text)
     message.add_alternative(html_body, subtype="html")
     try:

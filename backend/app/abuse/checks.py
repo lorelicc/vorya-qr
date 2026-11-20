@@ -39,7 +39,7 @@ class GoogleSafeBrowsing:
 
     def flagged(self, urls: list[str]) -> set[str]:
         body = {
-            "client": {"clientId": "vorya-qr", "clientVersion": "0.4.0"},
+            "client": {"clientId": "vorya-qr", "clientVersion": "0.5.0"},
             "threatInfo": {
                 "threatTypes": [
                     "MALWARE",

@@ -88,3 +88,28 @@ def test_scan_total_counts_humans_only(client, db):
     assert db.get(QrCode, data["id"]).scan_total == 1
     db.execute(update(QrCode).values(scan_total=0))
     db.commit()
+
+
+def test_new_site_paths_are_reserved_and_collisions_are_reported(client, db):
+    """0.5: the public site owns /prezzi, /guide... a back-half can never take them again, and
+    a pre-existing collision is listed (migration 0016 / `cli check-reserved`)."""
+    from sqlalchemy import update
+
+    from app.links.collisions import find_collisions
+    from app.models import LinkAlias
+
+    signup(client)
+    link = client.post(links(client), json={"target_url": "https://example.com/x"},
+                       headers=csrf(client)).json()  # fmt: skip
+    for word in ("prezzi", "guide", "genera", "contatti", "funzionalita", "qr-code", "soluzioni"):
+        assert word in ROUTE_WORDS
+        response = client.post(f"{qrs(client)}/{link['id']}/aliases", json={"alias": word},
+                               headers=csrf(client))  # fmt: skip
+        assert response.status_code in (403, 422)  # reserved (or plan-locked): never accepted
+    assert find_collisions(db) == []
+    db.add(LinkAlias(qr_code_id=link["id"], workspace_id=1, alias="prezzi"))  # a legacy alias
+    db.commit()
+    assert [c["value"] for c in find_collisions(db)] == ["prezzi"]
+    db.execute(update(LinkAlias).values(alias="prezzi-promo"))
+    db.commit()
+    assert find_collisions(db) == []

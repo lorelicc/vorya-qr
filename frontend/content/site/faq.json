@@ -1,0 +1,46 @@
+{
+  "home": [
+    {
+      "q": "Cosa succede ai miei QR se smetto di pagare?",
+      "a": "Niente di grave: il tuo account passa al piano Free e tutti i tuoi QR e link continuano a funzionare. Oltre i limiti del Free i codici diventano in sola lettura (non puoi modificarli) finché non scegli un piano."
+    },
+    {
+      "q": "C'è davvero un piano gratuito per sempre?",
+      "a": "Sì. Il piano Free non scade, non richiede carta di credito e non mostra pubblicità."
+    },
+    {
+      "q": "Qual è la differenza tra QR statico e dinamico?",
+      "a": "Il QR statico contiene i dati nel codice: è gratuito e non si può modificare né misurare. Il QR dinamico punta a un indirizzo breve che puoi cambiare dopo la stampa e permette di vedere le scansioni."
+    },
+    {
+      "q": "Vedete chi scansiona i miei QR?",
+      "a": "Vedi quante scansioni, da quali dispositivi e da quali paesi. Nessun indirizzo IP viene salvato nelle statistiche."
+    },
+    {
+      "q": "Posso usarlo per più clienti o attività?",
+      "a": "Sì: i piani Plus, Pro e Agency prevedono più aziende nello stesso account, ognuna separata dalle altre."
+    }
+  ],
+  "pricing": [
+    {
+      "q": "Come pago?",
+      "a": "Con carta tramite Stripe, mese per mese o all'anno. Puoi cambiare piano quando vuoi: il conguaglio si calcola sul periodo già pagato."
+    },
+    {
+      "q": "Posso disdire quando voglio?",
+      "a": "Sì, in qualsiasi momento dalla pagina del tuo piano, senza penali. Il piano resta attivo fino alla fine del periodo pagato."
+    },
+    {
+      "q": "Emettete fattura?",
+      "a": "Sì, in italiano, con i dati di fatturazione che inserisci prima del primo pagamento (partita IVA o codice fiscale, SDI o PEC)."
+    },
+    {
+      "q": "Cosa succede ai miei QR se smetto di pagare?",
+      "a": "Passi al piano Free e i tuoi QR continuano a funzionare. Oltre i limiti del Free i codici sono in sola lettura; se fai di nuovo l'upgrade si sbloccano subito."
+    },
+    {
+      "q": "I prezzi includono l'IVA?",
+      "a": "I prezzi sono indicati IVA esclusa, se dovuta."
+    }
+  ]
+}

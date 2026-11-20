@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
@@ -29,7 +30,32 @@ class LoginInput(EmailInput):
     remember: bool = False
 
 
+class AttributionIn(BaseModel):
+    """Where the signup came from (first touch). Everything optional, short and sanitised."""
+
+    model_config = ConfigDict(extra="ignore")
+    utm_source: str = Field(default="", max_length=100)
+    utm_medium: str = Field(default="", max_length=100)
+    utm_campaign: str = Field(default="", max_length=100)
+    utm_content: str = Field(default="", max_length=100)
+    utm_term: str = Field(default="", max_length=100)
+    referrer: str = Field(default="", max_length=200)  # host + path, never the query string
+    landing: str = Field(default="", max_length=64, pattern=r"^(/[a-z0-9/_-]{0,60})?$")
+    generator: str = Field(default="", max_length=16)  # QR type made with the free generator
+
+
+class HandoffIn(BaseModel):
+    """The static QR the visitor was making: becomes a dynamic QR after the email check."""
+
+    model_config = ConfigDict(extra="forbid")
+    type: Literal["website", "vcard_static"]
+    data: dict
+    design: dict | None = None
+
+
 class RegisterInput(EmailInput):
+    attribution: AttributionIn | None = None
+    handoff: HandoffIn | None = None
     display_name: str = Field(min_length=2, max_length=160)
     workspace_name: str = Field(min_length=2, max_length=160)
     accept_terms: bool

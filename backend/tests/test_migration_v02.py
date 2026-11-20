@@ -73,7 +73,7 @@ def test_populated_v02_database_upgrades_without_regressions(monkeypatch, client
         ("Ab3dEf7", True, 2), ("Pg4hJk8", True, 0), (None, True, 0), ("Old4Qr7", True, 0)]  # fmt: skip
     assert json.loads(rows[0].design) == {"modules": "dots"}
     assert outcomes == ["ok"]
-    assert pro["max_bulk_rows"] == 500 and pro["storage_mb"] == 1024  # merged, not replaced
+    assert pro["max_bulk_rows"] == 1000 and pro["storage_mb"] == 10240  # the 0.5 Pro plan
     assert reserved > 50
 
     with get_engine().connect() as c:
@@ -81,8 +81,10 @@ def test_populated_v02_database_upgrades_without_regressions(monkeypatch, client
             "SELECT id, billing_state, redirects_until > now() + interval '29 days' AS fresh, "
             "redirects_until IS NULL AS open FROM workspaces ORDER BY id"
         )).all()  # fmt: skip
-    assert [(w.billing_state, w.open) for w in windows] == [(None, True), (None, False)]
-    assert windows[1].fresh  # a new 30-day window, not an immediate cut
+    assert [(w.billing_state, w.open) for w in windows] == [
+        (None, True),
+        (None, True),
+    ]  # 0.5: no windows
     assert client.get("/r/Old4Qr7", follow_redirects=False).status_code == 302
 
     hop = client.get("/r/Ab3dEf7", follow_redirects=False)

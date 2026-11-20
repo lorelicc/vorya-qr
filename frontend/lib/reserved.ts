@@ -7,7 +7,8 @@ export const ROUTE_WORDS = new Set([
   "favicon.ico", "forgot-password", "health", "legal", "login", "logout", "p", "plans", "r",
   "register", "report", "reset-password", "robots.txt", "sitemap.xml", "static", "suspended",
   "verify-email", "billing", "checkout", "signup", "settings", "help", "docs", "status",
-  "www", "mail", "unlock", "expired",
+  "www", "mail", "unlock", "expired", "funzionalita", "qr-code", "link-brevi", "genera",
+  "soluzioni", "prezzi", "alternative", "guide", "chi-siamo", "contatti", "en", "og", "sitemap",
 ]); // prettier-ignore
 
 /** Slugs (7 chars) and custom back-halves (3-50, [a-z0-9-]) resolved at the root. */

@@ -8,8 +8,8 @@ from sqlalchemy import select
 
 from ..access import redirects_enabled
 from ..core.database import session_factory
-from ..models import Company, Plan, QrCode, QrPage, StoredFile, Workspace
-from ..plans import features_of
+from ..models import Company, QrCode, QrPage, StoredFile, Workspace
+from ..plans import features_of, plan_of
 from ..schemas.page import Page
 from .vcard import vcard
 
@@ -34,7 +34,7 @@ def load_page(slug: str, cookies: dict | None = None):
             or row.QrCode.deleted_at
             or row.QrCode.status != "active"
             or row.Company.deleted_at
-            or not redirects_enabled(row.Workspace.status, row.Workspace.redirects_until)
+            or not redirects_enabled(row.Workspace.status)
         ):
             raise HTTPException(404, "Pagina non disponibile.")
         from ..core.security import now
@@ -61,7 +61,7 @@ def load_page(slug: str, cookies: dict | None = None):
                 select(StoredFile).where(StoredFile.id.in_(ids), StoredFile.deleted_at.is_(None))
             )
         }
-        remove_branding = features_of(session.get(Plan, row.Workspace.plan_id)).remove_branding
+        remove_branding = features_of(plan_of(session, row.Workspace)).remove_branding
         company = {
             "name": row.Company.name,
             "logo_url": f"/f/{row.Company.logo_file_id}/logo" if row.Company.logo_file_id else None,

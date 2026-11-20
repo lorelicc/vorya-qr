@@ -1,7 +1,14 @@
 import type { UsageItem as Usage } from "@/lib/types";
 
 export type Cycle = "monthly" | "yearly";
-export type BillingState = "trialing" | "active" | "past_due" | "canceled" | "unpaid" | "gift";
+export type BillingState =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "unpaid"
+  | "gift"
+  | "free";
 
 export type PlanPrices = Partial<Record<Cycle, { amount_cents: number; currency: string }>>;
 
@@ -19,6 +26,12 @@ export type PlanCardData = {
     version_history: boolean;
     menu_type: boolean;
     allowed_types: string[];
+    storage_mb?: number | null;
+    stats_retention_days?: number | null;
+    remove_branding?: boolean;
+    report_frequencies?: ("weekly" | "monthly")[];
+    report_recipients?: number;
+    report_pdf?: boolean;
   };
   prices: PlanPrices;
 };
@@ -64,9 +77,7 @@ export type BillingInfo = {
   trial_ends_at: string | null;
   grace_until: string | null;
   grant_until: string | null;
-  redirects_until: string | null;
   grace_days: number;
-  redirect_days: number;
   usage: Record<"dynamic" | "static" | "companies" | "storage", Usage>;
   profile: BillingProfile | null;
   online_payments: boolean;
@@ -80,6 +91,7 @@ export const STATE_LABEL: Record<BillingState, string> = {
   canceled: "Annullato",
   unpaid: "Non attivo",
   gift: "Omaggio",
+  free: "Free",
 };
 
 export const CYCLE_LABEL: Record<Cycle, string> = { monthly: "mese", yearly: "anno" };
@@ -100,8 +112,8 @@ export function yearlySaving(prices: PlanPrices): number {
   return Math.round((1 - y / (m * 12)) * 100);
 }
 
-const limit = (n: number | null, one: string, many: string) =>
-  n === null ? `${many} illimitati` : `${n} ${n === 1 ? one : many}`;
+const limit = (n: number | null, one: string, many: string, unlimited = "illimitati") =>
+  n === null ? `${many} ${unlimited}` : `${n} ${n === 1 ? one : many}`;
 
 /** The feature lines of a plan card: everything comes from the plan's limits/features. */
 export function featureLines(plan: PlanCardData, labels: Record<string, string>): string[] {
@@ -109,7 +121,7 @@ export function featureLines(plan: PlanCardData, labels: Record<string, string>)
   const lines = [
     limit(plan.limits.dynamic_qr, "QR dinamico", "QR dinamici"),
     limit(plan.limits.static_qr, "QR statico", "QR statici"),
-    limit(plan.limits.companies, "azienda", "aziende"),
+    limit(plan.limits.companies, "azienda", "aziende", "illimitate"),
   ];
   if (f.custom_back_half)
     lines.push(

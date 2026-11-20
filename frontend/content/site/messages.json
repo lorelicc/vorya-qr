@@ -1,0 +1,38 @@
+[
+  {
+    "key": "always-on",
+    "title": "I tuoi QR non smettono mai di funzionare",
+    "text": "Nessun QR viene disattivato perché la prova è finita o l'abbonamento è scaduto. Se smetti di pagare, passi al piano Free e tutto continua a funzionare.",
+    "art": "guarantee"
+  },
+  {
+    "key": "no-ads",
+    "title": "Niente pubblicità, mai",
+    "text": "Nemmeno nel piano Free. Le pagine dei tuoi QR sono tue e dei tuoi clienti.",
+    "art": "noads"
+  },
+  {
+    "key": "prices",
+    "title": "Prezzi in euro, disdici quando vuoi",
+    "text": "Paghi mese per mese o all'anno, senza vincoli. Disdici in un clic: nessuna penale.",
+    "art": "euro"
+  },
+  {
+    "key": "italian",
+    "title": "In italiano, davvero",
+    "text": "Interfaccia, supporto e fatture in italiano. Non è un sito internazionale tradotto.",
+    "art": "italy"
+  },
+  {
+    "key": "made-for",
+    "title": "Pensato per chi lavora",
+    "text": "Ristoranti, cantine, eventi e agenzie: più aziende nello stesso account e report per i tuoi clienti.",
+    "art": "agency"
+  },
+  {
+    "key": "privacy",
+    "title": "Privacy rispettata",
+    "text": "Nessun indirizzo IP viene salvato nelle statistiche.",
+    "art": "privacy"
+  }
+]

@@ -4,7 +4,7 @@ import styles from "./LegalFooter.module.css";
 export function LegalFooter() {
   return (
     <footer className={styles.footer}>
-      <span>© {new Date().getFullYear()} Vorya Apps · Vorya QR 0.4</span>
+      <span>© {new Date().getFullYear()} Vorya Apps · Vorya QR 0.5</span>
       <nav aria-label="Documenti legali">
         <Link href="/legal/termini">Termini</Link>
         <Link href="/legal/privacy">Privacy</Link>

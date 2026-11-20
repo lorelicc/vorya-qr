@@ -117,5 +117,7 @@ class QrOut(BaseModel):
     spark: list[int] | None = None  # last 7 days, dashboard list only
     folder_id: int | None = None
     tag_ids: list[int] = []
+    locked: bool = False  # 0.5: read-only above the plan limits (still served)
+    locked_reason: str | None = None
     created_at: datetime
     updated_at: datetime

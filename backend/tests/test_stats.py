@@ -6,7 +6,7 @@ from sqlalchemy import func, select, update
 
 from app.core.security import now
 from app.main import app
-from app.models import DailySalt, PageEvent, Plan, ScanEvent
+from app.models import DailySalt, PageEvent, Plan, ScanEvent, Workspace
 from app.stats import geo
 from app.stats.periods import local_today, resolve
 from app.worker import rotate_salts, stats_retention
@@ -126,12 +126,14 @@ def test_retention_job_deletes_old_events_by_plan(client, db):
     db.execute(
         update(ScanEvent).where(ScanEvent.id == 1).values(scanned_at=now() - timedelta(days=400))
     )
+    db.execute(update(Workspace).values(plan_id="free", trial_ends_at=None))
     db.commit()
-    assert stats_retention(db) == 1  # trial = Pro: 365 days
+    # Free shows 30 days but keeps the data 12 months (hidden, not deleted): 400 days is gone
+    assert stats_retention(db) == 1
     db.commit()
     assert db.scalar(select(func.count()).select_from(ScanEvent)) == 1
-    plus = db.get(Plan, "plus")
-    assert plus.features.get("stats_retention_days", 0) is None
+    agency = db.get(Plan, "agency")
+    assert agency.features.get("stats_retention_days", 0) is None
 
 
 def test_dashboard_list_has_seven_day_sparklines(client, db):

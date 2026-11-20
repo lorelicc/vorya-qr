@@ -57,7 +57,7 @@ test("registrazione → QR dinamico → cambio destinazione → scansione simula
   // Dashboard lists the QR with its scans.
   await page.getByRole("link", { name: "Link e QR", exact: true }).click();
   await expect(page.getByRole("link", { name: "Menu del giorno", exact: true })).toBeVisible();
-  await expect(page.getByText("1 / 25")).toBeVisible(); // trial = Pro limits
+  await expect(page.getByText("1 / 35")).toBeVisible(); // trial = Pro limits
 });
 
 test("credenziali errate mostrano un errore", async ({ page }) => {

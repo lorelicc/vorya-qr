@@ -76,6 +76,20 @@ def download_geoip() -> str:
     return f"Database GeoIP aggiornato: {target} (riavvia backend per ricaricarlo)"
 
 
+def check_reserved() -> str:
+    from .links.collisions import find_collisions
+
+    with session_factory()() as session:
+        found = find_collisions(session)
+    if not found:
+        return "Nessuna collisione: nessuno slug o alias coincide con una parola riservata."
+    lines = [f"- {c['kind']} #{c['id']}: «{c['value']}»" for c in found]
+    return (
+        f"{len(found)} collisioni (il link dell'utente vince sul percorso del sito):\n"
+        + "\n".join(lines)
+    )
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -84,7 +98,13 @@ def main(argv: list[str] | None = None) -> None:
     create.add_argument("--name", required=True)
     create.add_argument("--role", choices=("super_admin", "platform_admin"), default="super_admin")
     sub.add_parser("download-geoip", help="Scarica il database DB-IP Lite City del mese")
+    sub.add_parser(
+        "check-reserved", help="Elenca slug e alias in conflitto con le parole riservate del sito"
+    )
     args = parser.parse_args(argv)
+    if args.command == "check-reserved":
+        print(check_reserved(), file=sys.stdout)
+        return
     if args.command == "download-geoip":
         print(download_geoip(), file=sys.stdout)
         return

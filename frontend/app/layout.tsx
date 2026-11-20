@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ErrorReporting } from "@/components/ErrorReporting";
 import { ToastProvider } from "@/components/ui";
 import "@/styles/vorya-tokens.css";
 import "@/styles/reset.css";
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="it">
       <body>
         <ToastProvider>{children}</ToastProvider>
+        <ErrorReporting />
       </body>
     </html>
   );

@@ -20,16 +20,15 @@ from ..models import (
     LinkAlias,
     LinkTag,
     LinkVersion,
-    Plan,
     QrCode,
     QrPage,
     StylePreset,
     Tag,
 )  # fmt: skip
-from ..plans import features_of, locked
+from ..plans import features_of, locked, plan_of
 from ..qr.design_service import apply_design
 from ..qr.render import new_slug, root_link, short_link
-from ..quotas import counts, limits, lock_workspace
+from ..quotas import counts, dynamic_per_company, limits, lock_workspace
 from ..schemas.design import QrDesign
 from .parser import TEMPLATE_HEADER, TEMPLATE_ROWS, build_context, validate_file
 
@@ -47,19 +46,22 @@ def template_csv() -> bytes:
 
 
 def feature_limit(session: Session, workspace) -> int:
-    rows = features_of(session.get(Plan, workspace.plan_id)).max_bulk_rows
+    rows = features_of(plan_of(session, workspace)).max_bulk_rows
     if not rows:
         raise locked("L'importazione massiva da CSV")
     return rows
 
 
-def batch_message(session: Session, workspace, dynamic: int, static: int) -> str | None:
+def batch_message(
+    session: Session, workspace, dynamic: int, static: int, company_id: int | None = None
+) -> str | None:
     """None if the whole batch fits; otherwise how many rows exceed the plan."""
-    plan = session.get(Plan, workspace.plan_id)
+    plan = plan_of(session, workspace)
     current, maximum = counts(session, workspace.id), limits(plan)
+    per_company = dynamic_per_company(session, workspace.id).get(company_id, 0)
     problems = []
     for key, used, add, label in (
-        ("dynamic", current.dynamic, dynamic, "link e QR dinamici"),
+        ("dynamic", per_company, dynamic, "link e QR dinamici dell'azienda"),
         ("static", current.static, static, "QR statici"),
     ):
         limit = maximum[key]
@@ -75,7 +77,7 @@ def batch_message(session: Session, workspace, dynamic: int, static: int) -> str
 def preview(session: Session, ctx, raw: bytes, fmt: str, size: int) -> ImportJob:
     workspace, company = ctx.workspace, ctx.company
     max_rows = feature_limit(session, workspace)
-    plan = session.get(Plan, workspace.plan_id)
+    plan = plan_of(session, workspace)
     context = build_context(session, workspace, company, plan)
     rows, errors, total, shown = validate_file(context, raw, max_rows)
     if not errors:  # reputation check once for all URLs, in batches of 500
@@ -87,7 +89,7 @@ def preview(session: Session, ctx, raw: bytes, fmt: str, size: int) -> ImportJob
     for row in rows:
         row.pop("urls", None)
     dynamic = sum(1 for r in rows if r["kind"] == "dynamic")
-    summary = batch_message(session, workspace, dynamic, len(rows) - dynamic)
+    summary = batch_message(session, workspace, dynamic, len(rows) - dynamic, company.id)
     if summary and not errors:
         errors.append({"row": 0, "column": "quota", "message": summary})
     job = ImportJob(
@@ -194,7 +196,7 @@ def confirm(session: Session, ctx, job: ImportJob) -> ImportJob:
         raise CodedError(409, "Questa importazione non può essere confermata.", "not_confirmable")
     workspace = lock_workspace(session, ctx.workspace.id)
     dynamic = sum(1 for r in job.rows if r["kind"] == "dynamic")
-    message = batch_message(session, workspace, dynamic, len(job.rows) - dynamic)
+    message = batch_message(session, workspace, dynamic, len(job.rows) - dynamic, ctx.company.id)
     if message:  # all or nothing: the lock guarantees nobody took the last slots meanwhile
         raise QuotaExceeded(message, "quota_import")
     job.created_ids = create_all(session, ctx, job)

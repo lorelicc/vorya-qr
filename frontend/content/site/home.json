@@ -1,0 +1,26 @@
+{
+  "hero": {
+    "title": "I tuoi QR non smettono mai di funzionare",
+    "lead": "Link brevi e codici QR statici e dinamici, in italiano e senza pubblicità. Crea il tuo qui sotto, gratis e senza registrarti.",
+    "cta": "Prova gratis",
+    "ctaSecondary": "Vedi i prezzi"
+  },
+  "steps": [
+    {
+      "title": "Scegli il tipo",
+      "text": "Sito web, vCard, menu, PDF, link in bio e molto altro."
+    },
+    {
+      "title": "Personalizza",
+      "text": "Colori, forme e logo, con controllo automatico di leggibilità."
+    },
+    {
+      "title": "Stampa e misura",
+      "text": "Scarica PNG, SVG o PDF e guarda le scansioni nelle statistiche."
+    }
+  ],
+  "finalCta": {
+    "title": "Crea il tuo primo QR in un minuto",
+    "text": "14 giorni di prova con tutte le funzioni, poi il piano Free per sempre. Senza carta di credito."
+  }
+}

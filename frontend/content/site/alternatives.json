@@ -1,0 +1,66 @@
+[
+  {
+    "slug": "bitly",
+    "name": "Bitly",
+    "verified": false,
+    "lastUpdated": null,
+    "intro": "",
+    "claims": [
+      {
+        "text": "Il piano gratuito prevede un numero limitato di QR code al mese e include pubblicità.",
+        "verify": true
+      },
+      {
+        "text": "I piani a pagamento sono fatturati solo annualmente.",
+        "verify": true
+      },
+      {
+        "text": "La personalizzazione dei QR code è limitata.",
+        "verify": true
+      }
+    ],
+    "sources": [
+      {
+        "label": "Pagina prezzi di Bitly",
+        "url": "https://bitly.com/pages/pricing",
+        "checked": null
+      }
+    ],
+    "vorya": [
+      "Niente pubblicità, anche nel piano Free",
+      "QR dinamici che non vengono disattivati: a fine abbonamento si passa al Free",
+      "Prezzi in euro, mensili o annuali",
+      "Italiano: interfaccia, supporto e fatture"
+    ]
+  },
+  {
+    "slug": "qr-code-generator",
+    "name": "QR Code Generator PRO",
+    "verified": false,
+    "lastUpdated": null,
+    "intro": "",
+    "claims": [
+      {
+        "text": "I QR dinamici provati gratuitamente vengono disattivati al termine della prova.",
+        "verify": true
+      },
+      {
+        "text": "Questo è una delle principali fonti di lamentele degli utenti che avevano già stampato i codici.",
+        "verify": true
+      }
+    ],
+    "sources": [
+      {
+        "label": "Pagina prezzi di QR Code Generator PRO",
+        "url": "https://www.qr-code-generator.com/pricing/",
+        "checked": null
+      }
+    ],
+    "vorya": [
+      "Niente pubblicità, anche nel piano Free",
+      "QR dinamici che non vengono disattivati: a fine abbonamento si passa al Free",
+      "Prezzi in euro, mensili o annuali",
+      "Italiano: interfaccia, supporto e fatture"
+    ]
+  }
+]

@@ -73,6 +73,8 @@ def register(
         session.add(registration)
     registration.workspace_name = payload.workspace_name
     registration.terms_accepted_at = now()
+    registration.attribution = payload.attribution.model_dump() if payload.attribution else None
+    registration.handoff = payload.handoff.model_dump() if payload.handoff else None
     token = issue_token(session, user, "verify", minutes=VERIFY_MINUTES)
     audit(session, None, "registration.requested")
     session.commit()
@@ -121,8 +123,17 @@ def verify_email(
     )
     session.add(workspace)
     session.flush()
+    workspace.attribution = registration.attribution
     company = create_default_company(session, workspace.id, workspace.name)
     user.last_company_id = company.id
+    if registration.handoff:
+        from .handoff import create_from_handoff
+
+        create_from_handoff(session, user, workspace, company, registration.handoff)
+    registration.handoff = None  # used once; nothing about it is kept
+    from ..billing.service import enqueue_mail
+
+    enqueue_mail(session, workspace.id, f"welcome:{user.id}", "welcome")
     session.execute(delete(PasswordReset).where(PasswordReset.user_id == user.id))
     token, csrf = start_session(session, user, remember=False)
     audit(session, user, "registration.verified", workspace.id)
