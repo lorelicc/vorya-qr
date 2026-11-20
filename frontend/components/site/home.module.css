@@ -8,7 +8,9 @@
 /* ---- Hero (dark) ---- */
 .hero {
   position: relative;
-  padding: var(--space-8) 0 var(--space-10);
+  /* the transparent header sits on top of the hero: no white band above it */
+  margin-top: -76px;
+  padding: calc(var(--space-8) + 76px) 0 var(--space-10);
   overflow: hidden;
   color: #fff;
   background:

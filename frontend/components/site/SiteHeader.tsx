@@ -2,9 +2,9 @@
 import { ChevronDown, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { Brand } from "@/components/layout/Brand";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AuthCta } from "./AuthCta";
+import { LogoSwap } from "./LogoSwap";
 import { MegaArt } from "./MegaArt";
 import { NavIcon } from "./NavIcon";
 import { VoryaFamily } from "./VoryaFamily";
@@ -17,7 +17,21 @@ export function SiteHeader({ groups }: { groups: NavGroup[] }) {
   return <HeaderInner key={usePathname()} groups={groups} />;
 }
 
+const SCROLLED_AT = 24;
+const onScroll = (notify: () => void) => {
+  window.addEventListener("scroll", notify, { passive: true });
+  return () => window.removeEventListener("scroll", notify);
+};
+
 function HeaderInner({ groups }: { groups: NavGroup[] }) {
+  const path = usePathname();
+  const scrolled = useSyncExternalStore(
+    onScroll,
+    () => window.scrollY > SCROLLED_AT,
+    () => false,
+  );
+  // The home opens on a dark hero: the header is dark there and turns white as the page scrolls.
+  const dark = path === "/" && !scrolled;
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
   const root = useRef<HTMLElement>(null);
@@ -48,13 +62,19 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
   }, []);
 
   return (
-    <header className={styles.header} ref={root} data-mobile={mobile || undefined}>
+    <header
+      className={styles.header}
+      ref={root}
+      data-mobile={mobile || undefined}
+      data-theme={dark ? "dark" : undefined}
+      data-scrolled={scrolled || undefined}
+    >
       <a href="#main" className={styles.skip}>
         Vai al contenuto
       </a>
       <div className={`${styles.container} ${styles.bar}`}>
         <div className={styles.brandRow}>
-          <Brand href="/" />
+          <LogoSwap dark={dark} />
           <VoryaFamily />
         </div>
         <nav className={styles.nav} aria-label="Principale">
