@@ -21,6 +21,17 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
   const root = useRef<HTMLElement>(null);
+  const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Hover intent: crossing the small gap between the header and the menu must not close it.
+  const hold = (key: string) => {
+    if (closing.current) clearTimeout(closing.current);
+    setOpen(key);
+  };
+  const release = () => {
+    if (closing.current) clearTimeout(closing.current);
+    closing.current = setTimeout(() => setOpen(null), 350);
+  };
 
   useEffect(() => {
     const away = (e: PointerEvent) => {
@@ -32,6 +43,7 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
     return () => {
       document.removeEventListener("pointerdown", away);
       document.removeEventListener("keydown", esc);
+      if (closing.current) clearTimeout(closing.current);
     };
   }, []);
 
@@ -50,8 +62,8 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
             <div
               key={group.key}
               className={styles.item}
-              onPointerEnter={(e) => e.pointerType === "mouse" && setOpen(group.key)}
-              onPointerLeave={(e) => e.pointerType === "mouse" && setOpen(null)}
+              onPointerEnter={(e) => e.pointerType === "mouse" && hold(group.key)}
+              onPointerLeave={(e) => e.pointerType === "mouse" && release()}
             >
               <button
                 type="button"
@@ -67,42 +79,44 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
                 data-open={open === group.key || undefined}
                 data-tone={group.tone}
               >
-                <div className={`${styles.container} ${styles.megaInner}`}>
-                  <div className={styles.intro}>
-                    <strong>{group.intro.title}</strong>
-                    <p>{group.intro.text}</p>
-                    <MegaArt kind={group.key === "tipi" ? "tipi" : group.key} />
-                    <Link href={group.intro.cta.href} tabIndex={open === group.key ? 0 : -1}>
-                      {group.intro.cta.label} →
-                    </Link>
-                  </div>
-                  <div className={styles.columns} data-cols={group.columns.length}>
-                    {group.columns.map((column, i) => (
-                      <div
-                        key={column.title ?? i}
-                        className={styles.column}
-                        data-grid={group.columns.length === 1 || undefined}
-                      >
-                        {column.title && <h2>{column.title}</h2>}
-                        {column.items.map((item, n) => (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            className={styles.tile}
-                            style={{ ["--i" as string]: n }}
-                            tabIndex={open === group.key ? 0 : -1}
-                          >
-                            <span className={styles.bubble}>
-                              <NavIcon name={item.icon} />
-                            </span>
-                            <span className={styles.tileText}>
-                              <b>{item.label}</b>
-                              {item.hint && <small>{item.hint}</small>}
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-                    ))}
+                <div className={styles.megaCard}>
+                  <div className={styles.megaInner}>
+                    <div className={styles.intro}>
+                      <strong>{group.intro.title}</strong>
+                      <p>{group.intro.text}</p>
+                      <MegaArt kind={group.key === "tipi" ? "tipi" : group.key} />
+                      <Link href={group.intro.cta.href} tabIndex={open === group.key ? 0 : -1}>
+                        {group.intro.cta.label} →
+                      </Link>
+                    </div>
+                    <div className={styles.columns} data-cols={group.columns.length}>
+                      {group.columns.map((column, i) => (
+                        <div
+                          key={column.title ?? i}
+                          className={styles.column}
+                          data-grid={group.columns.length === 1 || undefined}
+                        >
+                          {column.title && <h2>{column.title}</h2>}
+                          {column.items.map((item, n) => (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className={styles.tile}
+                              style={{ ["--i" as string]: n }}
+                              tabIndex={open === group.key ? 0 : -1}
+                            >
+                              <span className={styles.bubble}>
+                                <NavIcon name={item.icon} />
+                              </span>
+                              <span className={styles.tileText}>
+                                <b>{item.label}</b>
+                                {item.hint && <small>{item.hint}</small>}
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
