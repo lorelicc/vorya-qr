@@ -108,6 +108,21 @@
   background: var(--color-selected);
   text-decoration: none;
 }
+.panel a span {
+  display: block;
+  font-weight: var(--fw-semibold);
+}
+.panel a small {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  line-height: 1.35;
+  color: var(--color-text-secondary);
+}
+.panel:not([data-wide]):has(small) {
+  min-width: 340px;
+  max-width: 400px;
+}
 .headerCta {
   margin-left: auto;
   display: flex;

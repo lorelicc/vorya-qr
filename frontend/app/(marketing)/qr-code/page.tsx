@@ -35,7 +35,7 @@ export default function TypesIndex() {
           ))}
         </Cards>
       </Section>
-      <Section tone="soft" title="Solo statici" lead="Gratis, per sempre, senza registrarti.">
+      <Section tone="lilac" title="Solo statici" lead="Gratis, per sempre, senza registrarti.">
         <Cards>
           {statics.map((t, i) => (
             <Card

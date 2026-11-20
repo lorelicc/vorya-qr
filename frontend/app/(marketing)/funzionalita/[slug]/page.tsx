@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { featureScene } from "@/components/site/scenes/for";
 import { Bullets, Card, Cards, Crumbs, CtaBand, Hero, Section } from "@/components/site/blocks";
 import { MockDashboard, MockEditor, MockStats } from "@/components/site/Mockups";
 import { FEATURE_ART } from "@/lib/site/feature-art";
@@ -36,14 +37,20 @@ export default async function FeaturePage({ params }: { params: Promise<{ slug: 
           { label: f.label, href: `/funzionalita/${f.slug}` },
         ]}
       />
-      <Hero eyebrow={f.label} title={f.title} lead={f.text} art={FEATURE_ART[f.slug]} />
+      <Hero
+        eyebrow={f.label}
+        title={f.title}
+        lead={f.text}
+        art={FEATURE_ART[f.slug]}
+        scene={featureScene(f.slug)}
+      />
       <Section title="In pratica">
         <Bullets items={f.bullets} />
         <div style={{ marginTop: "var(--space-8)" }}>
           <Mock />
         </div>
       </Section>
-      <Section tone="soft" title="Funziona con tutti i tipi di QR">
+      <Section tone="lilac" title="Funziona con tutti i tipi di QR">
         <Cards>
           {related.map((t) => (
             <Card

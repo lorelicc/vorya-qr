@@ -1,4 +1,5 @@
 import { Bullets, Crumbs, CtaBand, FaqList, Hero, Section } from "@/components/site/blocks";
+import { featureScene } from "@/components/site/scenes/for";
 import { ShortLinkTab } from "@/components/site/generator/ShortLinkTab";
 import { pageMetadata } from "@/lib/site/config";
 
@@ -37,11 +38,12 @@ export default function ShortLinksPage() {
         title="Accorcia i tuoi link, misura i clic"
         lead="Link brevi che puoi cambiare dopo averli condivisi, con scadenza, password e destinazioni programmate nei piani che le includono."
         art="links"
+        scene={featureScene("link-brevi")}
       />
       <Section>
         <ShortLinkTab />
       </Section>
-      <Section tone="soft" title="Cosa puoi fare">
+      <Section tone="mint" title="Cosa puoi fare">
         <Bullets
           items={[
             "Cambiare la destinazione quando vuoi",

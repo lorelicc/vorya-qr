@@ -1,6 +1,6 @@
 import { FEATURES, SOLUTIONS, TYPES, featurePath, verifiedAlternatives } from "@/lib/site/content";
 
-export type NavLink = { label: string; href: string };
+export type NavLink = { label: string; href: string; hint?: string };
 export type NavGroup = { key: string; label: string; links: NavLink[]; wide?: boolean };
 
 /** Single source for the header mega-menu and the footer, built from the content files. */
@@ -10,8 +10,12 @@ export function navGroups(): NavGroup[] {
       key: "prodotto",
       label: "Prodotto",
       links: [
-        { label: "Tutte le funzionalità", href: "/funzionalita" },
-        ...FEATURES.map((f) => ({ label: f.label, href: featurePath(f) })),
+        {
+          label: "Tutte le funzionalità",
+          href: "/funzionalita",
+          hint: "Tutto ciò che include Vorya QR",
+        },
+        ...FEATURES.map((f) => ({ label: f.label, href: featurePath(f), hint: f.text })),
       ],
     },
     {
@@ -26,7 +30,11 @@ export function navGroups(): NavGroup[] {
     {
       key: "soluzioni",
       label: "Soluzioni",
-      links: SOLUTIONS.map((s) => ({ label: s.label, href: `/soluzioni/${s.slug}` })),
+      links: SOLUTIONS.map((s) => ({
+        label: s.label,
+        href: `/soluzioni/${s.slug}`,
+        hint: s.problem,
+      })),
     },
     {
       key: "risorse",

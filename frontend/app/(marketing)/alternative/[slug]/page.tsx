@@ -63,7 +63,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
           ))}
         </p>
       </Section>
-      <Section tone="soft" title="Cosa offre Vorya QR">
+      <Section tone="mint" title="Cosa offre Vorya QR">
         <Bullets items={a.vorya} />
       </Section>
       <CtaBand

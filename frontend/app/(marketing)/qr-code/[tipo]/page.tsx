@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { typeScene } from "@/components/site/scenes/for";
 import { notFound } from "next/navigation";
 import {
   Bullets,
@@ -63,6 +64,7 @@ export default async function TypePage({ params }: { params: Promise<{ tipo: str
         title={t.h1}
         lead={t.lead}
         art={t.art}
+        scene={typeScene(t.slug)}
         actions={
           dynamicOnly ? (
             <ButtonLink href="/register" data-umami-event={`landing-${t.slug}-prova`}>
@@ -89,7 +91,7 @@ export default async function TypePage({ params }: { params: Promise<{ tipo: str
           compact={false}
         />
       </Section>
-      <Section tone="soft" title="Quando usarlo">
+      <Section tone="peach" title="Quando usarlo">
         <Bullets items={t.useCases} />
       </Section>
       {related.length > 0 && (

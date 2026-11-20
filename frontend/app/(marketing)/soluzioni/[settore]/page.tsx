@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { solutionScene } from "@/components/site/scenes/for";
 import {
   Bullets,
   Card,
@@ -40,6 +41,7 @@ export default async function SolutionPage({ params }: { params: Promise<{ setto
         title={s.h1}
         lead={s.solution}
         art={s.art}
+        scene={solutionScene(s.slug)}
         actions={
           <ButtonLink href="/register" data-umami-event={`soluzione-${s.slug}-prova`}>
             Prova gratis
@@ -49,7 +51,7 @@ export default async function SolutionPage({ params }: { params: Promise<{ setto
       <Section title="Il problema">
         <p style={{ fontSize: "var(--fs-lg)", maxWidth: "62ch", lineHeight: 1.6 }}>{s.problem}</p>
       </Section>
-      <Section tone="soft" title="Come ti aiuta Vorya QR">
+      <Section tone="sun" title="Come ti aiuta Vorya QR">
         <Bullets items={s.bullets} />
       </Section>
       <Section title="I QR consigliati">

@@ -17,7 +17,10 @@
 }
 .hero {
   padding: var(--space-8) 0 var(--space-10);
-  background: linear-gradient(180deg, var(--color-canvas) 0%, #fff 100%);
+  background:
+    radial-gradient(640px 300px at 90% 0%, rgba(0, 233, 154, 0.26), transparent 70%),
+    radial-gradient(420px 240px at 0% 100%, rgba(255, 215, 186, 0.5), transparent 70%),
+    linear-gradient(180deg, #e8fdf3 0%, #fff 100%);
 }
 .hero > .container {
   display: grid;
@@ -73,6 +76,51 @@
 }
 .section[data-tone="soft"] {
   background: var(--color-canvas);
+}
+.section[data-tone="mint"] {
+  background: linear-gradient(180deg, #e9fdf4, #d2f7e5);
+}
+.section[data-tone="sun"] {
+  background: linear-gradient(180deg, #fff6d9, #ffefb8);
+}
+.section[data-tone="lilac"] {
+  background: linear-gradient(180deg, #f6f3ff, #e9e3ff);
+}
+.section[data-tone="peach"] {
+  background: linear-gradient(180deg, #fff5ed, #ffe3cd);
+}
+.section[data-tone="forest"] {
+  color: #fff;
+  background:
+    radial-gradient(700px 320px at 90% 0%, rgba(0, 233, 154, 0.22), transparent 70%),
+    linear-gradient(160deg, #0b6b4f, #064b38 65%);
+}
+.section[data-tone="forest"] .lead,
+.section[data-tone="forest"] .card p {
+  color: #cdeee0;
+}
+.section[data-tone="forest"] .sectionHead h2,
+.section[data-tone="forest"] .card h3 {
+  color: #fff;
+}
+.section[data-tone="forest"] .card {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.section[data-tone="forest"] .faq details {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.section[data-tone="forest"] .faq p {
+  color: #cdeee0;
+}
+.section[data-tone="mint"] .card,
+.section[data-tone="sun"] .card,
+.section[data-tone="lilac"] .card,
+.section[data-tone="peach"] .card {
+  border-color: rgba(9, 20, 17, 0.06);
+  box-shadow: 0 8px 24px rgba(9, 20, 17, 0.06);
 }
 .sectionHead {
   max-width: 720px;
@@ -167,19 +215,35 @@ a.card:hover {
 }
 .cta {
   margin-top: var(--space-8);
-  padding: var(--space-10) 0;
+  padding: var(--space-10) 0 calc(var(--space-10) + var(--space-4));
   text-align: center;
-  background: linear-gradient(135deg, var(--color-canvas), #d8fae9);
+  color: #fff;
+  background:
+    radial-gradient(600px 260px at 15% 0%, rgba(0, 233, 154, 0.28), transparent 70%),
+    radial-gradient(500px 240px at 90% 100%, rgba(255, 183, 3, 0.22), transparent 70%),
+    linear-gradient(135deg, #0b6b4f, #064b38);
 }
 .cta h2 {
   margin: 0 0 var(--space-3);
-  font-size: clamp(24px, 3.4vw, 36px);
+  font-size: clamp(26px, 3.8vw, 42px);
+  letter-spacing: -0.015em;
 }
 .cta p {
   margin: 0 auto;
   max-width: 56ch;
-  color: var(--color-text-secondary);
+  color: #d8fae9;
   font-size: var(--fs-lg);
+}
+.ctaSecondary {
+  background: transparent !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+}
+.ctaSecondary:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+.heroScene {
+  min-width: 0;
 }
 .cta .actions {
   justify-content: center;

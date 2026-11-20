@@ -3,7 +3,8 @@
     "title": "I tuoi QR non smettono mai di funzionare",
     "lead": "Link brevi e codici QR statici e dinamici, in italiano e senza pubblicità. Crea il tuo qui sotto, gratis e senza registrarti.",
     "cta": "Prova gratis",
-    "ctaSecondary": "Vedi i prezzi"
+    "ctaSecondary": "Vedi i prezzi",
+    "eyebrow": "Link brevi e QR code, in italiano"
   },
   "steps": [
     {
@@ -22,5 +23,48 @@
   "finalCta": {
     "title": "Crea il tuo primo QR in un minuto",
     "text": "14 giorni di prova con tutte le funzioni, poi il piano Free per sempre. Senza carta di credito."
+  },
+  "trust": [
+    "Niente pubblicità, mai",
+    "Prezzi in euro, disdici quando vuoi",
+    "Interfaccia e supporto in italiano",
+    "Nessun indirizzo IP salvato"
+  ],
+  "sections": {
+    "how": {
+      "title": "Come funziona",
+      "lead": "Dal primo link alle statistiche, in tre passi."
+    },
+    "features": {
+      "title": "Tutto quello che ti serve",
+      "lead": "Dal link breve alla carta dei vini, senza strumenti separati."
+    },
+    "sectors": {
+      "kicker": "Per chi stampa",
+      "title": "Cambi il prezzo, non il QR",
+      "text": "Stampi il QR una volta sul tavolo, in vetrina o sul volantino. Menu, carta dei vini, eventi e offerte si aggiornano dal telefono, senza ristampare nulla.",
+      "cta": "Le soluzioni per i ristoranti",
+      "lead": "Ristoranti, cantine, eventi, agenzie, negozi e immobiliari."
+    },
+    "guarantee": {
+      "kicker": "La nostra promessa",
+      "title": "Se smetti di pagare, i tuoi QR continuano a funzionare",
+      "text": "Nessun QR viene mai disattivato perché la prova è finita o l’abbonamento è scaduto: passi al piano Free e tutto resta raggiungibile.",
+      "points": [
+        "Nessuna pubblicità sulla pagina di destinazione, nemmeno nel piano Free",
+        "La dashboard resta sempre accessibile",
+        "Oltre i limiti del Free i codici diventano in sola lettura e si sbloccano subito scegliendo un piano"
+      ]
+    },
+    "report": {
+      "kicker": "Report automatici",
+      "title": "Il report ti arriva da solo",
+      "text": "Ogni settimana o ogni mese ricevi via email le scansioni dei tuoi QR, con un grafico chiaro. Dal piano Start: fino a 5 destinatari esterni, con conferma, e disiscrizione in un clic.",
+      "cta": "Scopri i piani"
+    },
+    "pricing": {
+      "title": "Prezzi chiari",
+      "lead": "Dal piano Free per sempre ad Agency. In euro, mese per mese o all’anno."
+    }
   }
 }

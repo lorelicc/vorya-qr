@@ -1,0 +1,2102 @@
+/*
+ * Animated scenes. Rules that keep them light and accessible:
+ * - the stage is 48em x 36em and 1em = 1/48 of the frame width, so everything scales together;
+ * - the base CSS of every element is the FINAL frame; keyframes only describe the way to it
+ *   (so "reduce motion" and no-JS show a complete picture);
+ * - only transform, opacity and a couple of custom properties are animated;
+ * - the frame pauses everything when off screen or when the visitor presses pause.
+ */
+@property --p {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 62;
+}
+
+.frame {
+  --ink: #091411;
+  --green: #00ba78;
+  --green-bright: #00e99a;
+  --dark: #087f5b;
+  --deep: #064b38;
+  --muted: #567067;
+  margin: 0;
+  container-type: inline-size;
+  border-radius: var(--radius-2xl, 24px);
+  overflow: hidden;
+  background: var(--scene-bg);
+  box-shadow: 0 18px 50px rgba(9, 20, 17, 0.14);
+  border: 1px solid rgba(9, 20, 17, 0.06);
+}
+.frame[data-tone="mint"] {
+  --scene-bg: linear-gradient(135deg, #eafdf4, #c3f5dc);
+}
+.frame[data-tone="forest"] {
+  --scene-bg: linear-gradient(135deg, #0b6b4f, #064b38 70%);
+}
+.frame[data-tone="sun"] {
+  --scene-bg: linear-gradient(135deg, #fff7dc, #ffe49a);
+}
+.frame[data-tone="lilac"] {
+  --scene-bg: linear-gradient(135deg, #f5f2ff, #d9d0ff);
+}
+.frame[data-tone="peach"] {
+  --scene-bg: linear-gradient(135deg, #fff4ec, #ffd2b0);
+}
+.stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  font-size: calc(100cqw / 48);
+  line-height: 1.25;
+  color: var(--ink);
+  overflow: hidden;
+  user-select: none;
+}
+.stage * {
+  box-sizing: border-box;
+}
+.caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  background: rgba(255, 255, 255, 0.55);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.frame[data-tone="forest"] .caption {
+  background: rgba(0, 0, 0, 0.18);
+  color: #d8fae9;
+}
+.playButton {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(9, 20, 17, 0.08);
+  color: inherit;
+  cursor: pointer;
+}
+.playButton:hover {
+  background: rgba(9, 20, 17, 0.16);
+}
+.playButton:focus-visible {
+  outline: 3px solid var(--color-focus, #087f5b);
+  outline-offset: 2px;
+}
+.frame[data-tone="forest"] .playButton {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Off screen or paused by the visitor: freeze. Reduced motion: show the final frame. */
+.frame[data-run="false"] .stage,
+.frame[data-run="false"] .stage *,
+.frame[data-run="false"] .stage *::before,
+.frame[data-run="false"] .stage *::after {
+  animation-play-state: paused !important;
+}
+/* Not seen yet: final frame, no animation. */
+.frame[data-run="idle"] .stage,
+.frame[data-run="idle"] .stage *,
+.frame[data-run="idle"] .stage *::before,
+.frame[data-run="idle"] .stage *::after {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage,
+  .stage *,
+  .stage *::before,
+  .stage *::after {
+    animation: none !important;
+  }
+}
+
+/* ---- shared pieces ---- */
+.card {
+  position: absolute;
+  padding: 1.6em;
+  background: #fff;
+  border-radius: 1.4em;
+  box-shadow: 0 0.6em 2em rgba(9, 20, 17, 0.12);
+  font-size: 1em;
+}
+.card > b {
+  display: block;
+  font-size: 1.4em;
+}
+.cursor {
+  position: absolute;
+  z-index: 8;
+  opacity: 0;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.rows li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  padding: 1em 1.2em;
+  border-bottom: 1px solid #eef3f0;
+  font-size: 1.25em;
+}
+.rows b {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.hNotch {
+  position: absolute;
+  z-index: 3;
+  top: 0.5em;
+  left: 50%;
+  width: 4em;
+  height: 0.8em;
+  margin-left: -2em;
+  border-radius: 1em;
+  background: var(--ink);
+}
+
+/* ================= 1 · HERO ================= */
+.hStage {
+  position: absolute;
+  inset: 0;
+  animation: hFade 12s linear infinite;
+}
+.hCard {
+  position: absolute;
+  left: 3em;
+  top: 5.5em;
+  width: 19em;
+  height: 20em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1em;
+  background: #fff;
+  border-radius: 1.6em;
+  box-shadow: 0 1em 2.6em rgba(9, 20, 17, 0.16);
+  transform: rotate(-2.5deg);
+}
+.hCardLabel {
+  font-size: 1.5em;
+  font-weight: 700;
+}
+.hQr {
+  position: relative;
+  width: 13em;
+  height: 13em;
+  color: var(--deep);
+  overflow: hidden;
+}
+.hQr svg {
+  width: 100%;
+  height: 100%;
+}
+.hBeam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 0.4em;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, var(--green-bright), transparent);
+  box-shadow: 0 0 1.2em var(--green-bright);
+  animation: hBeam 12s linear infinite;
+}
+.hCardUrl {
+  font-size: 1.1em;
+  color: var(--muted);
+}
+.hPhone {
+  position: absolute;
+  left: 29em;
+  top: 3em;
+  width: 15em;
+  height: 30em;
+  padding: 0.7em;
+  background: var(--ink);
+  border-radius: 2.2em;
+  box-shadow: 0 1em 2.6em rgba(9, 20, 17, 0.28);
+}
+.hScreen {
+  position: absolute;
+  inset: 0.7em;
+  overflow: hidden;
+  border-radius: 1.6em;
+  background: #fff;
+}
+.hScreen header {
+  padding: 2em 1em 1em;
+  font-size: 1.5em;
+  font-weight: 700;
+  color: #fff;
+}
+.hScreenA {
+  animation: hA 12s linear infinite;
+}
+.hScreenA header {
+  background: #ff8a3d;
+}
+.hScreenB {
+  animation: hB 12s linear infinite;
+}
+.hScreenB header {
+  background: var(--dark);
+}
+.hChip {
+  position: absolute;
+  left: 3em;
+  top: 27.5em;
+  width: 24em;
+  padding: 1em 1.4em;
+  background: #fff;
+  border-radius: 1.2em;
+  box-shadow: 0 0.6em 2em rgba(9, 20, 17, 0.16);
+  animation: hChip 12s linear infinite;
+}
+.hChip small {
+  display: block;
+  margin-bottom: 0.4em;
+  font-size: 1em;
+  color: var(--muted);
+}
+.hField {
+  position: relative;
+  width: 12em;
+  height: 2.6em;
+  border-radius: 0.6em;
+  background: #f0f6f3;
+}
+.hText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 0.8em;
+  font-size: 1.3em;
+  font-weight: 600;
+}
+.hTextA {
+  opacity: 0;
+  animation: hTextA 12s linear infinite;
+}
+.hTextB {
+  animation: hTextB 12s linear infinite;
+}
+.hSave {
+  position: absolute;
+  right: 1.2em;
+  bottom: 1em;
+  display: inline-grid;
+  padding: 0.5em 1em;
+  border-radius: 0.6em;
+  background: var(--green);
+  color: #fff;
+  font-size: 1.2em;
+  font-weight: 700;
+  animation: hPress 12s linear infinite;
+}
+.hSave > span {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  justify-content: center;
+}
+.hSaveLabel {
+  opacity: 0;
+  animation: hLabel 12s linear infinite;
+}
+.hSaved {
+  animation: hSaved 12s linear infinite;
+}
+.hBadge {
+  position: absolute;
+  left: 2.3em;
+  top: 0.7em;
+  padding: 0.6em 1.2em;
+  border-radius: 99em;
+  background: var(--deep);
+  color: #fff;
+  font-size: 1.3em;
+  font-weight: 700;
+  animation: hBadge 12s linear infinite;
+}
+.hCursor {
+  animation: hCursor 12s linear infinite;
+}
+@keyframes hFade {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hBeam {
+  0%,
+  4% {
+    top: 0;
+    opacity: 1;
+  }
+  14% {
+    top: 100%;
+    opacity: 1;
+  }
+  15%,
+  58% {
+    top: 0;
+    opacity: 0;
+  }
+  58.5% {
+    opacity: 1;
+  }
+  68% {
+    top: 100%;
+    opacity: 1;
+  }
+  69%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hA {
+  0%,
+  13% {
+    opacity: 0;
+  }
+  16%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hB {
+  0%,
+  67% {
+    opacity: 0;
+  }
+  70%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hChip {
+  0%,
+  29% {
+    opacity: 0;
+    transform: translateY(1.5em);
+  }
+  34%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hTextA {
+  0%,
+  43% {
+    opacity: 1;
+  }
+  44.5%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hTextB {
+  0%,
+  43% {
+    opacity: 0;
+  }
+  44.5%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hPress {
+  0%,
+  46% {
+    transform: scale(1);
+  }
+  47.5% {
+    transform: scale(0.92);
+  }
+  49%,
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes hLabel {
+  0%,
+  47.5% {
+    opacity: 1;
+  }
+  48.5%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hSaved {
+  0%,
+  48% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hBadge {
+  0%,
+  69% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  73%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hCursor {
+  0%,
+  34% {
+    opacity: 0;
+    left: 38em;
+    top: 35em;
+  }
+  36% {
+    opacity: 1;
+    left: 36em;
+    top: 34em;
+  }
+  45%,
+  49% {
+    opacity: 1;
+    left: 22.5em;
+    top: 31.5em;
+  }
+  52%,
+  100% {
+    opacity: 0;
+    left: 22.5em;
+    top: 31.5em;
+  }
+}
+
+/* ================= 2 · LINK BREVE ================= */
+.lStage {
+  position: absolute;
+  inset: 0;
+  animation: lFade 10s linear infinite;
+}
+.lLong {
+  position: absolute;
+  left: 3.3em;
+  right: 3.3em;
+  top: 3.3em;
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 1.1em 1.4em;
+  border-radius: 0.9em;
+  background: #fff;
+  box-shadow: 0 0.5em 1.6em rgba(9, 20, 17, 0.1);
+  color: var(--muted);
+  font-size: 1.2em;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 0.5;
+  transform: scale(0.97);
+  animation: lLong 10s linear infinite;
+}
+.lLong svg {
+  flex: none;
+}
+.lLong span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lShort {
+  position: absolute;
+  left: 1.9em;
+  top: 5.2em;
+  display: inline-flex;
+  align-items: center;
+  gap: 1em;
+  padding: 0.8em 1.6em;
+  border-radius: 99em;
+  background: var(--deep);
+  color: #fff;
+  font-size: 2.1em;
+  font-weight: 700;
+  animation: lShort 10s linear infinite;
+}
+.lShort b {
+  font-weight: 400;
+  opacity: 0.7;
+}
+.lCopy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+  padding: 0.2em 0.7em;
+  border-radius: 99em;
+  background: var(--green-bright);
+  color: var(--ink);
+  font-size: 0.5em;
+  font-style: normal;
+  animation: lCopy 10s linear infinite;
+}
+.lChat {
+  position: absolute;
+  left: 22em;
+  top: 18em;
+  width: 22em;
+  padding: 1em 1.3em;
+  border-radius: 1.2em 1.2em 0.2em 1.2em;
+  background: #fff;
+  box-shadow: 0 0.5em 1.6em rgba(9, 20, 17, 0.12);
+  animation: lChat 10s linear infinite;
+}
+.lChat small {
+  color: var(--muted);
+  font-size: 0.9em;
+}
+.lChat p {
+  margin: 0.3em 0 0;
+  font-size: 1.25em;
+}
+.lChat u {
+  color: var(--dark);
+  font-weight: 700;
+}
+.lCount {
+  position: absolute;
+  left: 4em;
+  top: 22em;
+  width: 15em;
+  padding: 1.2em 1.6em;
+  border-radius: 1.2em;
+  background: #fff;
+  box-shadow: 0 0.5em 1.6em rgba(9, 20, 17, 0.12);
+}
+.lCount small {
+  display: block;
+  color: var(--muted);
+  font-size: 1.1em;
+}
+.lWindow {
+  height: 1.2em;
+  overflow: hidden;
+  font-size: 3em;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--dark);
+}
+.lNums {
+  transform: translateY(-4.8em);
+  animation: lNums 10s linear infinite;
+}
+.lNums i {
+  display: block;
+  height: 1.2em;
+  font-style: normal;
+}
+@keyframes lFade {
+  0% {
+    opacity: 0;
+  }
+  3%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes lLong {
+  0%,
+  22% {
+    opacity: 1;
+    transform: none;
+  }
+  28%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.97);
+  }
+}
+@keyframes lShort {
+  0%,
+  24% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  33%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes lCopy {
+  0%,
+  43% {
+    opacity: 0;
+    transform: translateX(-0.5em);
+  }
+  48%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lChat {
+  0%,
+  55% {
+    opacity: 0;
+    transform: translateY(1.5em) scale(0.95);
+  }
+  61%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lNums {
+  0%,
+  64% {
+    transform: translateY(0);
+    animation-timing-function: steps(5, jump-none);
+  }
+  90%,
+  100% {
+    transform: translateY(-4.8em);
+  }
+}
+
+/* ================= 3 · STATISTICHE ================= */
+.sStage {
+  position: absolute;
+  inset: 0;
+  animation: sFade 10s linear infinite;
+}
+.sMain {
+  left: 2.5em;
+  top: 2.5em;
+  width: 28em;
+  height: 24em;
+}
+.sHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.sHead b {
+  font-size: 1.4em;
+}
+.sTotalWindow {
+  display: block;
+  height: 1.2em;
+  overflow: hidden;
+  font-size: 2.2em;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--dark);
+}
+.sTotalNums {
+  display: block;
+  transform: translateY(-3.6em);
+  animation: sNums 10s linear infinite;
+}
+.sTotalNums i {
+  display: block;
+  height: 1.2em;
+  font-style: normal;
+  text-align: right;
+}
+.sBars {
+  position: absolute;
+  left: 1.6em;
+  right: 1.6em;
+  top: 7em;
+  bottom: 4.4em;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.9em;
+}
+.sBars span {
+  position: relative;
+  flex: 1;
+  border-radius: 0.5em 0.5em 0 0;
+  background: linear-gradient(var(--green-bright), var(--green));
+  transform-origin: bottom;
+}
+.sBars span[data-peak="true"] {
+  background: linear-gradient(#ffd166, #f5a300);
+}
+.sBars em {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2em;
+  font-size: 1.1em;
+  font-style: normal;
+  text-align: center;
+  color: var(--muted);
+}
+.sPeak {
+  position: absolute;
+  right: 1.45em;
+  top: 4.9em;
+  padding: 0.35em 0.9em;
+  border-radius: 99em;
+  background: #fff3cf;
+  color: #8a5a00;
+  font-size: 1.1em;
+  font-weight: 700;
+  animation: sPeak 10s linear infinite;
+}
+.sSide {
+  left: 33em;
+  top: 2.5em;
+  width: 12.5em;
+  height: 11em;
+  padding: 1.2em 1.3em;
+}
+.sSide > b {
+  font-size: 1.2em;
+}
+.sDonutRow {
+  display: flex;
+  align-items: center;
+  gap: 0.9em;
+  margin-top: 0.8em;
+}
+.sDonut {
+  flex: none;
+  width: 5.2em;
+  height: 5.2em;
+  border-radius: 50%;
+  --p: 62;
+  background: conic-gradient(var(--green) calc(var(--p) * 1%), #ddd5ff 0);
+  -webkit-mask: radial-gradient(circle, transparent 52%, #000 54%);
+  mask: radial-gradient(circle, transparent 52%, #000 54%);
+  animation: sDonut 10s linear infinite;
+}
+.sDonutRow ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 1em;
+  line-height: 1.9;
+}
+.sDonutRow li span {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-right: 0.3em;
+  border-radius: 50%;
+}
+.sDonutRow li span[data-c="a"] {
+  background: var(--green);
+}
+.sDonutRow li span[data-c="b"] {
+  background: #ddd5ff;
+}
+.sCities {
+  left: 33em;
+  top: 15em;
+  width: 12.5em;
+  height: 11.5em;
+  padding: 1.2em 1.3em;
+}
+.sCities > b {
+  font-size: 1.2em;
+  margin-bottom: 0.4em;
+}
+.sCity {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  height: 1.9em;
+  font-size: 1em;
+}
+.sCity span {
+  flex: none;
+  width: 4.2em;
+}
+.sCity i {
+  display: block;
+  height: 0.9em;
+  border-radius: 0.5em;
+  background: #7c6cf0;
+  transform-origin: left;
+}
+.sPrivacy {
+  position: absolute;
+  left: 1.9em;
+  top: 21.9em;
+  padding: 0.7em 1.4em;
+  border-radius: 99em;
+  background: var(--deep);
+  color: #fff;
+  font-size: 1.3em;
+  font-weight: 700;
+  animation: sPrivacy 10s linear infinite;
+}
+@keyframes sFade {
+  0% {
+    opacity: 0;
+  }
+  3%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes sNums {
+  0%,
+  8% {
+    transform: translateY(0);
+    animation-timing-function: steps(4, jump-none);
+  }
+  42%,
+  100% {
+    transform: translateY(-3.6em);
+  }
+}
+@keyframes sPeak {
+  0%,
+  46% {
+    opacity: 0;
+    transform: translateY(0.6em);
+  }
+  52%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sDonut {
+  0%,
+  22% {
+    --p: 0;
+  }
+  42%,
+  100% {
+    --p: 62;
+  }
+}
+@keyframes sPrivacy {
+  0%,
+  58% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  64%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ================= 4 · DESIGN ================= */
+.dStage {
+  position: absolute;
+  inset: 0;
+  animation: dFade 10s linear infinite;
+}
+.dSwatches {
+  position: absolute;
+  left: 4em;
+  top: 8em;
+  width: 3.2em;
+}
+.dSwatches i {
+  display: block;
+  width: 3.2em;
+  height: 3.2em;
+  margin-bottom: 1.4em;
+  border-radius: 50%;
+  box-shadow: 0 0.3em 0.8em rgba(9, 20, 17, 0.18);
+}
+.dSwatches i[data-c="green"] {
+  background: #087f5b;
+}
+.dSwatches i[data-c="indigo"] {
+  background: #4b3fa0;
+}
+.dSwatches i[data-c="coral"] {
+  background: #e4572e;
+}
+.dSwatches i[data-c="ink"] {
+  background: #091411;
+}
+.dRing {
+  position: absolute;
+  left: -0.5em;
+  top: -0.5em;
+  width: 4.2em;
+  height: 4.2em;
+  border: 0.3em solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.2em var(--ink);
+  animation: dRing 10s linear infinite;
+}
+.dQrCard {
+  position: absolute;
+  left: 13em;
+  top: 4em;
+  width: 22em;
+  height: 22em;
+  padding: 2em;
+  border-radius: 1.8em;
+  background: #fff;
+  box-shadow: 0 1em 2.6em rgba(9, 20, 17, 0.16);
+}
+.dQr {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  color: #087f5b;
+  animation: dColor 10s linear infinite;
+}
+.dQr svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.dSquare {
+  opacity: 0;
+  animation: dSquare 10s linear infinite;
+}
+.dRound {
+  animation: dRound 10s linear infinite;
+}
+.dLogo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 4.8em;
+  height: 4.8em;
+  margin: -2.4em 0 0 -2.4em;
+  border: 0.3em solid currentColor;
+  border-radius: 1.1em;
+  background: #fff;
+  color: #087f5b;
+  font-size: 2.2em;
+  font-weight: 800;
+  animation: dLogo 10s linear infinite;
+}
+.dCheck {
+  position: absolute;
+  left: 8.7em;
+  top: 19em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.6em 1.3em;
+  border-radius: 99em;
+  background: #fff;
+  color: var(--dark);
+  font-size: 1.5em;
+  font-weight: 700;
+  box-shadow: 0 0.4em 1.2em rgba(9, 20, 17, 0.12);
+  animation: dCheck 10s linear infinite;
+}
+.dStyles {
+  position: absolute;
+  right: 3em;
+  top: 11em;
+  display: grid;
+  gap: 1em;
+}
+.dStyleA,
+.dStyleB {
+  display: block;
+  width: 8em;
+  padding: 0.7em 1em;
+  border-radius: 0.8em;
+  border: 0.15em solid var(--ink);
+  font-size: 1.3em;
+  font-weight: 700;
+  text-align: center;
+}
+.dStyleA {
+  background: #fff;
+  color: var(--ink);
+  animation: dStyleA 10s linear infinite;
+}
+.dStyleB {
+  background: var(--ink);
+  color: #fff;
+  animation: dStyleB 10s linear infinite;
+}
+.dCursor {
+  animation: dCursor 10s linear infinite;
+}
+@keyframes dFade {
+  0% {
+    opacity: 0;
+  }
+  3%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes dRing {
+  0%,
+  12% {
+    top: -0.5em;
+  }
+  14%,
+  26% {
+    top: 4.1em;
+  }
+  28%,
+  40% {
+    top: 8.7em;
+  }
+  42%,
+  54% {
+    top: 13.3em;
+  }
+  56%,
+  100% {
+    top: -0.5em;
+  }
+}
+@keyframes dColor {
+  0%,
+  12% {
+    color: #087f5b;
+  }
+  14%,
+  26% {
+    color: #4b3fa0;
+  }
+  28%,
+  40% {
+    color: #e4572e;
+  }
+  42%,
+  54% {
+    color: #091411;
+  }
+  56%,
+  100% {
+    color: #087f5b;
+  }
+}
+@keyframes dSquare {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  62%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes dRound {
+  0%,
+  60% {
+    opacity: 0;
+  }
+  62%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes dLogo {
+  0%,
+  70% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  76% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  80%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes dCheck {
+  0%,
+  84% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  90%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes dStyleA {
+  0%,
+  60% {
+    background: var(--ink);
+    color: #fff;
+  }
+  62%,
+  100% {
+    background: #fff;
+    color: var(--ink);
+  }
+}
+@keyframes dStyleB {
+  0%,
+  60% {
+    background: #fff;
+    color: var(--ink);
+  }
+  62%,
+  100% {
+    background: var(--ink);
+    color: #fff;
+  }
+}
+@keyframes dCursor {
+  0% {
+    opacity: 0;
+    left: 12em;
+    top: 20em;
+  }
+  6%,
+  12% {
+    opacity: 1;
+    left: 6em;
+    top: 9.6em;
+  }
+  16%,
+  26% {
+    opacity: 1;
+    left: 6em;
+    top: 14.2em;
+  }
+  30%,
+  40% {
+    opacity: 1;
+    left: 6em;
+    top: 18.8em;
+  }
+  44%,
+  54% {
+    opacity: 1;
+    left: 6em;
+    top: 23.4em;
+  }
+  58% {
+    opacity: 1;
+    left: 6em;
+    top: 9.6em;
+  }
+  64%,
+  66% {
+    opacity: 1;
+    left: 38em;
+    top: 17em;
+  }
+  70%,
+  100% {
+    opacity: 0;
+    left: 38em;
+    top: 17em;
+  }
+}
+
+/* ================= 5 · MENU ================= */
+.mStage {
+  position: absolute;
+  inset: 0;
+  animation: mFade 11s linear infinite;
+}
+.mEditor {
+  left: 3em;
+  top: 6em;
+  width: 24em;
+  height: 23em;
+}
+.mEditor label {
+  display: block;
+  margin-top: 1em;
+}
+.mEditor small {
+  display: block;
+  margin-bottom: 0.3em;
+  font-size: 1.05em;
+  color: var(--muted);
+}
+.mInput {
+  display: grid;
+  padding: 0.7em 1em;
+  border-radius: 0.6em;
+  background: #f0f6f3;
+  font-size: 1.4em;
+  font-weight: 600;
+}
+.mPrice {
+  grid-area: 1 / 1;
+}
+.mPriceA {
+  opacity: 0;
+  animation: mPriceA 11s linear infinite;
+}
+.mPriceB {
+  animation: mPriceB 11s linear infinite;
+}
+.mPublish {
+  display: inline-block;
+  margin-top: 1.4em;
+  padding: 0.7em 1.6em;
+  border-radius: 0.7em;
+  background: var(--green);
+  color: #fff;
+  font-size: 1.4em;
+  font-weight: 700;
+  animation: mPress 11s linear infinite;
+}
+.mPhone {
+  position: absolute;
+  left: 31em;
+  top: 3em;
+  width: 14em;
+  height: 30em;
+  overflow: hidden;
+  border: 0.7em solid var(--ink);
+  border-radius: 2.4em;
+  background: #fff;
+  box-shadow: 0 1em 2.6em rgba(9, 20, 17, 0.28);
+}
+.mPhone header {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 2.2em 1em 0.8em;
+  background: #ffe49a;
+  font-size: 1.4em;
+  font-weight: 700;
+}
+.mPhone .rows li {
+  font-size: 1.1em;
+}
+.mFlash {
+  animation: mFlash 11s linear infinite;
+}
+.mFlash b {
+  display: inline-grid;
+}
+.mOld,
+.mNew {
+  grid-area: 1 / 1;
+  text-align: right;
+}
+.mOld {
+  opacity: 0;
+  animation: mOld 11s linear infinite;
+}
+.mNew {
+  animation: mNew 11s linear infinite;
+}
+.mUpdated {
+  position: absolute;
+  left: 50%;
+  bottom: 1.2em;
+  transform: translateX(-50%);
+  padding: 0.4em 1em;
+  border-radius: 99em;
+  background: #e6fbf2;
+  color: var(--dark);
+  font-size: 1.1em;
+  font-weight: 700;
+  white-space: nowrap;
+  animation: mUpdated 11s linear infinite;
+}
+.mCursor {
+  animation: mCursor 11s linear infinite;
+}
+@keyframes mFade {
+  0% {
+    opacity: 0;
+  }
+  3%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes mPriceA {
+  0%,
+  36% {
+    opacity: 1;
+  }
+  38%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes mPriceB {
+  0%,
+  36% {
+    opacity: 0;
+  }
+  38%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes mPress {
+  0%,
+  42% {
+    transform: scale(1);
+  }
+  44% {
+    transform: scale(0.92);
+  }
+  46%,
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes mFlash {
+  0%,
+  44% {
+    background: transparent;
+  }
+  47% {
+    background: #fff3b0;
+  }
+  64%,
+  100% {
+    background: transparent;
+  }
+}
+@keyframes mOld {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  47%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes mNew {
+  0%,
+  45% {
+    opacity: 0;
+  }
+  47%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes mUpdated {
+  0%,
+  48% {
+    opacity: 0;
+    transform: translate(-50%, 0.6em);
+  }
+  54%,
+  100% {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+@keyframes mCursor {
+  0%,
+  14% {
+    opacity: 0;
+    left: 26em;
+    top: 12em;
+  }
+  18%,
+  36% {
+    opacity: 1;
+    left: 14em;
+    top: 17.4em;
+  }
+  40%,
+  45% {
+    opacity: 1;
+    left: 8em;
+    top: 25.5em;
+  }
+  48%,
+  100% {
+    opacity: 0;
+    left: 8em;
+    top: 25.5em;
+  }
+}
+
+/* ================= 6 · GARANZIA ================= */
+.gStage {
+  position: absolute;
+  inset: 0;
+  color: #fff;
+  animation: gFade 12s linear infinite;
+}
+.gTimeline {
+  position: absolute;
+  left: 3em;
+  right: 3em;
+  top: 3.5em;
+  display: flex;
+  gap: 0.4em;
+}
+.gSeg {
+  padding: 0.9em 1em;
+  border-radius: 0.7em;
+  font-size: 1.2em;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gSeg[data-k="trial"] {
+  flex: 1;
+  background: #ddd5ff;
+  color: #2d2470;
+}
+.gSeg[data-k="paid"] {
+  flex: 2;
+  background: var(--green-bright);
+  color: var(--deep);
+}
+.gSeg[data-k="free"] {
+  flex: 2;
+  background: rgba(255, 255, 255, 0.16);
+  border: 0.15em dashed rgba(255, 255, 255, 0.6);
+}
+.gHead {
+  position: absolute;
+  top: -1em;
+  bottom: -1em;
+  left: 96%;
+  width: 0.3em;
+  border-radius: 1em;
+  background: #fff;
+  box-shadow: 0 0 1em rgba(255, 255, 255, 0.8);
+  animation: gHead 12s linear infinite;
+}
+.gEnded {
+  position: absolute;
+  left: 60%;
+  top: 5.6em;
+  transform: translateX(-50%);
+  padding: 0.5em 1.1em;
+  border-radius: 99em;
+  background: #ffb703;
+  color: var(--ink);
+  font-size: 1.1em;
+  font-weight: 700;
+  white-space: nowrap;
+  animation: gEnded 12s linear infinite;
+}
+.gQrWrap {
+  position: absolute;
+  left: 17em;
+  top: 13em;
+  width: 12em;
+  height: 12em;
+}
+.gQr {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 1em;
+  border-radius: 1.4em;
+  background: #fff;
+  color: var(--deep);
+  box-shadow: 0 1em 2.4em rgba(0, 0, 0, 0.3);
+}
+.gQr svg {
+  width: 100%;
+  height: 100%;
+}
+.gRing {
+  position: absolute;
+  inset: 0;
+  border: 0.2em solid var(--green-bright);
+  border-radius: 1.6em;
+  opacity: 0;
+  animation: gPulse 2.4s ease-out infinite;
+}
+.gRing2 {
+  animation-delay: 1.2s;
+}
+.gStatus {
+  position: absolute;
+  left: 11.3em;
+  top: 18em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  width: 8em;
+  justify-content: center;
+  padding: 0.5em 0;
+  border-radius: 99em;
+  background: var(--green-bright);
+  color: var(--deep);
+  font-size: 1.5em;
+  font-weight: 800;
+}
+.gDot {
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: var(--deep);
+  animation: gBlink 1.2s ease-in-out infinite;
+}
+.gScans {
+  position: absolute;
+  left: 34em;
+  top: 14em;
+  width: 11em;
+  padding: 1.1em 1.3em;
+  border-radius: 1.2em;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 0.6em 1.8em rgba(0, 0, 0, 0.25);
+}
+.gScans small {
+  display: block;
+  font-size: 1.1em;
+  color: var(--muted);
+}
+.gWindow {
+  height: 1.2em;
+  overflow: hidden;
+  font-size: 2.4em;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--dark);
+}
+.gNums {
+  transform: translateY(-6em);
+  animation: gNums 12s linear infinite;
+}
+.gNums i {
+  display: block;
+  height: 1.2em;
+  font-style: normal;
+}
+.gNote {
+  position: absolute;
+  left: 2em;
+  right: 2em;
+  top: 21.3em;
+  text-align: center;
+  color: #d8fae9;
+  font-size: 1.5em;
+  font-weight: 700;
+  animation: gNote 12s linear infinite;
+}
+@keyframes gFade {
+  0% {
+    opacity: 0;
+  }
+  3%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes gHead {
+  0%,
+  6% {
+    left: 0%;
+  }
+  62%,
+  100% {
+    left: 96%;
+  }
+}
+@keyframes gEnded {
+  0%,
+  40% {
+    opacity: 0;
+    transform: translate(-50%, -0.6em);
+  }
+  45%,
+  100% {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+@keyframes gPulse {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+@keyframes gBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+@keyframes gNums {
+  0%,
+  44% {
+    transform: translateY(0);
+    animation-timing-function: steps(6, jump-none);
+  }
+  92%,
+  100% {
+    transform: translateY(-6em);
+  }
+}
+@keyframes gNote {
+  0%,
+  68% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  74%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ================= 7 · REPORT ================= */
+.rStage {
+  position: absolute;
+  inset: 0;
+  animation: rFade 11s linear infinite;
+}
+.rInbox {
+  left: 2.5em;
+  top: 6em;
+  width: 19em;
+  height: 21em;
+}
+.rInbox > b {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 1.3em;
+}
+.rMuted {
+  height: 2.6em;
+  margin: 0.8em 0 0;
+  border-radius: 0.5em;
+  background: #eef3f0;
+}
+.rNew {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  margin: 0.8em 0 0;
+  padding: 0.8em;
+  border-radius: 0.6em;
+  background: #fff3cf;
+  font-size: 1.1em;
+  animation: rNew 11s linear infinite;
+}
+.rNew i {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.9em;
+  height: 1.9em;
+  border-radius: 50%;
+  background: #ff6b4a;
+  color: #fff;
+  font-style: normal;
+  font-weight: 700;
+}
+.rMail {
+  left: 20em;
+  top: 3em;
+  width: 25.5em;
+  height: 27em;
+  animation: rMail 11s linear infinite;
+}
+.rMail header {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 1.4em;
+  font-weight: 700;
+}
+.rBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.7em;
+  height: 9em;
+  margin-top: 1.4em;
+  padding-bottom: 0.2em;
+  border-bottom: 0.1em solid #eef3f0;
+}
+.rBars span {
+  flex: 1;
+  border-radius: 0.4em 0.4em 0 0;
+  background: linear-gradient(var(--green-bright), var(--green));
+  transform-origin: bottom;
+}
+.rKpi {
+  display: flex;
+  gap: 2em;
+  margin-top: 1.2em;
+  animation: rKpi 11s linear infinite;
+}
+.rKpi small {
+  display: block;
+  font-size: 1em;
+  color: var(--muted);
+}
+.rKpi b {
+  font-size: 2.2em;
+  color: var(--dark);
+}
+.rMail u {
+  position: absolute;
+  left: 1.6em;
+  bottom: 1.2em;
+  font-size: 1em;
+  color: var(--muted);
+}
+.rWhen {
+  position: absolute;
+  left: 1.9em;
+  top: 22.7em;
+  padding: 0.6em 1.3em;
+  border-radius: 99em;
+  background: var(--ink);
+  color: #fff;
+  font-size: 1.3em;
+  font-weight: 700;
+  animation: rWhen 11s linear infinite;
+}
+@keyframes rFade {
+  0% {
+    opacity: 0;
+  }
+  3%,
+  94% {
+    opacity: 1;
+  }
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes rNew {
+  0%,
+  6% {
+    opacity: 0;
+    transform: translateY(-2em);
+  }
+  12%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rMail {
+  0%,
+  20% {
+    opacity: 0;
+    transform: translateY(2em) scale(0.96);
+  }
+  28%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rKpi {
+  0%,
+  56% {
+    opacity: 0;
+    transform: translateY(0.6em);
+  }
+  62%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rWhen {
+  0%,
+  64% {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+  70%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- staggered bars (generated: one keyframe per bar so loops never desync) ---- */
+@keyframes sBar0 {
+  0%,
+  8.0% {
+    transform: scaleY(0);
+  }
+  18.0%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.sBars span:nth-child(1) {
+  animation: sBar0 10s linear infinite;
+}
+@keyframes sBar1 {
+  0%,
+  10.5% {
+    transform: scaleY(0);
+  }
+  20.5%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.sBars span:nth-child(2) {
+  animation: sBar1 10s linear infinite;
+}
+@keyframes sBar2 {
+  0%,
+  13.0% {
+    transform: scaleY(0);
+  }
+  23.0%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.sBars span:nth-child(3) {
+  animation: sBar2 10s linear infinite;
+}
+@keyframes sBar3 {
+  0%,
+  15.5% {
+    transform: scaleY(0);
+  }
+  25.5%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.sBars span:nth-child(4) {
+  animation: sBar3 10s linear infinite;
+}
+@keyframes sBar4 {
+  0%,
+  18.0% {
+    transform: scaleY(0);
+  }
+  28.0%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.sBars span:nth-child(5) {
+  animation: sBar4 10s linear infinite;
+}
+@keyframes sBar5 {
+  0%,
+  20.5% {
+    transform: scaleY(0);
+  }
+  30.5%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.sBars span:nth-child(6) {
+  animation: sBar5 10s linear infinite;
+}
+@keyframes sBar6 {
+  0%,
+  23.0% {
+    transform: scaleY(0);
+  }
+  33.0%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.sBars span:nth-child(7) {
+  animation: sBar6 10s linear infinite;
+}
+@keyframes sCity0 {
+  0%,
+  14% {
+    transform: scaleX(0);
+  }
+  24%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+.sCities .sCity:nth-of-type(1) i {
+  animation: sCity0 10s linear infinite;
+}
+@keyframes sCity1 {
+  0%,
+  17% {
+    transform: scaleX(0);
+  }
+  27%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+.sCities .sCity:nth-of-type(2) i {
+  animation: sCity1 10s linear infinite;
+}
+@keyframes sCity2 {
+  0%,
+  20% {
+    transform: scaleX(0);
+  }
+  30%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+.sCities .sCity:nth-of-type(3) i {
+  animation: sCity2 10s linear infinite;
+}
+@keyframes sCity3 {
+  0%,
+  23% {
+    transform: scaleX(0);
+  }
+  33%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+.sCities .sCity:nth-of-type(4) i {
+  animation: sCity3 10s linear infinite;
+}
+@keyframes rBar0 {
+  0%,
+  34.0% {
+    transform: scaleY(0);
+  }
+  44.0%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.rBars span:nth-child(1) {
+  animation: rBar0 11s linear infinite;
+}
+@keyframes rBar1 {
+  0%,
+  36.5% {
+    transform: scaleY(0);
+  }
+  46.5%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.rBars span:nth-child(2) {
+  animation: rBar1 11s linear infinite;
+}
+@keyframes rBar2 {
+  0%,
+  39.0% {
+    transform: scaleY(0);
+  }
+  49.0%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.rBars span:nth-child(3) {
+  animation: rBar2 11s linear infinite;
+}
+@keyframes rBar3 {
+  0%,
+  41.5% {
+    transform: scaleY(0);
+  }
+  51.5%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.rBars span:nth-child(4) {
+  animation: rBar3 11s linear infinite;
+}
+@keyframes rBar4 {
+  0%,
+  44.0% {
+    transform: scaleY(0);
+  }
+  54.0%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.rBars span:nth-child(5) {
+  animation: rBar4 11s linear infinite;
+}
+@keyframes rBar5 {
+  0%,
+  46.5% {
+    transform: scaleY(0);
+  }
+  56.5%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.rBars span:nth-child(6) {
+  animation: rBar5 11s linear infinite;
+}

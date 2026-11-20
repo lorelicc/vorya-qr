@@ -47,6 +47,7 @@ export function Hero({
   lead,
   actions,
   art,
+  scene,
   children,
 }: {
   eyebrow?: string;
@@ -54,6 +55,8 @@ export function Hero({
   lead: string;
   actions?: ReactNode;
   art?: string;
+  /** An animated scene (components/site/scenes) shown instead of the static illustration. */
+  scene?: ReactNode;
   children?: ReactNode;
 }) {
   return (
@@ -65,16 +68,22 @@ export function Hero({
           <p className={styles.lead}>{lead}</p>
           {actions && <div className={styles.actions}>{actions}</div>}
         </div>
-        {art && (
-          <div className={styles.heroArt}>
-            <SiteArt name={art} size={320} />
-          </div>
+        {scene ? (
+          <div className={styles.heroScene}>{scene}</div>
+        ) : (
+          art && (
+            <div className={styles.heroArt}>
+              <SiteArt name={art} size={320} />
+            </div>
+          )
         )}
       </div>
       {children}
     </section>
   );
 }
+
+export type SectionTone = "soft" | "mint" | "forest" | "sun" | "lilac" | "peach";
 
 export function Section({
   id,
@@ -86,7 +95,7 @@ export function Section({
   id?: string;
   title?: string;
   lead?: string;
-  tone?: "soft";
+  tone?: SectionTone;
   children: ReactNode;
 }) {
   return (
@@ -148,12 +157,14 @@ export function Card({
 export function FaqList({
   items,
   title = "Domande frequenti",
+  tone,
 }: {
   items: FaqItem[];
   title?: string;
+  tone?: SectionTone;
 }) {
   return (
-    <Section title={title}>
+    <Section title={title} tone={tone}>
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -196,7 +207,7 @@ export function CtaBand({
             <ButtonLink href="/register" data-umami-event={event}>
               Prova gratis
             </ButtonLink>
-            <ButtonLink href="/prezzi" variant="secondary">
+            <ButtonLink href="/prezzi" variant="secondary" className={styles.ctaSecondary}>
               Vedi i prezzi
             </ButtonLink>
           </div>

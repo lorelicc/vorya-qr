@@ -63,7 +63,8 @@ function HeaderInner({ groups }: { groups: NavGroup[] }) {
               >
                 {group.links.map((link) => (
                   <Link key={link.href} href={link.href} tabIndex={open === group.key ? 0 : -1}>
-                    {link.label}
+                    <span>{link.label}</span>
+                    {link.hint && <small>{link.hint}</small>}
                   </Link>
                 ))}
               </div>

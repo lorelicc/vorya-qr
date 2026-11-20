@@ -1,15 +1,15 @@
+import { Check } from "lucide-react";
 import Link from "next/link";
 import { Card, Cards, CtaBand, FaqList, Section } from "@/components/site/blocks";
 import { Counter } from "@/components/site/Counter";
-import { Guarantee } from "@/components/site/Guarantee";
-import { MockDashboard, MockEditor, MockStats } from "@/components/site/Mockups";
+import { HowItWorks } from "@/components/site/HowItWorks";
 import { PlansPreview } from "@/components/site/PlansPreview";
 import { Reveal } from "@/components/site/Reveal";
-import { SiteArt } from "@/components/site/art/SiteArt";
+import { GuaranteeScene, HeroScene, MenuScene, ReportScene } from "@/components/site/scenes";
 import { HeroGenerator } from "@/components/site/generator/HeroGenerator";
 import { ButtonLink } from "@/components/ui";
 import { pageMetadata } from "@/lib/site/config";
-import { FAQ, FEATURES, HOME, MESSAGES, SOCIAL, SOLUTIONS, featurePath } from "@/lib/site/content";
+import { FAQ, FEATURES, HOME, SOCIAL, SOLUTIONS, featurePath } from "@/lib/site/content";
 import { FEATURE_ART } from "@/lib/site/feature-art";
 import styles from "@/components/site/home.module.css";
 
@@ -19,69 +19,91 @@ export const metadata = pageMetadata({
   path: "/",
 });
 
+const S = HOME.sections;
+
 export default function HomePage() {
   return (
     <>
       <section className={styles.hero}>
         <div className={styles.container}>
-          <div className={styles.heroCopy}>
-            <h1>{HOME.hero.title}</h1>
-            <p>{HOME.hero.lead}</p>
-            <div className={styles.heroArt} aria-hidden="true">
-              <SiteArt name="guarantee" size={240} />
+          <div className={styles.heroGrid}>
+            <div className={styles.heroCopy}>
+              <p className={styles.pill}>{HOME.hero.eyebrow}</p>
+              <h1>{HOME.hero.title}</h1>
+              <p className={styles.heroLead}>{HOME.hero.lead}</p>
+              <div className={styles.heroActions}>
+                <ButtonLink href="/register" data-umami-event="hero-prova-gratis">
+                  {HOME.hero.cta}
+                </ButtonLink>
+                <ButtonLink href="#genera" variant="secondary">
+                  Genera un QR gratis
+                </ButtonLink>
+              </div>
+            </div>
+            <div className={styles.heroScene}>
+              <HeroScene />
             </div>
           </div>
-          <HeroGenerator />
+          <div id="genera" className={styles.generator}>
+            <HeroGenerator />
+          </div>
           <Counter label="QR creati con Vorya QR" />
         </div>
       </section>
 
-      <Section title="Perché Vorya QR" lead="Sei cose che non trovi tutte insieme altrove.">
+      <section className={styles.trust} aria-label="Perché Vorya QR">
+        <ul className={styles.container}>
+          {HOME.trust.map((t) => (
+            <li key={t}>
+              <Check size={18} aria-hidden="true" /> {t}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <Section title={S.how.title} lead={S.how.lead}>
+        <HowItWorks />
+      </Section>
+
+      <Section id="funzioni" tone="lilac" title={S.features.title} lead={S.features.lead}>
         <Cards>
-          {MESSAGES.map((m, i) => (
-            <Card key={m.key} title={m.title} text={m.text} art={m.art} delay={i * 50} />
+          {FEATURES.map((f, i) => (
+            <Card
+              key={f.slug}
+              title={f.label}
+              text={f.text}
+              art={FEATURE_ART[f.slug]}
+              href={featurePath(f)}
+              delay={i * 40}
+            />
           ))}
         </Cards>
       </Section>
 
-      <Section
-        id="funzioni"
-        tone="soft"
-        title="Tutto quello che ti serve"
-        lead="Dal link breve alla carta dei vini, senza strumenti separati."
-      >
-        <div className={styles.showcase}>
-          <Reveal>
-            <h3>Link e QR in una dashboard</h3>
+      <Section tone="sun">
+        <div className={styles.split}>
+          <Reveal className={styles.splitCopy}>
+            <p className={styles.kicker}>{S.sectors.kicker}</p>
+            <h2>{S.sectors.title}</h2>
+            <p>{S.sectors.text}</p>
             <p>
-              Incolla un link, ottieni l’indirizzo breve e genera il QR quando vuoi. Cartelle, tag e
-              ricerca per non perderti.
+              <ButtonLink href="/soluzioni/ristoranti">{S.sectors.cta}</ButtonLink>
             </p>
-            <MockDashboard />
           </Reveal>
           <Reveal delay={80}>
-            <h3>Editor con anteprima dal vivo</h3>
-            <p>
-              Pagine per vCard, menu, PDF, musica e link in bio, con il controllo automatico di
-              leggibilità del QR.
-            </p>
-            <MockEditor />
-          </Reveal>
-          <Reveal delay={160}>
-            <h3>Statistiche chiare</h3>
-            <p>Scansioni, dispositivi e paesi. Nessun indirizzo IP viene salvato.</p>
-            <MockStats />
+            <MenuScene />
           </Reveal>
         </div>
-        <div style={{ marginTop: "var(--space-8)" }}>
+        <div className={styles.afterSplit}>
+          <h3 className={styles.miniTitle}>{S.sectors.lead}</h3>
           <Cards>
-            {FEATURES.map((f, i) => (
+            {SOLUTIONS.map((s, i) => (
               <Card
-                key={f.slug}
-                title={f.label}
-                text={f.text}
-                art={FEATURE_ART[f.slug]}
-                href={featurePath(f)}
+                key={s.slug}
+                title={s.label}
+                text={s.problem}
+                art={s.art}
+                href={`/soluzioni/${s.slug}`}
                 delay={i * 40}
               />
             ))}
@@ -89,50 +111,51 @@ export default function HomePage() {
         </div>
       </Section>
 
-      <Section title="Come funziona" lead="Dal primo QR a stampa e statistiche in tre passi.">
-        <ol className={styles.steps}>
-          {HOME.steps.map((s, i) => (
-            <Reveal as="li" key={s.title} delay={i * 80}>
-              <span className={styles.stepNumber}>{i + 1}</span>
-              <h3>{s.title}</h3>
-              <p>{s.text}</p>
-            </Reveal>
-          ))}
-        </ol>
+      <Section tone="forest">
+        <div className={`${styles.split} ${styles.reverse}`}>
+          <Reveal className={styles.splitCopy}>
+            <p className={`${styles.kicker} ${styles.kickerLight}`}>{S.guarantee.kicker}</p>
+            <h2>{S.guarantee.title}</h2>
+            <p>{S.guarantee.text}</p>
+            <ul className={styles.points}>
+              {S.guarantee.points.map((p) => (
+                <li key={p}>
+                  <Check size={18} aria-hidden="true" /> {p}
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+          <Reveal delay={80}>
+            <GuaranteeScene />
+          </Reveal>
+        </div>
       </Section>
 
-      <Section
-        tone="soft"
-        title="Per ogni settore"
-        lead="Ristoranti, cantine, eventi, agenzie, negozi e immobiliari."
-      >
-        <Cards>
-          {SOLUTIONS.map((s, i) => (
-            <Card
-              key={s.slug}
-              title={s.label}
-              text={s.problem}
-              art={s.art}
-              href={`/soluzioni/${s.slug}`}
-              delay={i * 40}
-            />
-          ))}
-        </Cards>
+      <Section tone="peach">
+        <div className={styles.split}>
+          <Reveal className={styles.splitCopy}>
+            <p className={styles.kicker}>{S.report.kicker}</p>
+            <h2>{S.report.title}</h2>
+            <p>{S.report.text}</p>
+            <p>
+              <ButtonLink href="/prezzi" variant="secondary">
+                {S.report.cta}
+              </ButtonLink>
+            </p>
+          </Reveal>
+          <Reveal delay={80}>
+            <ReportScene />
+          </Reveal>
+        </div>
       </Section>
 
-      <Section
-        title="Prezzi chiari"
-        lead="Dal piano Free per sempre ad Agency. In euro, mese per mese o all’anno."
-      >
+      <Section title={S.pricing.title} lead={S.pricing.lead}>
         <PlansPreview />
         <p style={{ marginTop: "var(--space-5)" }}>
           <ButtonLink href="/prezzi" variant="secondary">
             Vedi tutti i prezzi
           </ButtonLink>
         </p>
-        <div style={{ marginTop: "var(--space-8)" }}>
-          <Guarantee />
-        </div>
       </Section>
 
       {(SOCIAL.testimonials.length > 0 || SOCIAL.logos.length > 0) && (
@@ -146,7 +169,7 @@ export default function HomePage() {
         </Section>
       )}
 
-      <FaqList items={FAQ.home} />
+      <FaqList items={FAQ.home} tone="mint" />
       <CtaBand title={HOME.finalCta.title} text={HOME.finalCta.text} />
       <p className={styles.small}>
         <Link href="/genera">Genera un QR gratis</Link> · <Link href="/guide">Guide</Link>

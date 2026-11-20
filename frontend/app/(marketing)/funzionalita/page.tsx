@@ -38,7 +38,7 @@ export default function FeaturesIndex() {
         </Cards>
       </Section>
       {FEATURES.filter((f) => !f.page).map((f) => (
-        <Section key={f.slug} id={f.slug} tone="soft" title={f.title} lead={f.text}>
+        <Section key={f.slug} id={f.slug} tone="mint" title={f.title} lead={f.text}>
           <Reveal>
             <SiteArt name={FEATURE_ART[f.slug]} size={180} />
             <Bullets items={f.bullets} />
