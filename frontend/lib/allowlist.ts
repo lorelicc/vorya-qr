@@ -82,6 +82,7 @@ const rules: Rule[] = [
   // Free public generator and site counters (no session)
   r("POST", "public/generator/(preview|download|track)"),
   r("GET", "public/site/counters"),
+  r("POST", "public/contact"),
   // Billing (the webhook is signature-verified by the backend; Stripe cannot send cookies)
   r("POST", "public/stripe-webhook"),
   r("GET", "public/plans"),

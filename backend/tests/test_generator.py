@@ -179,3 +179,41 @@ def test_a_broken_handoff_never_breaks_the_signup(client, db):
     )
     assert done.status_code == 200
     assert db.scalar(select(func.count()).select_from(QrCode)) == 0
+
+
+# ---------------------------------------------------------------- contact form
+
+
+def contact(client, **over):
+    body = {"name": "Mario Rossi", "email": "mario@example.com",
+            "message": "Vorrei informazioni sui piani.", "accept_privacy": True, **over}  # fmt: skip
+    return client.post("/api/public/contact", json=body)
+
+
+def test_contact_form_sends_to_support_with_reply_to_and_rate_limits(client):
+    import json
+    from pathlib import Path
+
+    from tests.conftest import MAIL_DIR
+
+    assert contact(client).status_code == 202
+    sent = [json.loads(p.read_text()) for p in Path(MAIL_DIR).glob("contact-*.json")]
+    assert (
+        sent
+        and sent[0]["to"] == "supporto@example.com"
+        and "Vorrei informazioni" in sent[0]["text"]
+    )
+    assert contact(client, accept_privacy=False).status_code == 422
+    for i in range(4):  # 5 per IP per hour in total
+        assert contact(client, email=f"altro{i}@example.com").status_code == 202
+    assert contact(client, email="altro9@example.com").status_code == 429
+
+
+def test_contact_honeypot_pretends_success_and_sends_nothing(client):
+    from pathlib import Path
+
+    from tests.conftest import MAIL_DIR
+
+    before = len(list(Path(MAIL_DIR).glob("contact-*.json")))
+    assert contact(client, hp="http://spam").status_code == 202
+    assert len(list(Path(MAIL_DIR).glob("contact-*.json"))) == before

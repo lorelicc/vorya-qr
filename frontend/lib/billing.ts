@@ -26,6 +26,12 @@ export type PlanCardData = {
     version_history: boolean;
     menu_type: boolean;
     allowed_types: string[];
+    storage_mb?: number | null;
+    stats_retention_days?: number | null;
+    remove_branding?: boolean;
+    report_frequencies?: ("weekly" | "monthly")[];
+    report_recipients?: number;
+    report_pdf?: boolean;
   };
   prices: PlanPrices;
 };
@@ -106,8 +112,8 @@ export function yearlySaving(prices: PlanPrices): number {
   return Math.round((1 - y / (m * 12)) * 100);
 }
 
-const limit = (n: number | null, one: string, many: string) =>
-  n === null ? `${many} illimitati` : `${n} ${n === 1 ? one : many}`;
+const limit = (n: number | null, one: string, many: string, unlimited = "illimitati") =>
+  n === null ? `${many} ${unlimited}` : `${n} ${n === 1 ? one : many}`;
 
 /** The feature lines of a plan card: everything comes from the plan's limits/features. */
 export function featureLines(plan: PlanCardData, labels: Record<string, string>): string[] {
@@ -115,7 +121,7 @@ export function featureLines(plan: PlanCardData, labels: Record<string, string>)
   const lines = [
     limit(plan.limits.dynamic_qr, "QR dinamico", "QR dinamici"),
     limit(plan.limits.static_qr, "QR statico", "QR statici"),
-    limit(plan.limits.companies, "azienda", "aziende"),
+    limit(plan.limits.companies, "azienda", "aziende", "illimitate"),
   ];
   if (f.custom_back_half)
     lines.push(

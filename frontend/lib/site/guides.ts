@@ -1,4 +1,4 @@
-import { readdirSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 export type GuideMeta = {
@@ -34,4 +34,22 @@ export async function allGuides() {
   return loaded
     .filter((g): g is NonNullable<typeof g> => g !== null)
     .sort((a, b) => b.meta.date.localeCompare(a.meta.date));
+}
+
+export const slugify = (text: string) =>
+  text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+/** Table of contents: the "##" headings of the MDX source. */
+export function guideHeadings(slug: string): { id: string; title: string }[] {
+  try {
+    const source = readFileSync(path.join(DIR, `${slug}.mdx`), "utf8");
+    return [...source.matchAll(/^## (.+)$/gm)].map((m) => ({ id: slugify(m[1]), title: m[1] }));
+  } catch {
+    return [];
+  }
 }

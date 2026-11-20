@@ -56,13 +56,16 @@ export function PublicGenerator({
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<"png" | "svg" | null>(null);
   const [trap, setTrap] = useState("");
+  const [touched, setTouched] = useState(false);
   const viewed = useRef(false);
 
   const body = useMemo(
     () => ({ type, data, design: { ...design, logo: logo ? (design.logo ?? { file_id: "x", size: 0.22, padding: 0.02, plate: true }) : null }, logo, landing, hp: trap }),
     [type, data, design, logo, landing, trap],
   ); // prettier-ignore
-  const key = useDebouncedValue(JSON.stringify(body), 350);
+  // Before the visitor types anything the preview shows an example QR (nothing to download yet).
+  const sample = { ...body, type: "website", data: { url: "https://qr.vorya.it" } };
+  const key = useDebouncedValue(JSON.stringify(touched ? body : sample), 350);
 
   useEffect(() => {
     if (viewed.current) return;
@@ -91,6 +94,7 @@ export function PublicGenerator({
 
   function chooseType(next: GeneratorType) {
     setType(next);
+    setTouched(false);
     setData({ ...(STATIC_DEFAULTS[next] as Data) });
     setPreview(null);
   }
@@ -149,7 +153,14 @@ export function PublicGenerator({
       </div>
       <div className={styles.split}>
         <div className={styles.form}>
-          <StaticForm type={type} value={data} onChange={setData} />
+          <StaticForm
+            type={type}
+            value={data}
+            onChange={(next) => {
+              setTouched(true);
+              setData(next);
+            }}
+          />
           <input
             className={styles.trap}
             tabIndex={-1}
@@ -182,6 +193,10 @@ export function PublicGenerator({
               <Loader2 size={16} className={styles.spin} aria-hidden="true" /> Verifica della
               lettura…
             </p>
+          ) : !touched ? (
+            <p className={styles.badge} data-state="checking" role="status">
+              Anteprima di esempio: compila i campi
+            </p>
           ) : scan?.scannable ? (
             <p className={styles.badge} data-state="ok" role="status">
               <CheckCircle2 size={16} aria-hidden="true" /> Scansionabile
@@ -205,7 +220,7 @@ export function PublicGenerator({
             <Button
               icon={<Download size={16} />}
               loading={busy === "png"}
-              disabled={!scan?.scannable}
+              disabled={!touched || !scan?.scannable}
               onClick={() => download("png")}
               data-umami-event="generatore-download-png"
             >
@@ -215,7 +230,7 @@ export function PublicGenerator({
               variant="secondary"
               icon={<Download size={16} />}
               loading={busy === "svg"}
-              disabled={!scan?.scannable}
+              disabled={!touched || !scan?.scannable}
               onClick={() => download("svg")}
             >
               Scarica SVG

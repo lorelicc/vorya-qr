@@ -18,6 +18,7 @@ from .billing.router import router as billing_router
 from .companies.router import account_router as company_account_router
 from .companies.router import router as companies_router
 from .companies.transfers import router as transfers_router
+from .contact import router as contact_router
 from .core.config import get_settings
 from .core.database import get_engine
 from .core.errors import install_handlers
@@ -79,6 +80,7 @@ def create_app() -> FastAPI:
         abuse_public_router,
         billing_router,
         generator_router,
+        contact_router,
         site_router,
         billing_admin_router,
         redirect_router,
