@@ -64,6 +64,10 @@ class Settings(BaseSettings):
     stripe_secret_key: SecretStr = SecretStr("")
     stripe_webhook_secret: SecretStr = SecretStr("")
     stripe_live_allowed: bool = False
+    # Production readiness (0.5): errors (GlitchTip/Sentry-compatible), detailed health, logs.
+    sentry_dsn: str = ""
+    health_token: SecretStr = SecretStr("")  # protects /health/detail; empty = endpoint disabled
+    log_format: Literal["json", "text"] = "json"
     # Only for automated tests: points the Stripe client at a local fake. Refused in production.
     stripe_api_base: str = ""
 

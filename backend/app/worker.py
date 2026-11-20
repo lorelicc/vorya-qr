@@ -312,12 +312,19 @@ def run_queue_once() -> int:
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO)
+    from .core.observability import init_errors, setup_logging
+    from .health import beat
+
+    setup_logging()
+    init_errors()
     log.info("Vorya QR worker avviato (coda ogni %ss, manutenzione ogni %ss)", QUEUE_SECONDS,
              INTERVAL_SECONDS)  # fmt: skip
-    next_maintenance = 0.0
+    next_maintenance, next_beat = 0.0, 0.0
     while True:
         try:
+            if time.monotonic() >= next_beat:
+                beat()
+                next_beat = time.monotonic() + 30
             if time.monotonic() >= next_maintenance:
                 log.info("Esecuzione job: %s", run_once())
                 next_maintenance = time.monotonic() + INTERVAL_SECONDS

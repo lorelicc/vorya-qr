@@ -106,6 +106,8 @@ starlette==1.10.0
     # via fastapi
 stripe==14.4.2
     # via -r requirements.txt
+sentry-sdk==2.75.0
+    # via -r requirements.txt
 tinycss2==1.5.1
     # via
     #   cairosvg

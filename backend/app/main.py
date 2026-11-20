@@ -1,5 +1,3 @@
-import logging
-
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
@@ -23,8 +21,10 @@ from .contact import router as contact_router
 from .core.config import get_settings
 from .core.database import get_engine
 from .core.errors import install_handlers
+from .core.observability import ObservabilityMiddleware, init_errors, setup_logging
 from .generator import router as generator_router
 from .generator import site_router
+from .health import router as health_router
 from .imports.router import router as imports_router
 from .links.organization import router as organization_router
 from .links.organization import search_router
@@ -32,6 +32,7 @@ from .links.router import links_qr as links_qr_router
 from .links.router import public as links_public_router
 from .links.router import router as links_router
 from .links.router import utm as utm_router
+from .mail.check import startup_check
 from .pages.events import router as page_events_router
 from .pages.public import router as pages_public_router
 from .qr.router import router as qr_router
@@ -43,7 +44,8 @@ from .stats.router import router as stats_router
 from .storage.public import router as files_public_router
 from .storage.router import router as files_router
 
-logging.basicConfig(level=logging.INFO)
+setup_logging()
+init_errors()
 
 
 def create_app() -> FastAPI:
@@ -56,6 +58,9 @@ def create_app() -> FastAPI:
         openapi_url="/api/openapi.json" if development else None,
     )
     install_handlers(app)
+    app.add_middleware(ObservabilityMiddleware)
+    app.include_router(health_router)
+    startup_check()
     for router in (
         auth_router,
         onboarding_router,
